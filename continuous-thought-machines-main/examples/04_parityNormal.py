@@ -1,7 +1,5 @@
 import os
 import sys
-from turtledemo.penrose import start
-
 import torch
 import torch.nn as nn
 import numpy as np
@@ -9,7 +7,6 @@ import random
 from torch.utils.data import Dataset, DataLoader
 from tqdm.auto import tqdm
 import matplotlib.pyplot as plt
-import time
 import imageio
 
 
@@ -17,11 +14,11 @@ import imageio
 # Assumes this script is run from the 'examples' folder or similar depth
 sys.path.append("..")
 
-# Try importing CTM modules. 
+# Try importing CTM moddules.
 # If these fail, ensure you are running this script from the correct directory 
 # relative to the 'continuous-thought-machines' repo.
 try:
-    from models.ctm_kan import ContinuousThoughtMachine as CTM
+    from models.ctm import ContinuousThoughtMachine as CTM
     from tasks.parity.plotting import make_parity_gif
     from tasks.parity.utils import reshape_attention_weights, reshape_inputs
 except ImportError as e:
@@ -294,7 +291,7 @@ def main():
     PARITY_SEQUENCE_LENGTH = GRID_SIZE ** 2
     BATCH_SIZE = 5
     ITERATIONS = 100000
-    LOG_DIR = './parity_logs'
+    LOG_DIR = './parity_logs_normal'
 
     set_seed(42)
 
@@ -338,7 +335,6 @@ def main():
     print(f'Model parameters: {sum(p.numel() for p in model.parameters()):,}')
 
     print("Starting Training...")
-    start = time.time()
     model = train(
         model=model,
         trainloader=trainloader,
@@ -350,8 +346,6 @@ def main():
         log_dir=LOG_DIR
     )
 
-    end = time.time()
-    duration = end - start
     print("Training Complete.")
     print(f"Check {LOG_DIR} for logs and visualizations.")
 
