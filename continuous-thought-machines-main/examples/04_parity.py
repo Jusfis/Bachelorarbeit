@@ -1,6 +1,5 @@
 import os
 import sys
-from turtledemo.penrose import start
 
 import torch
 import torch.nn as nn
