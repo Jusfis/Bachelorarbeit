@@ -179,7 +179,7 @@ def create_viz(model, testloader, device, log_dir, grid_size):
 # Training Loop
 # -----------------------------------------------------------------------------
 
-def train(model, trainloader, testloader, grid_size, device='cpu', training_iterations=200000, test_every=1000, lr=1e-4,
+def train(model, trainloader, testloader, grid_size, device='cpu', training_iterations=100000, test_every=1000, lr=1e-4,
           log_dir='./logs'):
     os.makedirs(log_dir, exist_ok=True)
 
@@ -293,7 +293,7 @@ def main():
     GRID_SIZE = 4
     PARITY_SEQUENCE_LENGTH = GRID_SIZE ** 2
     BATCH_SIZE = 5
-    ITERATIONS = 100000
+    ITERATIONS = 300000
     LOG_DIR = './parity_logs'
 
     set_seed(42)
