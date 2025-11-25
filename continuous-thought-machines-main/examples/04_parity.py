@@ -9,7 +9,7 @@ from torch.utils.data import Dataset, DataLoader
 from tqdm.auto import tqdm
 import matplotlib.pyplot as plt
 import time
-import imageio
+# import imageio
 
 
 # Add parent directory to path to access the CTM package
@@ -292,8 +292,8 @@ def main():
     GRID_SIZE = 4
     PARITY_SEQUENCE_LENGTH = GRID_SIZE ** 2
     BATCH_SIZE = 5
-    ITERATIONS = 300000
-    LOG_DIR = './parity_logs'
+    ITERATIONS = 100000
+    LOG_DIR = './parity_logs_100k'
 
     set_seed(42)
 
@@ -310,15 +310,15 @@ def main():
 
     print("Initializing Model...")
     model = CTM(
-        iterations=5,
-        d_model=32,
+        iterations=50,
+        d_model=256,
         d_input=32,
         heads=8,
-        n_synch_out=16,
-        n_synch_action=16,
+        n_synch_out=256,
+        n_synch_action=256,
         synapse_depth=8,
-        memory_length=5,
-        deep_nlms=False,
+        memory_length=25,
+        deep_nlms=True,
         memory_hidden_dims=16,
         backbone_type='parity_backbone',
         out_dims=PARITY_SEQUENCE_LENGTH * 2,
