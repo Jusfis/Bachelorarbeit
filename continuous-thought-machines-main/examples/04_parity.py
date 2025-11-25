@@ -291,7 +291,7 @@ def main():
     # Configuration
     GRID_SIZE = 4
     PARITY_SEQUENCE_LENGTH = GRID_SIZE ** 2
-    BATCH_SIZE = 5
+    BATCH_SIZE = 15
     ITERATIONS = 100000
     LOG_DIR = './parity_logs_100k'
 
@@ -310,14 +310,14 @@ def main():
 
     print("Initializing Model...")
     model = CTM(
-        iterations=50,
-        d_model=256,
+        iterations=20,
+        d_model=32,
         d_input=32,
         heads=8,
-        n_synch_out=256,
-        n_synch_action=256,
+        n_synch_out= 32,
+        n_synch_action=32,
         synapse_depth=8,
-        memory_length=25,
+        memory_length=16,
         deep_nlms=True,
         memory_hidden_dims=16,
         backbone_type='parity_backbone',
