@@ -9,3 +9,4 @@
 #SBATCH --output=/home/f/fischerjus/Bachelorarbeit/continuous-thought-machines-main/examples/slurm_normal.%j.%N.out
  
 python3 -u 04_parity_normal.py
+#sbatch --partition=NvidiaAll parity_normal.sh
