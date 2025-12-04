@@ -293,7 +293,7 @@ def main():
     PARITY_SEQUENCE_LENGTH = GRID_SIZE ** 2
     BATCH_SIZE = 15
     ITERATIONS = 100000
-    LOG_DIR = './parity_logs_100k'
+    LOG_DIR = './parity_logs_kan'
 
     set_seed(42)
 
