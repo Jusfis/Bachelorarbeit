@@ -8,5 +8,5 @@
 #SBATCH --chdir=/home/f/fischerjus/Bachelorarbeit/continuous-thought-machines-main/examples
 #SBATCH --output=/home/f/fischerjus/Bachelorarbeit/continuous-thought-machines-main/examples/slurm_mnist_normal.%j.%N.out
  
-python3 -u 04_mnist_normal.py
+python3 -u mnist_normal.py
 #sbatch --partition=NvidiaAll mnist_normal.sh

@@ -9,6 +9,6 @@
 #SBATCH --output=/home/f/fischerjus/Bachelorarbeit/continuous-thought-machines-main/examples/slurm_mnist_kan.%j.%N.out
 
 
-python3 -u 04_mnist_kan.py
+python3 -u mnist_kan.py
 #to submit the job, use:
 #sbatch --partition=NvidiaAll mnist_kan.sh
