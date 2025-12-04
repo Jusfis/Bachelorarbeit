@@ -2,6 +2,7 @@ import os
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from sympy import false
 from tqdm import tqdm
 import numpy as np
 import random
@@ -13,10 +14,45 @@ from IPython.display import display, clear_output
 import seaborn as sns
 import imageio
 import mediapy
+from kan import KAN
 
 import torch._dynamo as dynamo
-
 dynamo.config.suppress_errors = False  # Raise errors on fallback
+
+# super KAN implementation for d parallel neuron-level models in CTM
+
+class SuperKAN(nn.Module):
+    def __init__(self, width, N, grid_size=5, k=3, **kwargs):
+        super().__init__()
+        self.N = N
+        if isinstance(width, (list, tuple)):
+            self.in_dims = int(width[0])
+            self.out_dims = int(width[-1])
+        else:
+            self.in_dims = int(width)
+            self.out_dims = 1
+
+        self.models = nn.ModuleList([
+            KAN(width=width, grid=grid_size, k=k, **kwargs) for _ in range(N)
+        ])
+
+    def forward(self, x):
+        if x.shape[1] != self.N or x.shape[2] != self.in_dims:
+            raise ValueError(
+                f"Erwartete Input-Shape (B, {self.N}, {self.in_dims}), "
+                f"aber erhielt {x.shape}"
+            )
+
+        outputs = []
+        for i in range(self.N):
+            x_i = x[:, i, :]
+            out_i = self.models[i](x_i)
+            outputs.append(out_i)
+
+        result = torch.stack(outputs, dim=1)
+        return result
+
+#get_kan_import implementation for CTM on MNIST
 
 
 def set_seed(seed=42, deterministic=True):
@@ -118,20 +154,29 @@ class ContinuousThoughtMachine(nn.Module):
         self.kv_proj = nn.Sequential(nn.LazyLinear(self.d_input), nn.LayerNorm(self.d_input))
         self.q_proj = nn.LazyLinear(self.d_input)
 
-        # --- Core CTM Modules ---
+        # here input for KAN
+
+
+
         self.synapses = nn.Sequential(
                 nn.Dropout(dropout),
                 nn.LazyLinear(d_model * 2),
                 nn.GLU(),
                 nn.LayerNorm(d_model)
             )
-        self.trace_processor = nn.Sequential(
-            SuperLinear(in_dims=memory_length, out_dims=2 * memory_hidden_dims, N=d_model, dropout=dropout),
-            nn.GLU(),
-            SuperLinear(in_dims=memory_hidden_dims, out_dims=2, N=d_model, dropout=dropout),
-            nn.GLU(),
-            Squeeze(-1)
-        )
+        # hardcode deep_nlms as false
+        deep_nlms = false
+        self.trace_processor = self.get_kan_network(deep_nlms, memory_length, memory_hidden_dims, d_model)
+
+
+        # old from mnist_normal.py
+        # self.trace_processor = nn.Sequential(
+        #     SuperLinear(in_dims=memory_length, out_dims=2 * memory_hidden_dims, N=d_model, dropout=dropout),
+        #     nn.GLU(),
+        #     SuperLinear(in_dims=memory_hidden_dims, out_dims=2, N=d_model, dropout=dropout),
+        #     nn.GLU(),
+        #     Squeeze(-1)
+        # )
 
         #  --- Start States ---
         self.register_parameter('start_activated_state', nn.Parameter(
@@ -156,6 +201,25 @@ class ContinuousThoughtMachine(nn.Module):
 
         # --- Output Procesing ---
         self.output_projector = nn.Sequential(nn.LazyLinear(self.out_dims))
+
+
+# --- KAN Network for Trace Processing
+    def get_kan_network(self, deep_nlms, memory_length, memory_hidden_dims, d_model,
+                        grid_size=3, k=2):
+        if deep_nlms:
+            width = [memory_length, memory_hidden_dims, 1]
+        else:
+            width = [memory_length, 1]
+
+        kan_module = SuperKAN(
+            width=width,
+            N=d_model,
+            grid_size=grid_size,
+            k=k,
+            noise_scale=0.01,
+        )
+
+        return nn.Sequential(kan_module, Squeeze(-1))
 
     def set_synchronisation_parameters(self, synch_type: str):
         synch_representation_size = self.synch_representation_size_action if synch_type == 'action' else self.synch_representation_size_out

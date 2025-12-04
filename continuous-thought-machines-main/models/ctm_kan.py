@@ -10,7 +10,7 @@ from models.modules import ParityBackbone, SynapseUNET, Squeeze, SuperLinear, Le
     MultiLearnableFourierPositionalEncoding, CustomRotationalEmbedding, CustomRotationalEmbedding1D, ShallowWide
 from models.resnet import prepare_resnet_backbone
 from models.utils import compute_normalized_entropy
-from kan import KAN  # <-- 1. ADDED IMPORT
+
 
 from models.constants import (
     VALID_NEURON_SELECT_TYPES,
