@@ -10,5 +10,5 @@
 
 
 python3 -u mnist_kan.py
-#to submit the job, use:
+
 #sbatch --partition=NvidiaAll mnist_kan.sh
