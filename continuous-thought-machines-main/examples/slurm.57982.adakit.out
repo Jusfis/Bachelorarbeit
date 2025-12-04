@@ -1,6 +1,0 @@
-slurmstepd-adakit: error: Unable to create TMPDIR [/tmp/user/23392]: Permission denied
-slurmstepd-adakit: error: Setting TMPDIR to /tmp
-Traceback (most recent call last):
-  File "/home/f/fischerjus/Bachelorarbeit/continuous-thought-machines-main/examples/04_parity.py", line 3, in <module>
-    import torch
-ModuleNotFoundError: No module named 'torch'
