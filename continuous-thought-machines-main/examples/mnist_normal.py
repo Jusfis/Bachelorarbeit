@@ -331,6 +331,12 @@ def update_training_curve_plot(fig, ax1, ax2, train_losses, test_losses, train_a
     ax2.grid(True, alpha=0.3)
 
     plt.tight_layout()
+
+    out_dir = './training_mnist_normal_figs'
+    os.makedirs(out_dir, exist_ok=True)
+    step_label = steps[-1] if len(steps) > 0 else len(train_losses) - 1
+    filename = os.path.join(out_dir, f'training_curve_step_{step_label}.jpg')
+    fig.savefig(filename, dpi=150, bbox_inches='tight')
     display(fig)
 
 

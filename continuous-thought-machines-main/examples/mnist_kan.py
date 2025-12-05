@@ -370,7 +370,7 @@ def prepare_data():
     return trainloader, testloader
 
 
-def update_training_curve_plot(fig, ax1, ax2, train_losses, test_losses, train_accuracies, test_accuracies, steps):
+def update_training_curve_plot(fig, ax1, ax2, train_losses, test_losses, train_accuracies, test_accuracies, steps, model):
     clear_output(wait=True)
 
     # Plot loss
@@ -386,7 +386,7 @@ def update_training_curve_plot(fig, ax1, ax2, train_losses, test_losses, train_a
     # Plot accuracy
     ax2.clear()
     ax2.plot(range(len(train_accuracies)), train_accuracies, 'b-', alpha=0.7,
-             label=f'Train Accuracy: {train_accuracies[-1]:.3f}')
+             label=f'Train Accuracy: {train_accuracies[-1]:.3f} {sum(p.numel() for p in model.parameters())}')
     ax2.plot(steps, test_accuracies, 'r-', marker='o', label=f'Test Accuracy: {test_accuracies[-1]:.3f}')
     ax2.set_title('Accuracy')
     ax2.set_xlabel('Step')
@@ -395,6 +395,12 @@ def update_training_curve_plot(fig, ax1, ax2, train_losses, test_losses, train_a
     ax2.grid(True, alpha=0.3)
 
     plt.tight_layout()
+    # Save the figure
+    out_dir = './training_mnist_kan_figs'
+    os.makedirs(out_dir, exist_ok=True)
+    step_label = steps[-1] if len(steps) > 0 else len(train_losses) - 1
+    filename = os.path.join(out_dir, f'training_curve_step_{step_label}.jpg')
+    fig.savefig(filename, dpi=150, bbox_inches='tight')
     display(fig)
 
 
@@ -466,7 +472,7 @@ def train(model, trainloader, testloader, iterations, test_every, device):
                 model.train()
 
                 update_training_curve_plot(fig, ax1, ax2, train_losses, test_losses, train_accuracies, test_accuracies,
-                                           steps)
+                                           steps,model)
 
             pbar.set_description(
                 f'Train Loss: {train_loss:.3f}, Train Accuracy: {train_accuracy:.3f} Test Loss: {test_loss:.3f}, Test Accuracy: {test_accuracy:.3f}')
@@ -489,9 +495,9 @@ def main():
     trainloader, testloader = prepare_data()
 
     model = ContinuousThoughtMachine(
-        iterations=15,
-        d_model=128,
-        d_input=128,
+        iterations=10,
+        d_model=16,
+        d_input=16,
         memory_length=10,
         heads=2,
         n_synch_out=16,
@@ -506,7 +512,7 @@ def main():
     with torch.no_grad():
         _ = model(dummy_input)
 
-    # Now compile the model
+
     model = torch.compile(model)
 
     def clamp_decay_params(module, _input):
@@ -518,7 +524,8 @@ def main():
 
     print(f'Model parameters: {sum(p.numel() for p in model.parameters()):,}')
 
-    model = train(model=model, trainloader=trainloader, testloader=testloader, iterations=100000, test_every=10000,
+    #  lower specs for testing
+    model = train(model=model, trainloader=trainloader, testloader=testloader, iterations=10000, test_every=5000,
                   device=device)
 
 
