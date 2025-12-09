@@ -9,7 +9,9 @@ from torch.utils.data import Dataset, DataLoader
 from tqdm.auto import tqdm
 import matplotlib.pyplot as plt
 import time
+import wandb
 # import imageio
+
 
 
 # Add parent directory to path to access the CTM package
@@ -221,6 +223,10 @@ def train(model, trainloader, testloader, grid_size, device='cpu', training_iter
             train_losses.append(train_loss.item())
             train_accuracies.append(train_accuracy)
 
+            # log to wandb
+            wandb.log({"loss/train": train_loss.item(), "accuracy/train": train_accuracy, "step": stepi})
+
+
             train_loss.backward()
             optimizer.step()
             optimizer.zero_grad()
@@ -291,11 +297,29 @@ def main():
     # Configuration
     GRID_SIZE = 4
     PARITY_SEQUENCE_LENGTH = GRID_SIZE ** 2
-    BATCH_SIZE = 15
-    ITERATIONS = 100000
+    BATCH_SIZE = 20
+    ITERATIONS = 10000
     LOG_DIR = './parity_logs_kan'
-
+    LEARNINGRATE = 1e-2
     set_seed(42)
+
+# Initialize WandB
+    run = wandb.init(
+        project="ctm-parity-kan",
+        entity="justus-fischer-ludwig-maximilian-university-of-munich",
+
+        config={
+            "learning_rate": LEARNINGRATE,
+            "architecture": "CTM-KAN",
+            "dataset": "Parity",
+            "batch_size": BATCH_SIZE,
+            "iterations": ITERATIONS,
+            "parity_sequence_length": PARITY_SEQUENCE_LENGTH,
+        },
+    )
+
+
+
 
     print("Initializing Data...")
     train_data = ParityDataset(sequence_length=PARITY_SEQUENCE_LENGTH, length=100000)
@@ -345,14 +369,15 @@ def main():
         grid_size=GRID_SIZE,
         device=device,
         training_iterations=ITERATIONS,
-        lr=1e-4,
+        lr=LEARNINGRATE,
         log_dir=LOG_DIR
     )
 
     end = time.time()
     duration = end - start
-    print("Training Complete.")
+    print("Training Complete. Time: duration {:.2f} seconds ({:.2f} minutes)".format(duration, duration / 60))
     print(f"Check {LOG_DIR} for logs and visualizations.")
+    run.finish()
 
 
 if __name__ == "__main__":
