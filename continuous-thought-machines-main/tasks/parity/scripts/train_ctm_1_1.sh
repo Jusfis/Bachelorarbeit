@@ -41,6 +41,6 @@ python -m tasks.parity.train \
     --save_every 10000 \
     --no-reload \
     --no-reload_model_only \
-    --device 0 \
+    --device -1 \
     --no-use_amp \
     --neuron_select_type "random"

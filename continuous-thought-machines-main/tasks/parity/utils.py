@@ -1,8 +1,8 @@
 import os
 import re
 import math
-from models.ctm import ContinuousThoughtMachine
-from models.lstm import LSTMBaseline
+from models.ctm_kan import ContinuousThoughtMachine
+from models.lstm import LSTMBaseline # alternative baseline model
 
 def prepare_model(prediction_reshaper, args, device):
     if args.model_type == 'ctm':
@@ -25,7 +25,7 @@ def prepare_model(prediction_reshaper, args, device):
             dropout=args.dropout,          
             neuron_select_type=args.neuron_select_type,
             n_random_pairing_self=args.n_random_pairing_self,
-        ).to(device)
+        ).to(device) # below baseline model #todo add other baseline model cnn for instance
     elif args.model_type == 'lstm':
         model = LSTMBaseline(
             iterations=args.iterations,

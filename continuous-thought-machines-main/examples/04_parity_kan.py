@@ -300,10 +300,15 @@ def main():
     BATCH_SIZE = 20
     ITERATIONS = 10000
     LOG_DIR = './parity_logs_kan'
-    LEARNINGRATE = 1e-2
+    LEARNINGRATE = 1e-4
     set_seed(42)
 
-# Initialize WandB
+    # Initialize WandB sweeps
+
+    # with wandb.init(project="my-first-sweep") as run:
+        # score = objective(run.config)  adjust
+        # run.log({"score": score})
+
     run = wandb.init(
         project="ctm-parity-kan",
         entity="justus-fischer-ludwig-maximilian-university-of-munich",
@@ -334,16 +339,16 @@ def main():
 
     print("Initializing Model...")
     model = CTM(
-        iterations=20,
-        d_model=32,
-        d_input=32,
-        heads=8,
-        n_synch_out= 32,
-        n_synch_action=32,
-        synapse_depth=8,
-        memory_length=16,
-        deep_nlms=True,
-        memory_hidden_dims=16,
+        iterations=20, # originally 50
+        d_model=32, # originally 256
+        d_input=32, # originally 50
+        heads=8,  # originally 8
+        n_synch_out= 32, # originally 256
+        n_synch_action=32,  # originally 256
+        synapse_depth=8,  # originally 8
+        memory_length=16, # originally 25
+        deep_nlms=True,  # originally True
+        memory_hidden_dims=16, # originally 16
         backbone_type='parity_backbone',
         out_dims=PARITY_SEQUENCE_LENGTH * 2,
         prediction_reshaper=[PARITY_SEQUENCE_LENGTH, 2],
@@ -382,3 +387,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+

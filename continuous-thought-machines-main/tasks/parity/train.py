@@ -27,6 +27,8 @@ from utils.housekeeping import set_seed, zip_python_code
 from utils.losses import parity_loss
 from utils.schedulers import WarmupCosineAnnealingLR, WarmupMultiStepLR, warmup
 
+
+
 torchvision.disable_beta_transforms_warning()
 torch.serialization.add_safe_globals([argparse.Namespace])
 
@@ -87,11 +89,11 @@ def parse_args():
 if __name__=='__main__':
 
     args = parse_args()
-    
+
     set_seed(args.seed)
 
     if not os.path.exists(args.log_dir): os.makedirs(args.log_dir)
-    
+
     assert int(math.sqrt(args.parity_sequence_length)) ** 2 == args.parity_sequence_length, "parity_sequence_length must be a perfect square."
 
     train_data = ParityDataset(sequence_length=args.parity_sequence_length, length=100000)
@@ -113,13 +115,14 @@ if __name__=='__main__':
         print(args, file=f)  
 
     # Configure device string (support MPS on macOS)
+    # todo repair cuda init for multi-gpu
     if args.device[0] != -1:
         device = f'cuda:{args.device[0]}'
     elif torch.backends.mps.is_available():
         device = 'mps'
     else:
         device = 'cpu'
-    print(f'Running model {args.model} on {device}')
+    print(f'Running model {args.model_type} on {device}')
 
     # Build model
     model = prepare_model(prediction_reshaper, args, device)

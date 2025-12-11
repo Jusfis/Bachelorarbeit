@@ -6,6 +6,7 @@ LOG_DIR="logs/parity/run${RUN}/ctm_${ITERATIONS}_${MEMORY_LENGTH}"
 SEED=$((RUN - 1))
 
 python -m tasks.parity.train \
+#    --model_type "ctm"\
     --log_dir $LOG_DIR \
     --seed $SEED \
     --iterations $ITERATIONS \
@@ -41,6 +42,6 @@ python -m tasks.parity.train \
     --save_every 10000 \
     --no-reload \
     --no-reload_model_only \
-    --device 0 \
     --no-use_amp \
-    --neuron_select_type "random"
+    --neuron_select_type "random" \
+    --device 0 # CUDA device ID
