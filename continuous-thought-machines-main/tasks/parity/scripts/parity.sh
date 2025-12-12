@@ -8,18 +8,18 @@
 #SBATCH --chdir=/home/f/fischerjus/Bachelorarbeit/continuous-thought-machines-main/tasks/parity
 #SBATCH --output=/home/f/fischerjus/Bachelorarbeit/continuous-thought-machines-main/tasks/parity/slurm_kan.%j.%N.out
 
-RUN=1
-ITERATIONS=10
-MEMORY_LENGTH=5
-LOG_DIR="logs/parity/run${RUN}/ctm_${ITERATIONS}_${MEMORY_LENGTH}"
-SEED=$((RUN - 1))
+#RUN=1
+#ITERATIONS=10
+#MEMORY_LENGTH=5
+#LOG_DIR="logs/parity/run${RUN}/ctm_${ITERATIONS}_${MEMORY_LENGTH}"
+#SEED=$((RUN - 1))
 
 python -u tasks.parity.train \
 #    --model_type "ctm"\
     --log_dir $LOG_DIR \
-    --seed $SEED \
-    --iterations $ITERATIONS \
-    --memory_length $MEMORY_LENGTH \
+    --seed 1 \
+    --iterations 10 \
+    --memory_length 5 \
     --parity_sequence_length 64  \
     --n_test_batches 20 \
     --d_model 1024 \
