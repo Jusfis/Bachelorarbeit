@@ -28,7 +28,6 @@ from utils.losses import parity_loss
 from utils.schedulers import WarmupCosineAnnealingLR, WarmupMultiStepLR, warmup
 import wandb
 
-
 torchvision.disable_beta_transforms_warning()
 torch.serialization.add_safe_globals([argparse.Namespace])
 
@@ -86,15 +85,13 @@ def parse_args():
     args = parser.parse_args()
     return args
 def main():
-    with wandb.init() as run:
+    with wandb.init(entity="justus-fischer-ludwig-maximilian-university-of-munich",project="ctm-parity-sweeps") as run:
         config = wandb.config
-
         args = parse_args()
 
         # input from wandb sweep
         args.batch_size = config.batch_size
         args.lr = config.learning_rate
-
         set_seed(args.seed)
 
         if not os.path.exists(args.log_dir): os.makedirs(args.log_dir)
@@ -312,7 +309,7 @@ def main():
                             train_losses.append(np.mean(all_losses))
 
                             # log to wandb
-                            wandb.log({"test_accuracies" : test_accuracies_most_certain[-1] if len(test_accuracies_most_certain) > 0 else 0,})
+                            run.log({"test_accuracies" : test_accuracies_most_certain[-1] if len(test_accuracies_most_certain) > 0 else 0,})
 
 
                             ##################################### TEST METRICS
@@ -419,17 +416,24 @@ def main():
 
 if __name__=='__main__':
         # Sweep configuration for wandb
-        sweep_configuration ={
+        sweep_configuration = {
+            "program": "train_sweeps.py",
+            "name": "ctm-parity-sweep",
             "method": "random",
             "metric": {
                 "name": "test_accuracies",
                 "goal": "maximize"
             },
-            'parameters': {
-                'batch_size': {'values': [10, 20, 40]},
-                'learning_rate': {'max': 5e-4, min : 1e-4}
+            "parameters": {
+                "batch_size": {"values": [16, 32, 64]},
+                "learning_rate": {"min": 1e-5, "max": 1e-2},
+                "training_iterations": {"values": [10000, 20000, 50000]},
+                "model_type": {"values": ["ctm"]},
+                "use_amp": {"values": [False, True]},
+                "parity_sequence_length": {"values": [16, 64]},
+                "use_scheduler": {"values": [True, False]}
             }
         }
 
-        sweep_id = wandb.sweep(sweep_configuration, project="ctm-parity")
+        sweep_id = wandb.sweep(sweep_configuration, project="ctm-parity-sweeps")
         wandb.agent(sweep_id, function=main, count=50)
