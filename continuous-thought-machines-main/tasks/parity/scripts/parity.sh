@@ -16,7 +16,7 @@
 
 python -u tasks.parity.train \
 #    --model_type "ctm"\
-    --log_dir $LOG_DIR \
+    --log_dir "logs/parity/run1/ctm_10_5"\
     --seed 1 \
     --iterations 10 \
     --memory_length 5 \
