@@ -325,10 +325,10 @@ def main():
 
                             # log to wandb
                             # todo repair
-                            run.log({"Train_accuracies": train_accuracies_most_certain[-1] if len(train_accuracies_most_certain) > 0 else 0, })
-                            run.log({"Test_accuracies" : test_accuracies_most_certain[-1] if len(test_accuracies_most_certain) > 0 else 0,})
-
-
+                            run.log({"Train_Accuracies_Most_Certain": train_accuracies_most_certain[-1] if len(train_accuracies_most_certain) > 0 else 0, })
+                            run.log({"Test_Accuracies_Most_Certain" : test_accuracies_most_certain[-1] if len(test_accuracies_most_certain) > 0 else 0,})
+                            run.log({"Train_Losses": train_losses[-1] if len(train_losses) > 0 else 0, })
+                            run.log({"Train_Accuracies": train_accuracies[-1] if len(train_accuracies) > 0 else 0, })
 
 
                             ##################################### TEST METRICS
