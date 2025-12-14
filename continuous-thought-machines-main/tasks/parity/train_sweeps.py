@@ -448,17 +448,18 @@ if __name__=='__main__':
             "method": "random",
             "metric": {
                 "name": "test_accuracies",
-                "goal": "maximize"
+                "goal": "maximize"# todo decide if maximize accuracies or minimize loss and add iterations and memory length
             },
             "parameters": {
-                "batch_size": {"values": [10,16, 32, 64]},
+                "batch_size": {"values": [16, 32, 64]},
                 "learning_rate": {"min": 1e-5, "max": 1e-2},
                 "training_iterations": {"values": [10000, 20000, 50000]},
                 "model_type": {"values": ["ctm"]},
                 "use_amp": {"values": [False, True]},
                 #"parity_sequence_length": {"values": [16, 64]},
                 "use_scheduler": {"values": [True, False]},
-                "postactivation_production": {"values": ["mlp"]}, # ,"kan"]}, missing
+                "postactivation_production": {"values": ["mlp"]}, # ,"kan"]},
+
             }
         }
 
