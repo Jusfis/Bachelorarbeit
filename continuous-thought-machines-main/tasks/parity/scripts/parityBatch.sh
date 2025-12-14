@@ -52,6 +52,7 @@ python -u train_sweeps.py \
     --no-reload_model_only \
     --no-use_amp \
     --neuron_select_type "random" \
+    --device 0
     --postactivation_production 'mlp' # MLP or linear for postactivation production
 
 #to submit the job, use:
