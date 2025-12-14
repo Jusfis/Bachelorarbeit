@@ -17,8 +17,8 @@
 python -m tasks.parity.train_sweeps \
     --log_dir "logs/parity/run1/ctm_10_5"\
     --seed 1 \
-    --iterations 10 \
-    --memory_length 5 \
+    --iterations 75 \
+    --memory_length 25 \
     --parity_sequence_length 64  \
     --n_test_batches 20 \
     --d_model 1024 \

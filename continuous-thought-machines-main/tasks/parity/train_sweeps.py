@@ -1,7 +1,6 @@
 import argparse
 import math
 import multiprocessing # Used for GIF generation
-import os
 import random # Used for saving/loading RNG state
 import os
 import sys
@@ -250,7 +249,14 @@ def main():
                 accuracy_finegrained = (predictions.argmax(2)[torch.arange(predictions.size(0), device=predictions.device),:,where_most_certain] == targets).float().mean().item()
                 pbar.set_description(f'Dataset=Parity. Loss={loss.item():0.3f}. Accuracy={accuracy_finegrained:0.3f}. LR={current_lr:0.6f}. Where_certain={where_most_certain.float().mean().item():0.2f}+-{where_most_certain.float().std().item():0.2f} ({where_most_certain.min().item():d}<->{where_most_certain.max().item():d})')
 
-                # Metrics tracking and plotting
+                run.log({
+                    "Train/Losses": loss.item(),
+                    "Train/Accuracies": accuracy_finegrained,
+                }, step=bi)
+
+
+                # Metrics tracking and plotting #######################3 TRACK 3##############
+                # TODO track more often but save less often?
                 if bi%args.track_every==0:# and bi != 0:
                     model.eval()
                     with torch.inference_mode():
@@ -283,7 +289,7 @@ def main():
                         ))
                         process.start()
 
-                        ##################################### TRAIN METRICS
+                        ##################################### TRAIN METRICS ##########################
                         all_predictions = []
                         all_targets = []
                         all_predictions_most_certain = []
@@ -322,16 +328,17 @@ def main():
                             train_accuracies_most_certain.append((all_targets == all_predictions_most_certain).mean())
                             train_accuracies_most_certain_per_input.append((all_targets == all_predictions_most_certain).reshape(all_targets.shape[0], -1).all(-1).mean())
                             train_losses.append(np.mean(all_losses))
+                            # TODO repair wandb logging here
+                            # # log to wandb
+                            # run.log({
+                            #     "Train/Accuracies_Most_Certain": train_accuracies_most_certain[-1] if len(train_accuracies_most_certain) > 0 else 0,
+                            #     "Test/Accuracies_Most_Certain": test_accuracies_most_certain[-1] if len(test_accuracies_most_certain) > 0 else 0,
+                            #     "Train/Losses": train_losses[-1] if len(train_losses) > 0 else 0,
+                            #     "Train/Accuracies": train_accuracies[-1] if len(train_accuracies) > 0 else 0,
+                            # }, step=bi)
 
-                            # log to wandb
-                            # todo repair
-                            run.log({"Train_Accuracies_Most_Certain": train_accuracies_most_certain[-1] if len(train_accuracies_most_certain) > 0 else 0, })
-                            run.log({"Test_Accuracies_Most_Certain" : test_accuracies_most_certain[-1] if len(test_accuracies_most_certain) > 0 else 0,})
-                            run.log({"Train_Losses": train_losses[-1] if len(train_losses) > 0 else 0, })
-                            run.log({"Train_Accuracies": train_accuracies[-1] if len(train_accuracies) > 0 else 0, })
 
-
-                            ##################################### TEST METRICS
+                            ##################################### TEST METRICS ##################################
                             all_predictions = []
                             all_predictions_most_certain = []
                             all_targets = []
@@ -399,13 +406,13 @@ def main():
                             figloss.tight_layout()
                             figloss.savefig(f'{args.log_dir}/losses.png', dpi=150)
                             plt.close(figloss)
-    #todo why model.train() twice?
+                # todo why model.train() twice?
                     model.train()
 
 
 
-
-                # Save model
+                # todo save fig every ...
+                # Save model ########################### AND make fig##############################
                 if (bi%args.save_every==0 or bi==args.training_iterations-1):
                     torch.save(
                         {
