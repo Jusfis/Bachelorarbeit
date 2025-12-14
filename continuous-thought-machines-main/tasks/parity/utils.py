@@ -25,6 +25,7 @@ def prepare_model(prediction_reshaper, args, device):
             dropout=args.dropout,          
             neuron_select_type=args.neuron_select_type,
             n_random_pairing_self=args.n_random_pairing_self,
+            postactivation_production=args.postactivation_production,
         ).to(device) # below baseline model #todo add other baseline model cnn for instance
     elif args.model_type == 'lstm':
         model = LSTMBaseline(

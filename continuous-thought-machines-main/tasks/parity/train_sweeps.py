@@ -58,6 +58,7 @@ def parse_args():
     parser.add_argument('--do_normalisation', action=argparse.BooleanOptionalAction, default=False, help='Apply normalization in NLMs.')
     parser.add_argument('--positional_embedding_type', type=str, default='custom-rotational-1d', help='Type of positional embedding.') # Choices removed for simplicity if not strictly needed by argparse functionality here
     parser.add_argument('--backbone_type', type=str, default='parity_backbone', help='Type of backbone feature extractor.')
+    parser.add_argument('--postactivation_production', type=str, default='mlp', choices=['mlp', 'kan'], help='Type neural network for post-activiation production.')
 
     # Training Configuration 
     parser.add_argument('--batch_size', type=int, default=64, help='Batch size for training.')
@@ -89,6 +90,7 @@ def parse_args():
     args = parser.parse_args()
     return args
 def main():
+    # todo anpassen an neue wandb api mlp vs kan
     with wandb.init(entity="justus-fischer-ludwig-maximilian-university-of-munich",project="ctm-parity-sweeps") as run:
         config = wandb.config
         args = parse_args()
@@ -96,6 +98,8 @@ def main():
         # input from wandb sweep
         args.batch_size = config.batch_size
         args.lr = config.learning_rate
+
+
         set_seed(args.seed)
 
         if not os.path.exists(args.log_dir): os.makedirs(args.log_dir)
@@ -313,6 +317,7 @@ def main():
                             train_losses.append(np.mean(all_losses))
 
                             # log to wandb
+                            # todo repair
                             run.log({"test_accuracies" : test_accuracies_most_certain[-1] if len(test_accuracies_most_certain) > 0 else 0,})
 
 
@@ -429,13 +434,14 @@ if __name__=='__main__':
                 "goal": "maximize"
             },
             "parameters": {
-                "batch_size": {"values": [16, 32, 64]},
+                "batch_size": {"values": [10,16, 32, 64]},
                 "learning_rate": {"min": 1e-5, "max": 1e-2},
                 "training_iterations": {"values": [10000, 20000, 50000]},
                 "model_type": {"values": ["ctm"]},
                 "use_amp": {"values": [False, True]},
                 "parity_sequence_length": {"values": [16, 64]},
-                "use_scheduler": {"values": [True, False]}
+                "use_scheduler": {"values": [True, False]},
+                "postactivation_production": {"values": ["mlp", "kan"]},
             }
         }
 

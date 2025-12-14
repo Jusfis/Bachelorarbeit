@@ -13,9 +13,8 @@
 #MEMORY_LENGTH=5
 #LOG_DIR="logs/parity/run${RUN}/ctm_${ITERATIONS}_${MEMORY_LENGTH}"
 #SEED=$((RUN - 1))
-
-python -u train_sweeps.py \
 #    --model_type "ctm"\
+python -m tasks.parity.train_sweeps \
     --log_dir "logs/parity/run1/ctm_10_5"\
     --seed 1 \
     --iterations 10 \
@@ -44,17 +43,16 @@ python -u train_sweeps.py \
     --dataset "parity" \
     --batch_size 64 \
     --batch_size_test 256 \
-    --lr=0.0001 \
+    --lr 3e-4 \
     --training_iterations 200001 \
     --warmup_steps 500 \
     --track_every 1000 \
-    --save_every 10000 \
+    --save_every 1000 \
     --no-reload \
     --no-reload_model_only \
     --no-use_amp \
     --neuron_select_type "random" \
-    --device 0 # CUDA device ID
-
+    --postactivation_production 'mlp' # MLP or linear for postactivation production
 
 #to submit the job, use:
 #sbatch --partition=NvidiaAll parity.sh

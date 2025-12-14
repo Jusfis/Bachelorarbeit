@@ -168,7 +168,7 @@ if __name__=='__main__':
     iters = []
     scaler = torch.amp.GradScaler("cuda" if "cuda" in device else "cpu", enabled=args.use_amp)
 
-    # Now that everything is initliased, reload if desired
+    # Now that everything is initialised, reload if desired
     if args.reload and (latest_checkpoint_path := get_latest_checkpoint(args.log_dir)):
         print(f'Reloading from: {latest_checkpoint_path}')
         checkpoint = torch.load(f'{latest_checkpoint_path}', weights_only=False)
@@ -304,6 +304,9 @@ if __name__=='__main__':
                         train_accuracies.append(np.mean(all_predictions == all_targets[...,np.newaxis], axis=tuple(range(all_predictions.ndim-1))))
                         train_accuracies_most_certain.append((all_targets == all_predictions_most_certain).mean())
                         train_accuracies_most_certain_per_input.append((all_targets == all_predictions_most_certain).reshape(all_targets.shape[0], -1).all(-1).mean())
+                        # todo wenn ich die all losses meane dann kommt doch nicht train losses raus hae
+
+
                         train_losses.append(np.mean(all_losses))
 
                         ##################################### TEST METRICS
@@ -374,7 +377,7 @@ if __name__=='__main__':
                         figloss.tight_layout()
                         figloss.savefig(f'{args.log_dir}/losses.png', dpi=150)
                         plt.close(figloss)
-
+# why model.train?
                 model.train()
                             
 

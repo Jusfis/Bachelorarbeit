@@ -35,11 +35,11 @@ class SuperKAN(nn.Module):
         else:
             self.in_dims = int(width)
             self.out_dims = 1
-
+        # width: array of number of neurons in each layer
         self.models = nn.ModuleList([
             KAN(width=width, grid=grid_size, k=k, **kwargs) for _ in range(N)
         ])
-
+# Todo review forward pass function
     def forward(self, x):
         if x.shape[1] != self.N or x.shape[2] != self.in_dims:
             raise ValueError(
@@ -143,9 +143,10 @@ class ContinuousThoughtMachine(nn.Module, PyTorchModelHubMixin):
                  dropout_nlm=None,
                  neuron_select_type='random-pairing',
                  n_random_pairing_self=0,
+                 postactivation_production="mlp"
                  ):
         super(ContinuousThoughtMachine, self).__init__()
-
+#todo postactivation production implementation
         # --- Core Parameters ---
         self.iterations = iterations
         self.d_model = d_model
@@ -161,6 +162,8 @@ class ContinuousThoughtMachine(nn.Module, PyTorchModelHubMixin):
         self.memory_length = memory_length
         dropout_nlm = dropout if dropout_nlm is None else dropout_nlm
 
+        ###### added for kan vs mlp  ######
+        self.postactivation_production = postactivation_production
         # --- Assertions ---
         self.verify_args()
 
@@ -175,13 +178,20 @@ class ContinuousThoughtMachine(nn.Module, PyTorchModelHubMixin):
 
         # --- Core CTM Modules ---
         self.synapses = self.get_synapses(synapse_depth, d_model, dropout)
-        # self.trace_processor = self.get_neuron_level_models(deep_nlms, do_layernorm_nlm, memory_length,
-        #                                                    memory_hidden_dims, d_model, dropout_nlm)
-        self.trace_processor = self.get_kan_network(deep_nlms, memory_length, memory_hidden_dims, d_model)
+
+        # kan vs mlp for postactivation production
+        if self.postactivation_production == "mlp":
+            self.trace_processor = self.get_neuron_level_models(deep_nlms, do_layernorm_nlm, memory_length,
+                                                               memory_hidden_dims, d_model, dropout_nlm)
+        elif self.postactivation_production == "kan":
+            self.trace_processor = self.get_kan_network(deep_nlms, memory_length, memory_hidden_dims, d_model)
 
         #  --- Start States ---
         self.register_parameter('start_activated_state', nn.Parameter(
             torch.zeros((d_model)).uniform_(-math.sqrt(1 / (d_model)), math.sqrt(1 / (d_model)))))
+
+        # Todo repair kan degrees of freedom issue
+
         self.register_parameter('start_trace', nn.Parameter(
             torch.zeros((d_model, memory_length)).uniform_(-math.sqrt(1 / (d_model + memory_length)),
                                                            math.sqrt(1 / (d_model + memory_length)))))
@@ -436,6 +446,39 @@ class ContinuousThoughtMachine(nn.Module, PyTorchModelHubMixin):
             return lambda x: 0  # Default no-op
         else:
             raise ValueError(f"Invalid positional_embedding_type: {self.positional_embedding_type}")
+
+    def get_neuron_level_models(self, deep_nlms, do_layernorm_nlm, memory_length, memory_hidden_dims, d_model, dropout):
+        """
+        Neuron level models are one of the core innovations of the CTM. They apply separate MLPs/linears to
+        each neuron.
+        NOTE: the name 'SuperLinear' is largely legacy, but its purpose is to apply separate linear layers
+            per neuron. It is sort of a 'grouped linear' function, where the group size is equal to 1.
+            One could make the group size bigger and use fewer parameters, but that is future work.
+
+        NOTE: We used GLU() nonlinearities because they worked well in practice.
+        """
+        if deep_nlms:
+            return nn.Sequential(
+                nn.Sequential(
+                    SuperLinear(in_dims=memory_length, out_dims=2 * memory_hidden_dims, N=d_model,
+                                do_norm=do_layernorm_nlm, dropout=dropout),
+                    nn.GLU(),
+                    SuperLinear(in_dims=memory_hidden_dims, out_dims=2, N=d_model,
+                                do_norm=do_layernorm_nlm, dropout=dropout),
+                    nn.GLU(),
+                    Squeeze(-1)
+                )
+            )
+        else:
+            return nn.Sequential(
+                nn.Sequential(
+                    SuperLinear(in_dims=memory_length, out_dims=2, N=d_model,
+                                do_norm=do_layernorm_nlm, dropout=dropout),
+                    nn.GLU(),
+                    Squeeze(-1)
+                )
+            )
+
 
     def get_kan_network(self, deep_nlms, memory_length, memory_hidden_dims, d_model,
                         grid_size=3, k=2):
