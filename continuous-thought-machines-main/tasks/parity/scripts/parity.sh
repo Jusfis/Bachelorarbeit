@@ -43,7 +43,7 @@ python -m tasks.parity.train_sweeps \
     --dataset "parity" \
     --batch_size 64 \
     --batch_size_test 256 \
-    --lr 3e-4 \
+    --lr 0.0002 \
     --training_iterations 200001 \
     --warmup_steps 500 \
     --track_every 1000 \

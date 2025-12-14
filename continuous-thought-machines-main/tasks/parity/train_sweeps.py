@@ -94,12 +94,19 @@ def main():
     with wandb.init(entity="justus-fischer-ludwig-maximilian-university-of-munich",project="ctm-parity-sweeps") as run:
         config = wandb.config
         args = parse_args()
-
         # input from wandb sweep
         args.batch_size = config.batch_size
         args.lr = config.learning_rate
+        args.postactivation_production = config.postactivation_production
+        args.training_iterations = config.training_iterations
+        args.model_type = config.model_type
+        args.use_amp = config.use_amp
+        args.use_scheduler = config.use_scheduler
+
+        print(f"Using config: {config}\n Parsed args: {args}\n")
 
 
+        # todo seeds run over 7 seeds in future ...
         set_seed(args.seed)
 
         if not os.path.exists(args.log_dir): os.makedirs(args.log_dir)
@@ -318,7 +325,10 @@ def main():
 
                             # log to wandb
                             # todo repair
-                            run.log({"test_accuracies" : test_accuracies_most_certain[-1] if len(test_accuracies_most_certain) > 0 else 0,})
+                            run.log({"Train_accuracies": train_accuracies_most_certain[-1] if len(train_accuracies_most_certain) > 0 else 0, })
+                            run.log({"Test_accuracies" : test_accuracies_most_certain[-1] if len(test_accuracies_most_certain) > 0 else 0,})
+
+
 
 
                             ##################################### TEST METRICS
@@ -389,7 +399,7 @@ def main():
                             figloss.tight_layout()
                             figloss.savefig(f'{args.log_dir}/losses.png', dpi=150)
                             plt.close(figloss)
-
+    #todo why model.train() twice?
                     model.train()
 
 
@@ -439,9 +449,9 @@ if __name__=='__main__':
                 "training_iterations": {"values": [10000, 20000, 50000]},
                 "model_type": {"values": ["ctm"]},
                 "use_amp": {"values": [False, True]},
-                "parity_sequence_length": {"values": [16, 64]},
+                #"parity_sequence_length": {"values": [16, 64]},
                 "use_scheduler": {"values": [True, False]},
-                "postactivation_production": {"values": ["mlp", "kan"]},
+                "postactivation_production": {"values": ["mlp"]}, # ,"kan"]}, missing
             }
         }
 
