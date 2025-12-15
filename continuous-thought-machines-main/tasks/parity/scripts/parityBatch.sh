@@ -15,7 +15,7 @@
 #SEED=$((RUN - 1))
 #    --model_type "ctm"\
 python -u train_sweeps.py \
-    --log_dir "logs/parity/run1/ctm_75_25_batch"\
+    --log_dir "logs/parity/run1/ctm_sweeps_mlp"\
     --seed 1 \
     --iterations 75 \
     --memory_length 25 \
@@ -56,4 +56,4 @@ python -u train_sweeps.py \
     --postactivation_production 'mlp' # option for MLP or KAN for postactivation production
 
 #to submit the job on slurm, use from ctmmain folder:
-#sbatch --partition=NvidiaAll parity.sh
+#sbatch --partition=NvidiaAll parityBatch.sh

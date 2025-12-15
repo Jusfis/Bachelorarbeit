@@ -101,6 +101,9 @@ def main():
         args.model_type = config.model_type
         args.use_amp = config.use_amp
         args.use_scheduler = config.use_scheduler
+        args.memory_length = config.memory_length
+        args.iterations = config.internal_ticks
+        args.postactivation_production = config.postactivation_production
 
         print(f"Using config: {config}\n Parsed args: {args}\n")
 
@@ -447,19 +450,20 @@ if __name__=='__main__':
             "name": "ctm-parity-sweep",
             "method": "random",
             "metric": {
-                "name": "test_accuracies",
-                "goal": "maximize"# todo decide if maximize accuracies or minimize loss and add iterations and memory length
+                "name": "Train/Losses",
+                "goal": "minimize"# todo decide if maximize accuracies or minimize loss and add iterations and memory length
             },
             "parameters": {
-                "batch_size": {"values": [16, 32, 64]},
-                "learning_rate": {"min": 1e-5, "max": 1e-2},
-                "training_iterations": {"values": [10000, 20000, 50000]},
+                "batch_size": {"values": [32, 64]},
+                "learning_rate": {"min": 2e-4, "max": 3e-4},
+                "training_iterations": {"values": [20000, 50000]},
                 "model_type": {"values": ["ctm"]},
                 "use_amp": {"values": [False, True]},
                 #"parity_sequence_length": {"values": [16, 64]},
                 "use_scheduler": {"values": [True, False]},
-                "postactivation_production": {"values": ["mlp"]}, # ,"kan"]},
-
+                "postactivation_production": {"values": ["mlp","kan"]},
+                "memory_length": {"values": [10, 25]},
+                "internal_ticks": {"values": [25, 50]},
             }
         }
 
