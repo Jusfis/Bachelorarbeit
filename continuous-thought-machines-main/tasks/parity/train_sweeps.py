@@ -447,7 +447,7 @@ if __name__=='__main__':
         # Sweep configuration for wandb
         sweep_configuration = {
             "program": "train_sweeps.py",
-            "name": "ctm-parity-sweep-mlp",
+            "name": "ctm-parity-reduced-hyperparameter-sweep",
             "method": "random",
             "metric": {
                 "name": "Train/Losses",
@@ -459,7 +459,7 @@ if __name__=='__main__':
                 "training_iterations": {"values": [20000, 50000]},
                 "model_type": {"values": ["ctm"]},
                 "use_amp": {"values": [False, True]},
-                #"parity_sequence_length": {"values": [16, 64]},
+                #Todo"parity_sequence_length": {"values": [16, 64]},
                 "use_scheduler": {"values": [True, False]},
                 "postactivation_production": {"values": ["mlp","kan"]},
                 "memory_length": {"values": [10, 25]},
@@ -467,5 +467,5 @@ if __name__=='__main__':
             }
         }
 
-        sweep_id = wandb.sweep(sweep_configuration, project="ctm-parity-sweeps")
+        sweep_id = wandb.sweep(sweep_configuration, project="ctm-parity-sweeps-mlp")
         wandb.agent(sweep_id, function=main, count=50)
