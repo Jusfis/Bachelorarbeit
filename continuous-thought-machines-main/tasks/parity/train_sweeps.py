@@ -447,7 +447,7 @@ if __name__=='__main__':
         # Sweep configuration for wandb
         sweep_configuration = {
             "program": "train_sweeps.py",
-            "name": "ctm-parity-sweep",
+            "name": "ctm-parity-sweep-mlp",
             "method": "random",
             "metric": {
                 "name": "Train/Losses",
