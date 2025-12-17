@@ -177,7 +177,7 @@ class SuperLinearKan(nn.Module):
                  dropout=0.0,
                  grid_size=3,
                  k=2,
-                 use_shared_kan=True,
+                 use_shared_kan=False,
                  **kan_kwargs):
         super().__init__()
         self.in_dims = in_dims
@@ -220,7 +220,7 @@ class SuperLinearKan(nn.Module):
             # instantiate a single KAN used for all neurons (vectorized via large batch)
             self.kan = KAN(width=width, grid=grid_size, k=k, **kan_kwargs)
         else:
-            # slower fallback: a ModuleList of KANs (one per neuron) - kept for compatibility
+
             self.kan = nn.ModuleList([
                 KAN(width=[H, out_dims] if not deep else [H, max(H//2,1), out_dims],
                     grid=grid_size, k=k, **kan_kwargs) for _ in range(N)
@@ -235,7 +235,7 @@ class SuperLinearKan(nn.Module):
         assert N == self.N and M == self.in_dims, f"expected (B,{self.N},{self.in_dims}), got {x.shape}"
 
         out = self.dropout(x)
-        out = self.layernorm(out)  # (B, N, M)
+        out = self.layernorm(out)  # (B, N, M)§
 
         # Per-neuron projection via einsum: (B,N,M) x (M, H2, N) -> (B, N, H2)
         # Note: einsum pattern matches SuperLinear style

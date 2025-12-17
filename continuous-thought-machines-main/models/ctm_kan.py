@@ -503,7 +503,7 @@ class ContinuousThoughtMachine(nn.Module, PyTorchModelHubMixin):
             dropout=dropout_val,
             grid_size=grid_size,
             k=k,
-            use_shared_kan=True,
+            use_shared_kan=False,
             noise_scale=0.01,  # falls KAN-support für Rauschen gewünscht
         )
 
