@@ -21,7 +21,8 @@ from models.constants import (
 import torch
 import torch.nn as nn
 from kan import KAN  # Erfordert 'pip install pykan'
-
+# fuer get_neuron_level_models
+from models.modules import SuperLinearKan
 
 
 
@@ -41,11 +42,11 @@ class SuperKAN(nn.Module):
         ])
 # Todo review forward pass function
     def forward(self, x):
-        if x.shape[1] != self.N or x.shape[2] != self.in_dims:
-            raise ValueError(
-                f"Erwartete Input-Shape (B, {self.N}, {self.in_dims}), "
-                f"aber erhielt {x.shape}"
-            )
+        # if x.shape[1] != self.N or x.shape[2] != self.in_dims:
+        #     raise ValueError(
+        #         f"Erwartete Input-Shape (B, {self.N}, {self.in_dims}), "
+        #         f"aber erhielt {x.shape}"
+        #     )
 
         outputs = []
         for i in range(self.N):
@@ -161,6 +162,8 @@ class ContinuousThoughtMachine(nn.Module, PyTorchModelHubMixin):
         self.neuron_select_type = neuron_select_type
         self.memory_length = memory_length
         dropout_nlm = dropout if dropout_nlm is None else dropout_nlm
+
+        self.do_layernorm_nlm = do_layernorm_nlm
 
         ###### added for kan vs mlp  ######
         self.postactivation_production = postactivation_production
@@ -479,23 +482,43 @@ class ContinuousThoughtMachine(nn.Module, PyTorchModelHubMixin):
                 )
             )
 
-
     def get_kan_network(self, deep_nlms, memory_length, memory_hidden_dims, d_model,
-                        grid_size=3, k=2):
-        if deep_nlms:
-            width = [memory_length, memory_hidden_dims, 1]
-        else:
-            width = [memory_length, 1]
+                        grid_size=3, k=2, dropout_nlm=None):
+        # if deep_nlms:
+        #     width = [memory_length, memory_hidden_dims, 1]
+        # else:
+        #     width = [memory_length, 1]
 
-        kan_module = SuperKAN(
-            width=width,
+        dropout_val = self.iterations if dropout_nlm is None else dropout_nlm  # fallback not required; keep explicit
+        dropout_val = 0.0 if dropout_nlm is None else dropout_nlm
+
+
+        kan_module = SuperLinearKan(
+            in_dims=memory_length,
+            out_dims=1,
             N=d_model,
+            hidden_dims=memory_hidden_dims,
+            deep=deep_nlms,
+            do_norm=self.do_layernorm_nlm,
+            dropout=dropout_val,
             grid_size=grid_size,
             k=k,
-            noise_scale=0.01,
+            use_shared_kan=True,
+            noise_scale=0.01,  # falls KAN-support für Rauschen gewünscht
         )
 
         return nn.Sequential(kan_module, Squeeze(-1))
+
+
+        # kan_module = SuperKAN(
+        #     width=width,
+        #     N=d_model,
+        #     grid_size=grid_size,
+        #     k=k,
+        #     noise_scale=0.01,
+        # )
+        #
+        # return nn.Sequential(kan_module, Squeeze(-1))
 
 
 

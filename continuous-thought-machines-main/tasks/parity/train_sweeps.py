@@ -461,7 +461,7 @@ if __name__=='__main__':
                 "use_amp": {"values": [False, True]},
                 #Todo"parity_sequence_length": {"values": [16, 64]},
                 "use_scheduler": {"values": [True, False]},
-                "postactivation_production": {"values": ["mlp","kan"]},
+                "postactivation_production": {"values": ["kan"]},
                 "memory_length": {"values": [10, 25]},
                 "internal_ticks": {"values": [25, 50]},
             }

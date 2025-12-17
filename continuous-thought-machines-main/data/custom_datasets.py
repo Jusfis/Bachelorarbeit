@@ -322,3 +322,14 @@ class ParityDataset(Dataset):
         cumsum = torch.cumsum(negatives, dim=0)
         target = (cumsum % 2 != 0).to(torch.long)
         return vector, target
+
+
+# TODO implement
+class ListOpsDataset(Dataset):
+    def __init__(self, length=100000):
+        self.length = length
+
+    def __len__(self):
+        return self.length
+    def getitem(self, idx):
+        pass
