@@ -1,13 +1,15 @@
+from doctest import master
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F # Used for GLU
 import math
 import numpy as np
 import torch.nn.functional as F
-# import keras_efficient_kan
-from kan import KAN
+from efficient_kan import KAN
 # Assuming 'add_coord_dim' is defined in models.utils
 from models.utils import add_coord_dim
+
 
 # --- Basic Utility Modules ---
 
@@ -144,7 +146,7 @@ class SynapseUNET(nn.Module):
         # The final output after all up-projections
         return outs_up
 
-class SuperLinearKan(nn.Module):
+class SuperLinearEfficientKan(nn.Module):
     """
     The main idea is kongruently to the SuperLinear module to run n neuron level basis models but with KAN instead of MLP.
     SuperLinearKan Layer: Implements Neuron-Level Models (NLMs) for the CTM using KAN.
@@ -217,12 +219,12 @@ class SuperLinearKan(nn.Module):
             else:
                 width = [H, out_dims]
             # instantiate a single KAN used for all neurons (vectorized via large batch)
-            self.kan = KAN(width=width, grid=grid_size, k=k, **kan_kwargs)
+            self.kan = KAN(width, grid_size=grid_size, spline_order=k **kan_kwargs)
         else:
 
             self.kan = nn.ModuleList([
-                KAN(width=[H, out_dims] if not deep else [H, max(H//2,1), out_dims],
-                    grid=grid_size, k=k, **kan_kwargs) for _ in range(N)
+                KAN([H, out_dims] if not deep else [H, max(H//2,1), out_dims],
+                    grid_size=grid_size, spline_order=k, base_activation=nn.Identity, **kan_kwargs) for _ in range(N)
             ])
 
     def forward(self, x):

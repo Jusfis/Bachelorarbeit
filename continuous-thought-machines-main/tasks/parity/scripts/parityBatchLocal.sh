@@ -14,7 +14,7 @@
 #LOG_DIR="logs/parity/run${RUN}/ctm_${ITERATIONS}_${MEMORY_LENGTH}"
 #SEED=$((RUN - 1))
 #    --model_type "ctm"\
-python -m train_sweeps \
+python -m train_sweeps_efficient \
     --log_dir "logs/parity/run1/ctm_sweeps_mlp"\
     --seed 1 \
     --iterations 75 \
@@ -52,7 +52,7 @@ python -m train_sweeps \
     --no-reload_model_only \
     --no-use_amp \
     --neuron_select_type "random" \
-
+    --postactivation_production 'kan'
 #to submit the job on slurm, use from ctmmain folder:
 #sbatch --partition=NvidiaAll parityBatch.sh
 # remove --device 0 to allow slurm to assign GPU automatically
