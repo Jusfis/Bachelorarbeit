@@ -15,13 +15,13 @@
 #SEED=$((RUN - 1))
 #    --model_type "ctm"\
 python -m train_sweeps_efficient\
-    --log_dir "logs/parity/run1/ctm_sweeps_mlp"\
+    --log_dir "logs/parity/run2/ctm_sweeps_kan_efficient"\
     --seed 1 \
     --iterations 75 \
     --memory_length 25 \
     --parity_sequence_length 64  \
     --n_test_batches 20 \
-    --d_model 20 \
+    --d_model 64 \
     --d_input 64 \
     --n_synch_out 16 \
     --n_synch_action 16 \

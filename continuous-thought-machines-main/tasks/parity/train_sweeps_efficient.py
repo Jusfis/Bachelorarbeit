@@ -453,16 +453,16 @@ if __name__=='__main__':
                 "goal": "minimize"# todo decide if maximize accuracies or minimize loss and add iterations and memory length
             },
             "parameters": {
-                "batch_size": {"values": [8]},
+                "batch_size": {"values": [8,32, 64]},
                 "learning_rate": {"min": 2e-4, "max": 3e-4},
-                "training_iterations": {"values": [100000]},
+                "training_iterations": {"values": [200000]},
                 "model_type": {"values": ["ctm"]},
                 "use_amp": {"values": [False, True]},
                 #Todo"parity_sequence_length": {"values": [16, 64]},
                 "use_scheduler": {"values": [True, False]},
                 "postactivation_production": {"values": ["kan"]},
-                "memory_length": {"values": [10]},
-                "internal_ticks": {"values": [10]},
+                "memory_length": {"values": [10, 25]},
+                "internal_ticks": {"values": [10, 25]},
             }
         }
 
