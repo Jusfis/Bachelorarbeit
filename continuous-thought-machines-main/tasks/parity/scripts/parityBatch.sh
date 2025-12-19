@@ -50,7 +50,6 @@ python -u train_sweeps.py \
     --save_every 1000 \
     --no-reload \
     --no-reload_model_only \
-    --device 0 \
     --no-use_amp \
     --neuron_select_type "random" \
     --postactivation_production 'mlp' # option for MLP or KAN for postactivation production

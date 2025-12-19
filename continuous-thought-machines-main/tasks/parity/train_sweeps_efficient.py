@@ -273,7 +273,7 @@ def main():
                         inputs = reshape_inputs(inputs, args.iterations, grid_size=int(math.sqrt(args.parity_sequence_length)))
 
                         pbar.set_description('Tracking: Neural dynamics')
-                        plot_neural_dynamics(post_activations, 100, args.log_dir, axis_snap=True)
+                        plot_neural_dynamics(post_activations, args.d_model, args.log_dir, axis_snap=True)
 
                         pbar.set_description('Tracking: Producing attention gif')
 
@@ -453,16 +453,16 @@ if __name__=='__main__':
                 "goal": "minimize"# todo decide if maximize accuracies or minimize loss and add iterations and memory length
             },
             "parameters": {
-                "batch_size": {"values": [32, 64]},
+                "batch_size": {"values": [8]},
                 "learning_rate": {"min": 2e-4, "max": 3e-4},
-                "training_iterations": {"values": [20000, 50000]},
+                "training_iterations": {"values": [100000]},
                 "model_type": {"values": ["ctm"]},
                 "use_amp": {"values": [False, True]},
                 #Todo"parity_sequence_length": {"values": [16, 64]},
                 "use_scheduler": {"values": [True, False]},
                 "postactivation_production": {"values": ["kan"]},
-                "memory_length": {"values": [10, 25]},
-                "internal_ticks": {"values": [25, 50]},
+                "memory_length": {"values": [10]},
+                "internal_ticks": {"values": [10]},
             }
         }
 

@@ -22,8 +22,7 @@ import torch
 import torch.nn as nn
 from kan import KAN  # Erfordert 'pip install pykan'
 # fuer get_neuron_level_models
-from models.modules import SuperLinearKan
-
+from models.modules_efficient_kan import SuperLinearEfficientKan
 
 
 # class SuperKAN(nn.Module):
@@ -493,7 +492,7 @@ class ContinuousThoughtMachine(nn.Module, PyTorchModelHubMixin):
         dropout_val = 0.0 if dropout_nlm is None else dropout_nlm
 
 
-        kan_module = SuperLinearKan(
+        kan_module = SuperLinearEfficientKan(
             in_dims=memory_length,
             out_dims=1,
             N=d_model,
@@ -502,9 +501,8 @@ class ContinuousThoughtMachine(nn.Module, PyTorchModelHubMixin):
             do_norm=self.do_layernorm_nlm,
             dropout=dropout_val,
             grid_size=grid_size,
-            k=k,
-            use_shared_kan=False,
-            noise_scale=0.01,  # falls KAN-support für Rauschen gewünscht
+            spline_order=k,
+            # noise_scale=0.01, left out
         )
 
         return nn.Sequential(kan_module, Squeeze(-1))

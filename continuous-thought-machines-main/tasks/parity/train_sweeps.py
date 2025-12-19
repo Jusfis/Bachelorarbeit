@@ -274,7 +274,7 @@ def main():
                         inputs = reshape_inputs(inputs, args.iterations, grid_size=int(math.sqrt(args.parity_sequence_length)))
 
                         pbar.set_description('Tracking: Neural dynamics')
-                        plot_neural_dynamics(post_activations, 100, args.log_dir, axis_snap=True)
+                        plot_neural_dynamics(post_activations, args.d_model, args.log_dir, axis_snap=True)
 
                         pbar.set_description('Tracking: Producing attention gif')
 

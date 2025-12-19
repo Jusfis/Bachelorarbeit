@@ -9,6 +9,10 @@ import torch.nn.functional as F
 from efficient_kan import KAN
 # Assuming 'add_coord_dim' is defined in models.utils
 from models.utils import add_coord_dim
+# Stelle sicher, dass du Blealtan's Repo hast:
+# pip install git+https://github.com/Blealtan/efficient-kan
+# oder kopiere die Datei 'efficient_kan.py' in deinen Ordner.
+from efficient_kan import KAN
 
 
 # --- Basic Utility Modules ---
@@ -146,28 +150,19 @@ class SynapseUNET(nn.Module):
         # The final output after all up-projections
         return outs_up
 
+
 class SuperLinearEfficientKan(nn.Module):
     """
-    The main idea is kongruently to the SuperLinear module to run n neuron level basis models but with KAN instead of MLP.
-    SuperLinearKan Layer: Implements Neuron-Level Models (NLMs) for the CTM using KAN.
+    SuperLinear-Alternative, die Blealtan's Efficient-KAN als Core nutzt.
+
+    Arbeitsweise:
+    1. Input (B, N, M) -> LayerNorm & Dropout
+    2. Projektion via Einsum (B, N, M) * (M, H2, N) -> (B, N, H2)
+    3. GLU Gating -> (B, N, H)
+    4. Reshape zu (B*N, H) -> EfficientKAN -> (B*N, Out)
+    5. Reshape zurück & Bias/Temperature -> (B, N, Out)
     """
-    """
-    Vektorisierte SuperLinear-Alternative, die KAN als "core" verwendet.
-    - Input: x shape (B, N, M)  (B=batch, N=Neuronen, M=history/in_dims)
-    - Per-neuron Projektionsgewichte werden als Tensoren gespeichert und per einsum angewendet.
-    - GLU wird auf die per-neuron Projektion angewendet.
-    - Ein *geteilter* KAN verarbeitet die zusammengefasste Batch `(B*N, H)` in einem Aufruf.
-    - Output: (B, N, out_dims) (oder (B, N) falls out_dims==1, dann squeezed)
-    Args:
-        in_dims (int): history length M
-        out_dims (int): Ausgabe pro Neuron
-        N (int): Anzahl Neuronen
-        hidden_dims (int): interne Kanalzahl vor KAN
-        deep (bool): falls True, projiziert zu 2*hidden -> GLU -> KAN -> ggf. tieferer KAN
-        do_norm (bool): LayerNorm über history dim (wie SuperLinear)
-        dropout (float)
-        grid_size, k, **kan_kwargs: an KAN weitergereicht
-    """
+
     def __init__(self,
                  in_dims,
                  out_dims,
@@ -176,100 +171,101 @@ class SuperLinearEfficientKan(nn.Module):
                  deep=True,
                  do_norm=False,
                  dropout=0.0,
-                 grid_size=3,
-                 k=2,
-                 use_shared_kan=False,
+                 grid_size=5,  # Blealtan Standard
+                 spline_order=3,  # Blealtan Standard
+                 scale_noise=0.1,  # KAN init noise
+                 scale_base=1.0,  # KAN base scale
+                 scale_spline=1.0,  # KAN spline scale
+                 base_activation=torch.nn.SiLU,  # SiLU ist Standard bei Blealtan
                  **kan_kwargs):
         super().__init__()
         self.in_dims = in_dims
         self.out_dims = out_dims
         self.N = N
-        self.deep = deep
-        self.use_shared_kan = use_shared_kan
 
-        # Fallback hidden size
+        # 1. Hidden Dimensions bestimmen
+        # Blealtan KAN ist mächtig, wir brauchen nicht zwingend riesige Hidden Dims
         if hidden_dims is None:
             hidden_dims = max(out_dims, 4)
 
-        # Dropout + LayerNorm (wie SuperLinear)
         self.dropout = nn.Dropout(dropout) if dropout > 0 else nn.Identity()
         self.layernorm = nn.LayerNorm(in_dims) if do_norm else nn.Identity()
 
-        # Per-neuron projection: M -> 2*H  (2*H für GLU)
+        # 2. Projektion (Einsum-Kernel)
+        # Wir projizieren auf 2*H für die GLU
         H = hidden_dims
         H2 = H * 2
-        # w_proj shape: (M, H2, N)
-        w_proj = torch.empty((in_dims, H2, N))
-        bound = 1.0 / math.sqrt(in_dims + H)
-        nn.init.uniform_(w_proj, -bound, bound)
-        self.register_parameter('w_proj', nn.Parameter(w_proj, requires_grad=True))
 
-        # Bias per neuron
-        b1 = torch.zeros((1, N, out_dims))
-        self.register_parameter('b1', nn.Parameter(b1, requires_grad=True))
+        # Init weights: Kaiming ist gut für die Stabilität vor der GLU
+        self.w_proj = nn.Parameter(torch.empty((in_dims, H2, N)))
+        nn.init.kaiming_uniform_(self.w_proj, a=math.sqrt(5))
 
-        # Learnable temperature / scaler T like SuperLinear
-        self.register_parameter('T', nn.Parameter(torch.tensor([1.0])))
+        # Bias & Temperature für den Output
+        self.b1 = nn.Parameter(torch.zeros((1, N, out_dims)))
+        self.T = nn.Parameter(torch.tensor([1.0]))
 
-        # Shared KAN: input size H -> out_dims
-        # width config for KAN expects list-like architecture, pass [H, ..., out_dims]
-        if use_shared_kan:
-            if deep:
-                width = [H, max(H // 2, 1), out_dims]
-            else:
-                width = [H, out_dims]
-            # instantiate a single KAN used for all neurons (vectorized via large batch)
-            self.kan = KAN(width, grid_size=grid_size, spline_order=k **kan_kwargs)
+        # 3. KAN Setup (Blealtan Style)
+        # Erwartet eine Liste [input_dim, hidden_layers..., output_dim]
+        if deep:
+            # Ein tieferes KAN: Input -> H/2 -> Output
+            kan_layers = [H, max(H // 2, 1), out_dims]
         else:
+            # Flaches KAN: Input -> Output
+            kan_layers = [H, out_dims]
 
-            self.kan = nn.ModuleList([
-                KAN([H, out_dims] if not deep else [H, max(H//2,1), out_dims],
-                    grid_size=grid_size, spline_order=k, base_activation=nn.Identity, **kan_kwargs) for _ in range(N)
-            ])
+        # Wir nutzen EIN großes KAN für alle Neuronen (Batching über B*N)
+        # Das ist der Schlüssel zur Geschwindigkeit bei dieser Library.
+        self.kan = KAN(
+            kan_layers,
+            grid_size=grid_size,
+            spline_order=spline_order,
+            scale_noise=scale_noise,
+            scale_base=scale_base,
+            scale_spline=scale_spline,
+            base_activation=base_activation,
+            **kan_kwargs
+        )
 
     def forward(self, x):
         """
-        x: (B, N, M)
-        returns: (B, N, out_dims)  or (B, N) if out_dims==1 (squeezed)
+        x: (Batch, N, History)
         """
         B, N, M = x.shape
-        assert N == self.N and M == self.in_dims, f"expected (B,{self.N},{self.in_dims}), got {x.shape}"
 
-        out = self.dropout(x)
-        out = self.layernorm(out)  # (B, N, M)§
+        # Safety Check (kann für max performance auskommentiert werden)
+        if N != self.N or M != self.in_dims:
+            raise ValueError(f"Shape mismatch: expected (B,{self.N},{self.in_dims}), got {x.shape}")
 
-        # Per-neuron projection via einsum: (B,N,M) x (M, H2, N) -> (B, N, H2)
-        # Note: einsum pattern matches SuperLinear style
-        z = torch.einsum('BNM,MHN->BNH', out, self.w_proj)  # (B, N, H2)
+        # A. Pre-Processing
+        out = self.layernorm(x)
+        out = self.dropout(out)
 
-        # GLU along last dim -> (B, N, H)
-        z = F.glu(z, dim=-1)
+        # B. Einsum Projection
+        # (Batch, N, M) x (M, H*2, N) -> (Batch, N, H*2)
+        # Dies ist effizienter als ein Loop über Linear Layer
+        z = torch.einsum('BNM,MHN->BNH', out, self.w_proj)
 
-        # Merge batch and neuron dims to compute in one KAN forward: (B*N, H)
-        z_reshaped = z.reshape(B * N, -1)
+        # C. Gating (GLU)
+        # Reduziert Dimension von H*2 auf H
+        z = F.glu(z, dim=-1)  # -> (Batch, N, H)
 
-        if self.use_shared_kan:
-            kan_out = self.kan(z_reshaped)  # expects (batch, H) -> returns (batch, out_dims)
-        else:
-            # slower per-neuron KAN path but vectorized loop over small N using stack
-            # still better than original ModuleList per-sample loops
-            parts = []
-            for ni in range(self.N):
-                zi = z_reshaped[ni::N]  # picks every N-th row corresponding to neuron ni across batches
-                parts.append(self.kan[ni](zi))
-            # parts list length N, each (B, out_dims) -> stack to (N, B, out_dims) -> permute -> (B*N, out_dims)
-            kan_out = torch.stack(parts, dim=0).permute(1, 0, 2).reshape(B * N, self.out_dims)
+        # D. Efficient KAN Execution
+        # Blealtan's KAN frisst (Total_Batch, Features).
+        # Wir flachen Batch und Neuronen Dimension zusammen.
+        z_reshaped = z.reshape(B * N, -1)  # -> (B*N, H)
 
-        # reshape back to (B, N, out_dims)
+        kan_out = self.kan(z_reshaped)  # -> (B*N, Out)
+
+        # E. Wiederherstellen der Struktur
         kan_out = kan_out.reshape(B, N, self.out_dims)
 
-        # add bias and apply temperature scaling like SuperLinear
-        out_final = kan_out + self.b1  # broadcast (1, N, out_dims)
-        # squeeze last dim if out_dims == 1 to match SuperLinear output
+        # F. Final Bias & Scaling
+        out_final = kan_out + self.b1
+        out_final = out_final / self.T
+
+        # Squeeze falls output dim 1 (für Regression/Classification oft nötig)
         if self.out_dims == 1:
-            out_final = out_final.squeeze(-1) / self.T
-        else:
-            out_final = out_final / self.T
+            return out_final.squeeze(-1)
 
         return out_final
 
