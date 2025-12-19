@@ -1,11 +1,15 @@
 #!/bin/bash
+# This script initiates a training sweep for the parity task using specified hyperparameters.
+# It is configured to run on a single GPU device. Ensure that the device ID is correctly set.
+
 RUN=1
-ITERATIONS=1
-MEMORY_LENGTH=1
+ITERATIONS=10
+MEMORY_LENGTH=5
 LOG_DIR="logs/parity/run${RUN}/ctm_${ITERATIONS}_${MEMORY_LENGTH}"
 SEED=$((RUN - 1))
 
-python -m tasks.parity.train \
+# Run the training sweep script. Avoid inline commented continuation lines which break argument chaining.
+python -m tasks.parity.train_sweeps \
     --log_dir $LOG_DIR \
     --seed $SEED \
     --iterations $ITERATIONS \
@@ -41,6 +45,6 @@ python -m tasks.parity.train \
     --save_every 10000 \
     --no-reload \
     --no-reload_model_only \
-    --device -1 \
     --no-use_amp \
-    --neuron_select_type "random"
+    --neuron_select_type "random" \
+    --device -1 # CUDA device ID

@@ -22,40 +22,39 @@ import torch
 import torch.nn as nn
 from kan import KAN  # Erfordert 'pip install pykan'
 # fuer get_neuron_level_models
-from models.modules import SuperLinearKan
+from models.modules_efficient_kan import SuperLinearEfficientKan
 
 
-
-class SuperKAN(nn.Module):
-    def __init__(self, width, N, grid_size=5, k=3, **kwargs):
-        super().__init__()
-        self.N = N
-        if isinstance(width, (list, tuple)):
-            self.in_dims = int(width[0])
-            self.out_dims = int(width[-1])
-        else:
-            self.in_dims = int(width)
-            self.out_dims = 1
-        # width: array of number of neurons in each layer
-        self.models = nn.ModuleList([
-            KAN(width=width, grid=grid_size, k=k, **kwargs) for _ in range(N)
-        ])
-# Todo review forward pass function
-    def forward(self, x):
-        # if x.shape[1] != self.N or x.shape[2] != self.in_dims:
-        #     raise ValueError(
-        #         f"Erwartete Input-Shape (B, {self.N}, {self.in_dims}), "
-        #         f"aber erhielt {x.shape}"
-        #     )
-
-        outputs = []
-        for i in range(self.N):
-            x_i = x[:, i, :]
-            out_i = self.models[i](x_i)
-            outputs.append(out_i)
-
-        result = torch.stack(outputs, dim=1)
-        return result
+# class SuperKAN(nn.Module):
+#     def __init__(self, width, N, grid_size=5, k=3, **kwargs):
+#         super().__init__()
+#         self.N = N
+#         if isinstance(width, (list, tuple)):
+#             self.in_dims = int(width[0])
+#             self.out_dims = int(width[-1])
+#         else:
+#             self.in_dims = int(width)
+#             self.out_dims = 1
+#         # width: array of number of neurons in each layer
+#         self.models = nn.ModuleList([
+#             KAN(width=width, grid=grid_size, k=k, **kwargs) for _ in range(N)
+#         ])
+# # Todo review forward pass function
+#     def forward(self, x):
+#         # if x.shape[1] != self.N or x.shape[2] != self.in_dims:
+#         #     raise ValueError(
+#         #         f"Erwartete Input-Shape (B, {self.N}, {self.in_dims}), "
+#         #         f"aber erhielt {x.shape}"
+#         #     )
+#
+#         outputs = []
+#         for i in range(self.N):
+#             x_i = x[:, i, :]
+#             out_i = self.models[i](x_i)
+#             outputs.append(out_i)
+#
+#         result = torch.stack(outputs, dim=1)
+#         return result
 
 
 
@@ -493,7 +492,7 @@ class ContinuousThoughtMachine(nn.Module, PyTorchModelHubMixin):
         dropout_val = 0.0 if dropout_nlm is None else dropout_nlm
 
 
-        kan_module = SuperLinearKan(
+        kan_module = SuperLinearEfficientKan(
             in_dims=memory_length,
             out_dims=1,
             N=d_model,
@@ -502,9 +501,8 @@ class ContinuousThoughtMachine(nn.Module, PyTorchModelHubMixin):
             do_norm=self.do_layernorm_nlm,
             dropout=dropout_val,
             grid_size=grid_size,
-            k=k,
-            use_shared_kan=False,
-            noise_scale=0.01,  # falls KAN-support für Rauschen gewünscht
+            spline_order=k,
+            # noise_scale=0.01, left out
         )
 
         return nn.Sequential(kan_module, Squeeze(-1))

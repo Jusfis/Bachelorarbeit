@@ -1,7 +1,7 @@
 import os
 import re
 import math
-from models.ctm_kan import ContinuousThoughtMachine
+from models.ctm_kan_efficient import ContinuousThoughtMachine
 from models.lstm import LSTMBaseline # alternative baseline model
 
 def prepare_model(prediction_reshaper, args, device):

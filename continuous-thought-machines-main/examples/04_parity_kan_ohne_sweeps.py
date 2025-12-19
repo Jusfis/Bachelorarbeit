@@ -9,7 +9,7 @@ from torch.utils.data import Dataset, DataLoader
 from tqdm.auto import tqdm
 import matplotlib.pyplot as plt
 import time
-import wandb
+#import wandb
 # import imageio
 
 
@@ -52,16 +52,16 @@ def make_pbar_desc(train_loss, train_accuracy, test_loss, test_accuracy, lr, whe
 
 
 def update_training_curve_plot(fig, ax1, ax2, train_losses, test_losses, train_accuracies, test_accuracies, steps,
-                               log_dir,iteration):
+                               log_dir,iteration,parameter):
     """Saves the training curve plot to disk instead of displaying inline."""
 
     # Plot loss
+    fig.suptitle(f'{iteration}th iteration Parameter: {parameter}')
     ax1.clear()
     ax1.plot(range(len(train_losses)), train_losses, 'b-', alpha=0.7, label=f'Train Loss: {train_losses[-1]:.3f}')
     ax1.plot(steps, test_losses, 'r-', marker='o', label=f'Test Loss: {test_losses[-1]:.3f}')
     ax1.set_title('Loss')
-    # todo change to iterations instead steps
-    ax1.set_xlabel('Iterations')
+    ax1.set_xlabel('Iteration')
     ax1.set_ylabel('Loss')
     ax1.legend()
     ax1.grid(True, alpha=0.3)
@@ -72,13 +72,12 @@ def update_training_curve_plot(fig, ax1, ax2, train_losses, test_losses, train_a
              label=f'Train Accuracy: {train_accuracies[-1]:.3f}')
     ax2.plot(steps, test_accuracies, 'r-', marker='o', label=f'Test Accuracy: {test_accuracies[-1]:.3f}')
     ax2.set_title('Accuracy')
-    ax2.set_xlabel('Iterations')
+    ax2.set_xlabel('Iteration')
     ax2.set_ylabel('Accuracy')
     ax2.legend()
     ax2.grid(True, alpha=0.3)
 
     plt.tight_layout()
-    # todo dont overwrite every update step
     fig.savefig(os.path.join(log_dir, f'training_curves{iteration}.png'))
 
 
@@ -183,7 +182,7 @@ def create_viz(model, testloader, device, log_dir, grid_size):
 # -----------------------------------------------------------------------------
 
 def train(model, trainloader, testloader, grid_size, device='cpu', training_iterations=100000, test_every=1000, lr=1e-4,
-          log_dir='./logs'):
+          log_dir='./logs', save_every=1000):
     os.makedirs(log_dir, exist_ok=True)
 
     model.train()
@@ -226,7 +225,7 @@ def train(model, trainloader, testloader, grid_size, device='cpu', training_iter
             train_accuracies.append(train_accuracy)
 
             # log to wandb
-            wandb.log({"loss/train": train_loss.item(), "accuracy/train": train_accuracy, "step": stepi})
+            # wandb.log({"loss/train": train_loss.item(), "accuracy/train": train_accuracy, "step": stepi})
 
 
             train_loss.backward()
@@ -262,7 +261,7 @@ def train(model, trainloader, testloader, grid_size, device='cpu', training_iter
                     all_test_predictions = torch.cat(all_test_predictions, dim=0)
                     all_test_targets = torch.cat(all_test_targets, dim=0)
                     all_test_where_most_certain = torch.cat(all_test_where_most_certain, dim=0)
-
+                    # cat because of batch
                     test_accuracy = (all_test_predictions.argmax(2)[
                                      torch.arange(all_test_predictions.size(0), device=predictions.device), :,
                                      all_test_where_most_certain] == all_test_targets).float().mean().item()
@@ -276,10 +275,35 @@ def train(model, trainloader, testloader, grid_size, device='cpu', training_iter
                     create_viz(model, testloader, device, log_dir, grid_size)
 
                 model.train()
-
+                parameters = sum(p.numel() for p in model.parameters())
                 # Save plot to disk
-                update_training_curve_plot(fig, ax1, ax2, train_losses, test_losses, train_accuracies, test_accuracies,
-                                           steps, log_dir,stepi)
+                # test every ... but updaet curve plot every 1000 iterations
+
+                if stepi % 1000 == 0:
+                    update_training_curve_plot(fig, ax1, ax2, train_losses, test_losses, train_accuracies, test_accuracies,
+                                           steps, log_dir, stepi, parameters)
+                    torch.save(
+                        {
+                            'model_state_dict': model.state_dict(),
+                            'optimizer_state_dict': optimizer.state_dict(),
+                            # 'scheduler_state_dict': scheduler.state_dict(),
+                            # 'scaler_state_dict': scaler.state_dict(),
+                            'iteration': stepi,
+                            # 'train_accuracies_most_certain': train_accuracies,
+                            # 'train_accuracies_most_certain_per_input': ,
+                            'train_accuracies': train_accuracies,
+                            'test_accuracies_most_certain': all_test_where_most_certain,
+                            # 'test_accuracies_most_certain_per_input': test_accuracies_most_certain_per_input,
+                            'test_accuracies': test_accuracies,
+                            'train_losses': train_losses,
+                            'test_losses': test_losses,
+                            'iters': training_iterations,
+                            'torch_rng_state': torch.get_rng_state(),
+                            'numpy_rng_state': np.random.get_state(),
+                            'random_rng_state': random.getstate(),
+                        }, f'{log_dir}/checkpoint_{stepi}.pt')
+
+
 
             pbar_desc = make_pbar_desc(train_loss=train_loss.item(), train_accuracy=train_accuracy, test_loss=test_loss,
                                        test_accuracy=test_accuracy, lr=optimizer.param_groups[-1]["lr"],
@@ -299,9 +323,9 @@ def main():
     # Configuration
     GRID_SIZE = 4
     PARITY_SEQUENCE_LENGTH = GRID_SIZE ** 2
-    BATCH_SIZE = 20
+    BATCH_SIZE = 5 # tried 20
     ITERATIONS = 10000
-    LOG_DIR = './parity_logs_kan'
+    LOG_DIR = "./parity_logs_kan"
     LEARNINGRATE = 1e-4
     set_seed(42)
 
@@ -311,19 +335,19 @@ def main():
         # score = objective(run.config)  adjust
         # run.log({"score": score})
 
-    run = wandb.init(
-        project="ctm-parity-kan",
-        entity="justus-fischer-ludwig-maximilian-university-of-munich",
-
-        config={
-            "learning_rate": LEARNINGRATE,
-            "architecture": "CTM-KAN",
-            "dataset": "Parity",
-            "batch_size": BATCH_SIZE,
-            "iterations": ITERATIONS,
-            "parity_sequence_length": PARITY_SEQUENCE_LENGTH,
-        },
-    )
+    # run = wandb.init(
+    #     project="ctm-parity-kan",
+    #     entity="justus-fischer-ludwig-maximilian-university-of-munich",
+    #
+    #     config={
+    #         "learning_rate": LEARNINGRATE,
+    #         "architecture": "CTM-KAN",
+    #         "dataset": "Parity",
+    #         "batch_size": BATCH_SIZE,
+    #         "iterations": ITERATIONS,
+    #         "parity_sequence_length": PARITY_SEQUENCE_LENGTH,
+    #     },
+    # )
 
 
 
@@ -349,7 +373,7 @@ def main():
         n_synch_action=32,  # originally 256
         synapse_depth=8,  # originally 8
         memory_length=16, # originally 25
-        deep_nlms=True,  # originally True
+        deep_nlms=False,  # originally True
         memory_hidden_dims=16, # originally 16
         backbone_type='parity_backbone',
         out_dims=PARITY_SEQUENCE_LENGTH * 2,
@@ -359,13 +383,14 @@ def main():
         positional_embedding_type='custom-rotational-1d'
     ).to(device)
 
+
     # Initialize model parameters with dummy forward pass
     sample_batch = next(iter(trainloader))
     dummy_input = sample_batch[0][:1].to(device)
     with torch.no_grad():
         _ = model(dummy_input)
-
-    print(f'Model parameters: {sum(p.numel() for p in model.parameters()):,}')
+    parameters = sum(p.numel() for p in model.parameters())
+    print(f'Model parameters: {parameters: }')
 
     print("Starting Training...")
     start = time.time()
@@ -376,15 +401,22 @@ def main():
         grid_size=GRID_SIZE,
         device=device,
         training_iterations=ITERATIONS,
+        test_every= 10,
         lr=LEARNINGRATE,
         log_dir=LOG_DIR
     )
+
+    # todo save model
+
+
+
+
 
     end = time.time()
     duration = end - start
     print("Training Complete. Time: duration {:.2f} seconds ({:.2f} minutes)".format(duration, duration / 60))
     print(f"Check {LOG_DIR} for logs and visualizations.")
-    run.finish()
+    # run.finish()
 
 
 if __name__ == "__main__":

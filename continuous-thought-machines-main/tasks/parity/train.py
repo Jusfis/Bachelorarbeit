@@ -27,6 +27,8 @@ from utils.housekeeping import set_seed, zip_python_code
 from utils.losses import parity_loss
 from utils.schedulers import WarmupCosineAnnealingLR, WarmupMultiStepLR, warmup
 
+
+
 torchvision.disable_beta_transforms_warning()
 torch.serialization.add_safe_globals([argparse.Namespace])
 
@@ -87,11 +89,11 @@ def parse_args():
 if __name__=='__main__':
 
     args = parse_args()
-    
+
     set_seed(args.seed)
 
     if not os.path.exists(args.log_dir): os.makedirs(args.log_dir)
-    
+
     assert int(math.sqrt(args.parity_sequence_length)) ** 2 == args.parity_sequence_length, "parity_sequence_length must be a perfect square."
 
     train_data = ParityDataset(sequence_length=args.parity_sequence_length, length=100000)
@@ -113,13 +115,14 @@ if __name__=='__main__':
         print(args, file=f)  
 
     # Configure device string (support MPS on macOS)
+    # todo repair cuda init for multi-gpu
     if args.device[0] != -1:
         device = f'cuda:{args.device[0]}'
     elif torch.backends.mps.is_available():
         device = 'mps'
     else:
         device = 'cpu'
-    print(f'Running model {args.model} on {device}')
+    print(f'Running model {args.model_type} on {device}')
 
     # Build model
     model = prepare_model(prediction_reshaper, args, device)
@@ -165,7 +168,7 @@ if __name__=='__main__':
     iters = []
     scaler = torch.amp.GradScaler("cuda" if "cuda" in device else "cpu", enabled=args.use_amp)
 
-    # Now that everything is initliased, reload if desired
+    # Now that everything is initialised, reload if desired
     if args.reload and (latest_checkpoint_path := get_latest_checkpoint(args.log_dir)):
         print(f'Reloading from: {latest_checkpoint_path}')
         checkpoint = torch.load(f'{latest_checkpoint_path}', weights_only=False)
@@ -301,6 +304,9 @@ if __name__=='__main__':
                         train_accuracies.append(np.mean(all_predictions == all_targets[...,np.newaxis], axis=tuple(range(all_predictions.ndim-1))))
                         train_accuracies_most_certain.append((all_targets == all_predictions_most_certain).mean())
                         train_accuracies_most_certain_per_input.append((all_targets == all_predictions_most_certain).reshape(all_targets.shape[0], -1).all(-1).mean())
+                        # todo wenn ich die all losses meane dann kommt doch nicht train losses raus hae
+
+
                         train_losses.append(np.mean(all_losses))
 
                         ##################################### TEST METRICS
@@ -371,7 +377,7 @@ if __name__=='__main__':
                         figloss.tight_layout()
                         figloss.savefig(f'{args.log_dir}/losses.png', dpi=150)
                         plt.close(figloss)
-
+# why model.train?
                 model.train()
                             
 

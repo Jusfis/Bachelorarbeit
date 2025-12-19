@@ -1,0 +1,31 @@
+# WandB Sweep configuration file for hyperparameter optimization
+program: train_sweeps.py
+name: sweepdemo
+# Sweep search method: one of [grid, random, bayes]
+method: random
+metric:
+  goal: minimize
+  name: validation_loss
+parameters:
+  # train_sweeps.py liest `config.learning_rate` und `config.batch_size`
+  learning_rate:
+    min: 1e-5
+    max: 1e-2
+  batch_size:
+    values: [16, 32, 64]
+  # train_sweeps.py erwartet `training_iterations` (iter count), nicht `epochs`
+  training_iterations:
+    values: [10000, 20000, 50000]
+  # Modelltyp (ctm oder lstm), passend zu argparse choices
+  model_type:
+    values: ["ctm"]
+  # Optional: enable mixed precision during sweep runs
+#   use_amp:
+#    values: [false, true]
+  # Optional: sequence length for parity task (must be perfect square)
+  parity_sequence_length:
+    values: [16, 64]
+  # Optional: learning rate scheduler toggle
+  use_scheduler:
+    values: [true, false]
+# Bei Bedarf kannst du hier weitere Parameter hinzufügen, die in train_sweeps.py benutzt werden.

@@ -1,16 +1,24 @@
 #!/bin/bash
-RUN=1
-ITERATIONS=10
-MEMORY_LENGTH=5
-LOG_DIR="logs/parity/run${RUN}/ctm_${ITERATIONS}_${MEMORY_LENGTH}"
-SEED=$((RUN - 1))
+#
+#SBATCH --job-name=CTM_kan_parity
+#SBATCH --comment="CTM training"
+#SBATCH --mail-type=ALL
+#SBATCH --mail-user=justus.fischer@campus.lmu.de
+#SBATCH --ntasks=1
+#SBATCH --chdir=/home/f/fischerjus/Bachelorarbeit/continuous-thought-machines-main/tasks/parity
+#SBATCH --output=/home/f/fischerjus/Bachelorarbeit/continuous-thought-machines-main/tasks/parity/slurm_kan.%j.%N.out
 
-python -m tasks.parity.train \
+#RUN=1
+#ITERATIONS=10
+#MEMORY_LENGTH=5
+#LOG_DIR="logs/parity/run${RUN}/ctm_${ITERATIONS}_${MEMORY_LENGTH}"
+#SEED=$((RUN - 1))
 #    --model_type "ctm"\
-    --log_dir $LOG_DIR \
-    --seed $SEED \
-    --iterations $ITERATIONS \
-    --memory_length $MEMORY_LENGTH \
+python -m tasks.parity.train_sweeps \
+    --log_dir "logs/parity/run1/ctm_10_5"\
+    --seed 1 \
+    --iterations 75 \
+    --memory_length 25 \
     --parity_sequence_length 64  \
     --n_test_batches 20 \
     --d_model 1024 \
@@ -35,13 +43,16 @@ python -m tasks.parity.train \
     --dataset "parity" \
     --batch_size 64 \
     --batch_size_test 256 \
-    --lr=0.0001 \
+    --lr 0.0002 \
     --training_iterations 200001 \
     --warmup_steps 500 \
     --track_every 1000 \
-    --save_every 10000 \
+    --save_every 1000 \
     --no-reload \
     --no-reload_model_only \
     --no-use_amp \
     --neuron_select_type "random" \
-    --device 0 # CUDA device ID
+    --postactivation_production 'mlp' # MLP or linear for postactivation production
+
+#to submit the job, use:
+#sbatch --partition=NvidiaAll parity.sh
