@@ -52,7 +52,8 @@ python -u train_sweeps_efficient.py\
     --no-reload_model_only \
     --no-use_amp \
     --neuron_select_type "random" \
-    --postactivation_production 'kan'
+    --postactivation_production 'kan'\
+    --device 0
 #to submit the job on slurm, use from ctmmain folder:
 #sbatch --partition=NvidiaAll parityBatch.sh
 # remove --device 0 to allow slurm to assign GPU automatically
