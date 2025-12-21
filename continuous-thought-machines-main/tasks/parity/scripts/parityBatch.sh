@@ -14,7 +14,7 @@
 #LOG_DIR="logs/parity/run${RUN}/ctm_${ITERATIONS}_${MEMORY_LENGTH}"
 #SEED=$((RUN - 1))
 #    --model_type "ctm"\
-python -u train_sweeps.py \
+python -u train_sweeps_efficient.py \
     --log_dir "logs/parity/run3/parity-cip"\
     --seed 1 \
     --iterations 75 \
@@ -54,5 +54,5 @@ python -u train_sweeps.py \
     --neuron_select_type "random" \
     --postactivation_production 'kan' # option for MLP or KAN for postactivation production
 
-#to submit the job on slurm, use from ctmmain folder:
+#to submit the job on slurm, use from ctm main folder:
 #sbatch --partition=NvidiaAll parityBatch.sh
