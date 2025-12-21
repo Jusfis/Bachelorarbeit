@@ -4,6 +4,9 @@ import multiprocessing # Used for GIF generation
 import random # Used for saving/loading RNG state
 import os
 import sys
+import seaborn as sns
+import pandas as pd
+import numpy as np
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
 
@@ -88,17 +91,36 @@ def parse_args():
 
     args = parser.parse_args()
     return args
+
+
+def create_long_df(data_array, iters, metric_name='Accuracy'):
+    """
+    Converts numpy array (iters x runs) into a Long-Form DataFrame for Seaborn.
+    """
+    # Ensure data is (iters, runs)
+    data = np.array(data_array)
+
+    # Create DataFrame with Iterations as index
+    df = pd.DataFrame(data, index=iters)
+
+    # Reset index to make 'Iteration' a column
+    df = df.reset_index().rename(columns={'index': 'Iteration'})
+
+    # Melt into long format: [Iteration, Run_ID, Value]
+    df_long = df.melt(id_vars='Iteration', var_name='Run', value_name=metric_name)
+    return df_long
+
 def main():
     # todo anpassen an neue wandb api mlp vs kan
-    with wandb.init(entity="justus-fischer-ludwig-maximilian-university-of-munich",project="ctm-parity-sweeps") as run:
+    with wandb.init(entity="justus-fischer-ludwig-maximilian-university-of-munich",project="ctm-parity") as run:
         config = wandb.config
         args = parse_args()
         # input from wandb sweep
         args.batch_size = config.batch_size
         args.lr = config.learning_rate
-        args.postactivation_production = config.postactivation_production
+        # args.postactivation_production = config.postactivation_production
         args.training_iterations = config.training_iterations
-        args.model_type = config.model_type
+        # args.model_type = config.model_type
         args.use_amp = config.use_amp
         args.use_scheduler = config.use_scheduler
         args.memory_length = config.memory_length
@@ -107,7 +129,6 @@ def main():
         print(f"Using config: {config}\n Parsed args: {args}\n")
 
 
-        # todo seeds run over 7 seeds in future ...
         set_seed(args.seed)
 
         if not os.path.exists(args.log_dir): os.makedirs(args.log_dir)
@@ -257,9 +278,8 @@ def main():
                 }, step=bi)
 
 
-                # Metrics tracking and plotting #######################3 TRACK 3##############
-                # TODO track more often but save less often?
-                if bi%args.track_every==0:# and bi != 0:
+                # Metrics tracking and plotting ####################### TRACK ##############
+                if bi%args.track_every==0 and bi != 0:
                     model.eval()
                     with torch.inference_mode():
 
@@ -330,7 +350,7 @@ def main():
                             train_accuracies_most_certain.append((all_targets == all_predictions_most_certain).mean())
                             train_accuracies_most_certain_per_input.append((all_targets == all_predictions_most_certain).reshape(all_targets.shape[0], -1).all(-1).mean())
                             train_losses.append(np.mean(all_losses))
-                            # TODO repair wandb logging here
+
                             # # log to wandb
                             # run.log({
                             #     "Train/Accuracies_Most_Certain": train_accuracies_most_certain[-1] if len(train_accuracies_most_certain) > 0 else 0,
@@ -376,44 +396,89 @@ def main():
                             test_losses.append(np.mean(all_losses))
 
 
-                            figacc = plt.figure(figsize=(10, 10))
-                            axacc_train = figacc.add_subplot(211)
-                            axacc_test = figacc.add_subplot(212)
+                            figacc_raw = plt.figure(figsize=(10, 10))
+                            axacc_train = figacc_raw.add_subplot(211)
+                            axacc_test = figacc_raw.add_subplot(212)
                             cm = sns.color_palette("viridis", as_cmap=True)
+
                             if args.dataset != 'sort':
-                                for ti, (train_acc, test_acc) in enumerate(zip(np.array(train_accuracies).T, np.array(test_accuracies).T)):
-                                    axacc_train.plot(iters, train_acc, color=cm((ti)/(train_accuracies[0].shape[-1])), alpha=0.3)
-                                    axacc_test.plot(iters, test_acc, color=cm((ti)/(test_accuracies[0].shape[-1])), alpha=0.3)
-                            axacc_train.plot(iters, train_accuracies_most_certain, 'k--', alpha=0.7, label='Most certain')
-                            axacc_train.plot(iters, train_accuracies_most_certain_per_input, 'r', alpha=0.6, label='Full Input')
+                                # Transpose (.T) so we iterate over runs, not iterations
+                                train_data_T = np.array(train_accuracies).T
+                                test_data_T = np.array(test_accuracies).T
+
+                                num_runs = train_data_T.shape[0]
+
+                                for ti, (train_acc, test_acc) in enumerate(zip(train_data_T, test_data_T)):
+                                    # Calculate color based on run index
+                                    color_val = ti / num_runs
+                                    axacc_train.plot(iters, train_acc, color=cm(color_val), alpha=0.3)
+                                    axacc_test.plot(iters, test_acc, color=cm(color_val), alpha=0.3)
+
+                            # Baselines
+                            axacc_train.plot(iters, train_accuracies_most_certain, 'k--', alpha=0.7,
+                                             label='Most certain')
+                            axacc_train.plot(iters, train_accuracies_most_certain_per_input, 'r', alpha=0.6,
+                                             label='Full Input')
                             axacc_test.plot(iters, test_accuracies_most_certain, 'k--', alpha=0.7, label='Most certain')
-                            axacc_test.plot(iters, test_accuracies_most_certain_per_input, 'r', alpha=0.6, label='Full Input')
-                            axacc_train.set_title('Train')
-                            axacc_test.set_title('Test')
+                            axacc_test.plot(iters, test_accuracies_most_certain_per_input, 'r', alpha=0.6,
+                                            label='Full Input')
+
+                            # Formatting
+                            axacc_train.set_title('Train Accuracy (All Runs)')
+                            axacc_test.set_title('Test Accuracy (All Runs)')
                             axacc_train.legend(loc='lower right')
                             axacc_train.set_xlim([0, args.training_iterations])
                             axacc_test.set_xlim([0, args.training_iterations])
 
-                            figacc.tight_layout()
-                            figacc.savefig(f'{args.log_dir}/accuracies.png', dpi=150)
-                            plt.close(figacc)
+                            figacc_raw.tight_layout()
+                            figacc_raw.savefig(f'{args.log_dir}/accuracies_all_runs.png', dpi=150)
+                            plt.close(figacc_raw)
 
-                            figloss = plt.figure(figsize=(10, 5))
-                            axloss = figloss.add_subplot(111)
-                            axloss.plot(iters, train_losses, 'b-', linewidth=1, alpha=0.8, label=f'Train: {train_losses[-1]}')
-                            axloss.plot(iters, test_losses, 'r-', linewidth=1, alpha=0.8, label=f'Test: {test_losses[-1]}')
-                            axloss.legend(loc='upper right')
+                            # ==========================================
+                            # PLOT 2: The "Confidence Interval" Plot (Seaborn)
+                            # Shows Mean + 95% Confidence Interval
+                            # ==========================================
+                            sns.set_theme(style="whitegrid")
+                            figacc_ci, (ax_ci_train, ax_ci_test) = plt.subplots(2, 1, figsize=(10, 10), sharex=True)
 
-                            axloss.set_xlim([0, args.training_iterations])
-                            figloss.tight_layout()
-                            figloss.savefig(f'{args.log_dir}/losses.png', dpi=150)
-                            plt.close(figloss)
+                            if args.dataset != 'sort':
+                                # Convert data to Pandas DataFrame for Seaborn
+                                df_train = create_long_df(train_accuracies, iters, 'Train Accuracy')
+                                df_test = create_long_df(test_accuracies, iters, 'Test Accuracy')
+
+                                # Plot with Confidence Intervals (errorbar=('ci', 95) is default)
+                                sns.lineplot(data=df_train, x='Iteration', y='Train Accuracy',
+                                             ax=ax_ci_train, color='blue', label='Mean Acc (95% CI)')
+                                sns.lineplot(data=df_test, x='Iteration', y='Test Accuracy',
+                                             ax=ax_ci_test, color='green', label='Mean Acc (95% CI)')
+
+                            # Baselines (Added to Seaborn plot for comparison)
+                            ax_ci_train.plot(iters, train_accuracies_most_certain, 'k--', alpha=0.7,
+                                             label='Most certain')
+                            ax_ci_train.plot(iters, train_accuracies_most_certain_per_input, 'r', alpha=0.6,
+                                             label='Full Input')
+                            ax_ci_test.plot(iters, test_accuracies_most_certain, 'k--', alpha=0.7, label='Most certain')
+                            ax_ci_test.plot(iters, test_accuracies_most_certain_per_input, 'r', alpha=0.6,
+                                            label='Full Input')
+
+                            # Formatting
+                            ax_ci_train.set_title('Train Accuracy (Mean + CI)')
+                            ax_ci_test.set_title('Test Accuracy (Mean + CI)')
+                            ax_ci_train.legend(loc='lower right')
+                            ax_ci_test.legend(loc='lower right')
+                            ax_ci_train.set_xlim([0, args.training_iterations])
+                            ax_ci_test.set_xlim([0, args.training_iterations])
+
+                            figacc_ci.tight_layout()
+                            figacc_ci.savefig(f'{args.log_dir}/accuracies_ci.png', dpi=150)
+                            plt.close(figacc_ci)
+
+
                 # todo why model.train() twice?
                     model.train()
 
 
 
-                # todo save fig every ...
                 # Save model ########################### AND make fig##############################
                 if (bi%args.save_every==0 or bi==args.training_iterations-1):
                     torch.save(
@@ -446,25 +511,25 @@ if __name__=='__main__':
         # Sweep configuration for wandb
         sweep_configuration = {
             "program": "train_sweeps.py",
-            "name": "ctm-parity-reduced-hyperparameter-sweep",
+            "name": "ctm-parity",
             "method": "random",
             "metric": {
                 "name": "Train/Losses",
                 "goal": "minimize"# todo decide if maximize accuracies or minimize loss and add iterations and memory length
             },
             "parameters": {
-                "batch_size": {"values": [8,32, 64]},
+                "batch_size": {"values": [32, 64]},
                 "learning_rate": {"min": 2e-4, "max": 3e-4},
+                "use_amp": {"values": [True]},
+                "use_scheduler": {"values": [False]},
+                "memory_length": {"values": [50]},
+                "internal_ticks": {"values": [100]},
                 "training_iterations": {"values": [200000]},
-                "model_type": {"values": ["ctm"]},
-                "use_amp": {"values": [False, True]},
-                #Todo"parity_sequence_length": {"values": [16, 64]},
-                "use_scheduler": {"values": [True, False]},
-                "postactivation_production": {"values": ["kan"]},
-                "memory_length": {"values": [10, 25]},
-                "internal_ticks": {"values": [10, 25]},
+                # "postactivation_production": {"values": ["kan"]},
+                # "model_type": {"values": ["ctm"]},
+                # Todo"parity_sequence_length": {"values": [16, 64]},
             }
         }
 
-        sweep_id = wandb.sweep(sweep_configuration, project="ctm-parity-sweeps-efficient")
+        sweep_id = wandb.sweep(sweep_configuration, project="ctm-parity")
         wandb.agent(sweep_id, function=main, count=50)
