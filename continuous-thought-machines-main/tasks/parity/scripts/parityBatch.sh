@@ -54,5 +54,5 @@ python -u train_sweeps.py \
     --neuron_select_type "random" \
     --postactivation_production 'kan' # option for MLP or KAN for postactivation production
 
-#to submit the job on slurm, use from ctmmain folder:
+#to submit the job on slurm, use from ctm main folder:
 #sbatch --partition=NvidiaAll parityBatch.sh
