@@ -510,7 +510,7 @@ def main():
 if __name__=='__main__':
         # Sweep configuration for wandb
         sweep_configuration = {
-            "program": "train_sweeps.py",
+            "program": "train_sweeps_efficient.py",
             "name": "ctm-parity",
             "method": "random",
             "metric": {
