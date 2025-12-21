@@ -14,7 +14,7 @@
 #LOG_DIR="logs/parity/run${RUN}/ctm_${ITERATIONS}_${MEMORY_LENGTH}"
 #SEED=$((RUN - 1))
 #    --model_type "ctm"\
-python -u train_sweeps.py \
+python -u train_sweeps_efficient.py \
     --log_dir "logs/parity/run3/parity-cip"\
     --seed 1 \
     --iterations 75 \
