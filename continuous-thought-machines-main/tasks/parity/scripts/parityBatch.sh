@@ -56,4 +56,4 @@ python -u train_sweeps_efficient.py \
     --postactivation_production 'kan'
 
 #to submit the job on slurm, use from ctm main folder:
-#sbatch --partition=NvidiaAll parityBatch.sh
+#sbatch --partition=NvidiaAll parityBatch.sh script for slurm #####
