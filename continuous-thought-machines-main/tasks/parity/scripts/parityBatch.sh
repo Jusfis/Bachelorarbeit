@@ -52,7 +52,8 @@ python -u train_sweeps_efficient.py \
     --no-reload_model_only \
     --no-use_amp \
     --neuron_select_type "random" \
-    --postactivation_production 'kan' # option for MLP or KAN for postactivation production
+    --device 0 \
+    --postactivation_production 'kan'
 
 #to submit the job on slurm, use from ctm main folder:
 #sbatch --partition=NvidiaAll parityBatch.sh
