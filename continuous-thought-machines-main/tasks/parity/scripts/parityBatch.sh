@@ -15,13 +15,13 @@
 #SEED=$((RUN - 1))
 #    --model_type "ctm"\
 python -u train_sweeps.py \
-    --log_dir "logs/parity/run1/ctm_sweeps_mlp"\
+    --log_dir "logs/parity/run3/parity-cip"\
     --seed 1 \
     --iterations 75 \
     --memory_length 25 \
     --parity_sequence_length 64  \
     --n_test_batches 20 \
-    --d_model 128 \
+    --d_model 64 \
     --d_input 64 \
     --n_synch_out 16 \
     --n_synch_action 16 \
@@ -42,17 +42,17 @@ python -u train_sweeps.py \
     --gamma 0 \
     --dataset "parity" \
     --batch_size 32 \
-    --batch_size_test 128 \
+    --batch_size_test 120 \
     --lr=0.0001 \
     --training_iterations 200001 \
     --warmup_steps 500 \
     --track_every 1000 \
-    --save_every 1000 \
+    --save_every 20000 \
     --no-reload \
     --no-reload_model_only \
     --no-use_amp \
     --neuron_select_type "random" \
-    --postactivation_production 'mlp' # option for MLP or KAN for postactivation production
+    --postactivation_production 'kan' # option for MLP or KAN for postactivation production
 
 #to submit the job on slurm, use from ctmmain folder:
 #sbatch --partition=NvidiaAll parityBatch.sh
