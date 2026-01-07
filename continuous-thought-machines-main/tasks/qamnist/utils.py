@@ -1,4 +1,4 @@
-from models.ctm_qamnist import ContinuousThoughtMachineQAMNIST
+from models.ctm_qamnist import ContinuousThoughtMachineQAMNIST_KAN
 from models.lstm_qamnist import LSTMBaseline
 from data.custom_datasets import QAMNISTDataset
 from torchvision import datasets
@@ -20,7 +20,7 @@ def get_dataset(q_num_images, q_num_images_delta, q_num_repeats_per_input, q_num
 
 def prepare_model(args, device):
     if args.model_type == 'ctm':
-        model = ContinuousThoughtMachineQAMNIST(
+        model = ContinuousThoughtMachineQAMNIST_KAN(
         iterations=args.iterations,
         d_model=args.d_model,
         d_input=args.d_input,  

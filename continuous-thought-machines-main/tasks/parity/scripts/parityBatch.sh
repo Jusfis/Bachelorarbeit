@@ -21,12 +21,12 @@ python -u train_sweeps_efficient.py \
     --memory_length 25 \
     --parity_sequence_length 64  \
     --n_test_batches 20 \
-    --d_model 60 \
-    --d_input 64 \
-    --n_synch_out 16 \
-    --n_synch_action 16 \
+    --d_model 1024 \
+    --d_input 512 \
+    --n_synch_out 32 \
+    --n_synch_action 32 \
     --synapse_depth 1 \
-    --heads 4 \
+    --heads 8 \
     --memory_hidden_dims 16 \
     --dropout 0.0 \
     --deep_memory \

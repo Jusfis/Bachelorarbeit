@@ -395,83 +395,130 @@ def main():
                             test_accuracies_most_certain_per_input.append((all_targets == all_predictions_most_certain).reshape(all_targets.shape[0], -1).all(-1).mean())
                             test_losses.append(np.mean(all_losses))
 
+                            sns.set_theme(style="whitegrid")
 
-                            figacc_raw = plt.figure(figsize=(10, 10))
-                            axacc_train = figacc_raw.add_subplot(211)
-                            axacc_test = figacc_raw.add_subplot(212)
+                            # Define Color Palette for the "All Runs" plots
                             cm = sns.color_palette("viridis", as_cmap=True)
 
+                            # Ensure data is numpy array for easier handling
+                            train_acc_arr = np.array(train_accuracies)
+                            test_acc_arr = np.array(test_accuracies)
+                            train_loss_arr = np.array(train_losses)
+                            test_loss_arr = np.array(test_losses)
+
                             if args.dataset != 'sort':
-                                # Transpose (.T) so we iterate over runs, not iterations
-                                train_data_T = np.array(train_accuracies).T
-                                test_data_T = np.array(test_accuracies).T
+                                # =========================================================
+                                # PART A: ACCURACIES
+                                # =========================================================
 
-                                num_runs = train_data_T.shape[0]
+                                # --- A1. Accuracies: Old Style (All Runs) ---
+                                figacc_raw = plt.figure(figsize=(10, 10))
+                                axacc_train = figacc_raw.add_subplot(211)
+                                axacc_test = figacc_raw.add_subplot(212)
 
-                                for ti, (train_acc, test_acc) in enumerate(zip(train_data_T, test_data_T)):
-                                    # Calculate color based on run index
+                                # Loop through runs (Transpose .T to iterate over columns/runs)
+                                num_runs = train_acc_arr.shape[1]
+                                for ti in range(num_runs):
                                     color_val = ti / num_runs
-                                    axacc_train.plot(iters, train_acc, color=cm(color_val), alpha=0.3)
-                                    axacc_test.plot(iters, test_acc, color=cm(color_val), alpha=0.3)
+                                    axacc_train.plot(iters, train_acc_arr[:, ti], color=cm(color_val), alpha=0.3)
+                                    axacc_test.plot(iters, test_acc_arr[:, ti], color=cm(color_val), alpha=0.3)
 
-                            # Baselines
-                            axacc_train.plot(iters, train_accuracies_most_certain, 'k--', alpha=0.7,
-                                             label='Most certain')
-                            axacc_train.plot(iters, train_accuracies_most_certain_per_input, 'r', alpha=0.6,
-                                             label='Full Input')
-                            axacc_test.plot(iters, test_accuracies_most_certain, 'k--', alpha=0.7, label='Most certain')
-                            axacc_test.plot(iters, test_accuracies_most_certain_per_input, 'r', alpha=0.6,
+                                # Baselines
+                                for ax in [axacc_train, axacc_test]:
+                                    ax.plot(iters, train_accuracies_most_certain, 'k--', alpha=0.7,
+                                            label='Most certain')
+                                    ax.plot(iters, train_accuracies_most_certain_per_input, 'r', alpha=0.6,
                                             label='Full Input')
 
-                            # Formatting
-                            axacc_train.set_title('Train Accuracy (All Runs)')
-                            axacc_test.set_title('Test Accuracy (All Runs)')
-                            axacc_train.legend(loc='lower right')
-                            axacc_train.set_xlim([0, args.training_iterations])
-                            axacc_test.set_xlim([0, args.training_iterations])
+                                axacc_train.set_title('Train Accuracy (All Runs)')
+                                axacc_test.set_title('Test Accuracy (All Runs)')
+                                axacc_train.legend(loc='lower right')
+                                axacc_train.set_xlim([0, args.training_iterations])
+                                axacc_test.set_xlim([0, args.training_iterations])
 
-                            figacc_raw.tight_layout()
-                            figacc_raw.savefig(f'{args.log_dir}/accuracies_all_runs.png', dpi=150)
-                            plt.close(figacc_raw)
+                                figacc_raw.tight_layout()
+                                figacc_raw.savefig(f'{args.log_dir}/accuracies_all_runs.png', dpi=150)
+                                plt.close(figacc_raw)
 
-                            # ==========================================
-                            # PLOT 2: The "Confidence Interval" Plot (Seaborn)
-                            # Shows Mean + 95% Confidence Interval
-                            # ==========================================
-                            sns.set_theme(style="whitegrid")
-                            figacc_ci, (ax_ci_train, ax_ci_test) = plt.subplots(2, 1, figsize=(10, 10), sharex=True)
+                                # --- A2. Accuracies: New Style (Seaborn CI) ---
+                                figacc_ci, (ax_ci_train, ax_ci_test) = plt.subplots(2, 1, figsize=(10, 10), sharex=True)
 
-                            if args.dataset != 'sort':
-                                # Convert data to Pandas DataFrame for Seaborn
-                                df_train = create_long_df(train_accuracies, iters, 'Train Accuracy')
-                                df_test = create_long_df(test_accuracies, iters, 'Test Accuracy')
+                                df_acc_train = create_long_df(train_acc_arr, iters, 'Accuracy')
+                                df_acc_test = create_long_df(test_acc_arr, iters, 'Accuracy')
 
-                                # Plot with Confidence Intervals (errorbar=('ci', 95) is default)
-                                sns.lineplot(data=df_train, x='Iteration', y='Train Accuracy',
-                                             ax=ax_ci_train, color='blue', label='Mean Acc (95% CI)')
-                                sns.lineplot(data=df_test, x='Iteration', y='Test Accuracy',
-                                             ax=ax_ci_test, color='green', label='Mean Acc (95% CI)')
+                                sns.lineplot(data=df_acc_train, x='Iteration', y='Accuracy', ax=ax_ci_train,
+                                             color='tab:blue', errorbar=('ci', 95), label='Mean Train Acc')
+                                sns.lineplot(data=df_acc_test, x='Iteration', y='Accuracy', ax=ax_ci_test,
+                                             color='tab:green', errorbar=('ci', 95), label='Mean Test Acc')
 
-                            # Baselines (Added to Seaborn plot for comparison)
-                            ax_ci_train.plot(iters, train_accuracies_most_certain, 'k--', alpha=0.7,
-                                             label='Most certain')
-                            ax_ci_train.plot(iters, train_accuracies_most_certain_per_input, 'r', alpha=0.6,
-                                             label='Full Input')
-                            ax_ci_test.plot(iters, test_accuracies_most_certain, 'k--', alpha=0.7, label='Most certain')
-                            ax_ci_test.plot(iters, test_accuracies_most_certain_per_input, 'r', alpha=0.6,
-                                            label='Full Input')
+                                # Baselines
+                                ax_ci_train.plot(iters, train_accuracies_most_certain, 'k--', alpha=0.7,
+                                                 label='Most certain')
+                                ax_ci_train.plot(iters, train_accuracies_most_certain_per_input, 'r', alpha=0.6,
+                                                 label='Full Input')
+                                ax_ci_test.plot(iters, test_accuracies_most_certain, 'k--', alpha=0.7,
+                                                label='Most certain')
+                                ax_ci_test.plot(iters, test_accuracies_most_certain_per_input, 'r', alpha=0.6,
+                                                label='Full Input')
 
-                            # Formatting
-                            ax_ci_train.set_title('Train Accuracy (Mean + CI)')
-                            ax_ci_test.set_title('Test Accuracy (Mean + CI)')
-                            ax_ci_train.legend(loc='lower right')
-                            ax_ci_test.legend(loc='lower right')
-                            ax_ci_train.set_xlim([0, args.training_iterations])
-                            ax_ci_test.set_xlim([0, args.training_iterations])
+                                ax_ci_train.set_title('Train Accuracy (Mean + 95% CI)')
+                                ax_ci_test.set_title('Test Accuracy (Mean + 95% CI)')
+                                ax_ci_train.legend(loc='lower right')
+                                ax_ci_test.legend(loc='lower right')
+                                ax_ci_train.set_xlim([0, args.training_iterations])
 
-                            figacc_ci.tight_layout()
-                            figacc_ci.savefig(f'{args.log_dir}/accuracies_ci.png', dpi=150)
-                            plt.close(figacc_ci)
+                                figacc_ci.tight_layout()
+                                figacc_ci.savefig(f'{args.log_dir}/accuracies.png', dpi=150)
+                                plt.close(figacc_ci)
+
+                                # =========================================================
+                                # PART B: LOSSES
+                                # =========================================================
+
+                                # --- B1. Losses: Old Style (All Runs) ---
+                                figloss_raw = plt.figure(figsize=(10, 5))
+                                axloss_raw = figloss_raw.add_subplot(111)
+
+                                # Loop through runs
+                                num_runs_loss = train_loss_arr.shape[1]
+                                for ti in range(num_runs_loss):
+                                    # We use a very low alpha (0.2) because losses can be noisy
+                                    axloss_raw.plot(iters, train_loss_arr[:, ti], 'b-', alpha=0.2)
+                                    axloss_raw.plot(iters, test_loss_arr[:, ti], 'r-', alpha=0.2)
+
+                                # Create custom legend handles since we plotted many lines
+                                from matplotlib.lines import Line2D
+                                custom_lines = [Line2D([0], [0], color='blue', lw=2),
+                                                Line2D([0], [0], color='red', lw=2)]
+                                axloss_raw.legend(custom_lines, ['Train Loss', 'Test Loss'], loc='upper right')
+
+                                axloss_raw.set_title('Losses (All Runs)')
+                                axloss_raw.set_xlim([0, args.training_iterations])
+
+                                figloss_raw.tight_layout()
+                                figloss_raw.savefig(f'{args.log_dir}/losses_all_runs.png', dpi=150)
+                                plt.close(figloss_raw)
+
+                                # --- B2. Losses: New Style (Seaborn CI) ---
+                                figloss_ci = plt.figure(figsize=(10, 5))
+                                axloss_ci = figloss_ci.add_subplot(111)
+
+                                df_loss_train = create_long_df(train_loss_arr, iters, 'Loss')
+                                df_loss_test = create_long_df(test_loss_arr, iters, 'Loss')
+
+                                # Seaborn automatically handles the mean line and shadow
+                                sns.lineplot(data=df_loss_train, x='Iteration', y='Loss', ax=axloss_ci,
+                                             color='blue', errorbar=('ci', 95), label='Train Loss')
+                                sns.lineplot(data=df_loss_test, x='Iteration', y='Loss', ax=axloss_ci,
+                                             color='red', errorbar=('ci', 95), label='Test Loss')
+
+                                axloss_ci.set_title('Losses (Mean + 95% Confidence Interval)')
+                                axloss_ci.legend(loc='upper right')
+                                axloss_ci.set_xlim([0, args.training_iterations])
+
+                                figloss_ci.tight_layout()
+                                figloss_ci.savefig(f'{args.log_dir}/losses.png', dpi=150)
+                                plt.close(figloss_ci)
 
 
                 # todo why model.train() twice?

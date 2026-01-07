@@ -148,7 +148,7 @@ if __name__=='__main__':
         device = 'mps'
     else:
         device = 'cpu'
-    print(f'Running model {args.model} on {device}')
+    print(f'Running model {args.model_type} on {device}')
 
     # Build model
     model = prepare_model(args, device)
@@ -285,7 +285,8 @@ if __name__=='__main__':
                     pad_width = ((0, 0), (0, 0), (0, (32*32)-args.d_input))
                     embedding_padded = np.pad(embedding_tracking, pad_width, mode='constant')
                     reshaped = embedding_padded.reshape(T_embed,B, 1, 32, 32)
-                    embedding_input = np.zeros((T_embed, B, 1, 32, 32))
+                    # TypeError: Cannot convert a MPS Tensor to float64 dtype as the MPS framework doesn't support float64. Please use float32 instead.
+                    embedding_input = np.zeros((T_embed, B, 1, 32, 32),dtype=np.float32)
                     embedding_input[:T_embed] = reshaped
 
                     embedding_tensor = torch.from_numpy(embedding_input).to(gif_inputs.device)

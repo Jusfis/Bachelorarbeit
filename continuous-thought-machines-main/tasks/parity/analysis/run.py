@@ -8,7 +8,7 @@ import os
 import csv
 from utils.housekeeping import set_seed
 from data.custom_datasets import ParityDataset
-from tasks.parity.utils import prepare_model, reshape_attention_weights, reshape_inputs, get_where_most_certain
+from tasks.parity.utils_efficient import prepare_model, reshape_attention_weights, reshape_inputs, get_where_most_certain
 from tasks.parity.plotting import plot_attention_trajectory, plot_input, plot_target, plot_probabilities, plot_prediction, plot_accuracy_training, create_attentions_heatmap_gif, create_accuracies_heatmap_gif, create_stacked_gif, plot_training_curve_all_runs, plot_accuracy_thinking_time, make_parity_gif, plot_lstm_last_and_certain_accuracy
 from models.utils import compute_normalized_entropy, reshape_predictions, get_latest_checkpoint_file, get_checkpoint_files, load_checkpoint, get_model_args_from_checkpoint, get_all_log_dirs
 from tasks.image_classification.plotting import plot_neural_dynamics
