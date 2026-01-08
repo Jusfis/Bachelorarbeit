@@ -372,8 +372,8 @@ class ListOpsDataset(Dataset):
     def __getitem__(self, idx):
         row = self.data.iloc[idx]
         # source = row['Source']  # The math problem
-        source = row.iloc[0]  # The math problem
-        target = int(row.iloc[1])  # The result (0-9)
+        source = row.iloc[1]  # The math problem
+        target = int(row.iloc[0])  # The result (0-9)
 
         # Convert source sequence to indices
         token_ids = self.tokenize(source)

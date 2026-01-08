@@ -132,7 +132,7 @@ def main():
     model.train()
 
     # as per usual: lazy modules so that we can get param count
-    pseudo_inputs = train_data.__getitem__(0)[0].unsqueeze(0).to(device)
+    pseudo_inputs = train_data.__getitem__(0)['input_ids'].unsqueeze(0).to(device)
     model(pseudo_inputs)
 
     print(f'Total params: {sum(p.numel() for p in model.parameters())}')
