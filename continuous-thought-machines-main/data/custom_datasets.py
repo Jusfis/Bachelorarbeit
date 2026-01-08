@@ -6,6 +6,7 @@ import numpy as np
 from tqdm.auto import tqdm
 from PIL import Image
 from datasets import load_dataset
+import pandas as pd
 
 class SortDataset(Dataset):
     def __init__(self, N):
@@ -325,11 +326,65 @@ class ParityDataset(Dataset):
 
 
 # TODO implement
+# class ListOpsDataset(Dataset):
+#     def __init__(self, length=100000):
+#         self.length = length
+#
+#     def __len__(self):
+#         return self.length
+#     def getitem(self, idx):
+#         pass
+
+
 class ListOpsDataset(Dataset):
-    def __init__(self, length=100000):
-        self.length = length
+    def __init__(self, tsv_file, max_len=100, vocab=None):
+        """
+        Args:
+            tsv_file (str): Path to the ListOps .tsv file
+            max_len (int): Maximum sequence length for padding
+            vocab (dict): Dictionary mapping xtokens to integer IDs
+        """
+        self.data = pd.read_csv(tsv_file, sep='\t')
+        self.max_len = max_len
+
+        # Standard ListOps vocabulary including brackets and operators
+        if vocab is None:
+            self.vocab = {
+                "<PAD>": 0, "(": 1, ")": 2, "[": 3, "]": 4,
+                "MAX": 5, "MIN": 6, "MED": 7, "SM": 8,
+            }
+            # SM ist SUM Modulo 10 operator
+
+            # Add digits 0-9 to vocab
+            for i in range(10):
+                self.vocab[str(i)] = 9 + i
+        else:
+            self.vocab = vocab
+
+    def tokenize(self, sentence):
+        # Simple whitespace tokenization as used in ListOps
+        tokens = sentence.strip().split()
+        return [self.vocab.get(t, 0) for t in tokens]
 
     def __len__(self):
-        return self.length
-    def getitem(self, idx):
-        pass
+        return len(self.data)
+
+    def __getitem__(self, idx):
+        row = self.data.iloc[idx]
+        # source = row['Source']  # The math problem
+        source = row.iloc[0]  # The math problem
+        target = int(row.iloc[1])  # The result (0-9)
+
+        # Convert source sequence to indices
+        token_ids = self.tokenize(source)
+
+        # Pad or truncate
+        if len(token_ids) > self.max_len:
+            token_ids = token_ids[:self.max_len]
+        else:
+            token_ids += [0] * (self.max_len - len(token_ids))
+
+        return {
+            'input_ids': torch.tensor(token_ids, dtype=torch.long),
+            'label': torch.tensor(target, dtype=torch.long)
+        }

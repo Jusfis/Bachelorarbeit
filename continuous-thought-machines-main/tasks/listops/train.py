@@ -16,6 +16,7 @@ if torch.cuda.is_available():
 import torchvision # For disabling warning
 from tqdm.auto import tqdm # Used for progress bars
 
+from tasks.listops.utils  import prepare_model
 from autoclip.torch import QuantileClip # Used for gradient clipping
 from data.custom_datasets import ListOpsDataset
 from tasks.image_classification.plotting import plot_neural_dynamics
@@ -92,12 +93,50 @@ def main():
     #print(f"Using config: {config}\n Parsed args: {args}\n")
     print(f"Parsed args: {args}\n")
     set_seed(args.seed)
+
     if not os.path.exists(args.log_dir): os.makedirs(args.log_dir)
-    train_data = ListOpsDataset(args.listops_size)
-    test_data = ListOpsDataset(args.listops_size)
+
+
+    csv_train_file='tasks/listops/dataset/train_d20s.tsv'
+    csv_test_file='tasks/listops/dataset/test_d20s.tsv'
+    if not os.path.exists('tasks/listops/dataset'):
+        os.makedirs('tasks/listops/dataset')
+        print("Fehler, dataset folder is missing, created dataset")
+    train_data = ListOpsDataset(csv_train_file)
+    test_data = ListOpsDataset(csv_test_file)
+    # loads batches from train_data and test_data which are insctances of torch.utils.data.Dataset
     trainloader = torch.utils.data.DataLoader(train_data, batch_size=args.batch_size, shuffle=True, num_workers=0)
+
     testloader = torch.utils.data.DataLoader(test_data, batch_size=args.batch_size_test, shuffle=False, num_workers=0, drop_last=False)
+
+    prediction_reshaper = [1, 10]
+    # da ZMOD 10Z Restklasse
+    args.out_dims = 10
     pass
+    # todo implement baseline or keep?
+
+    args.use_most_certain = args.model_type == "ctm" or (args.use_most_certain_with_lstm and args.model_type == "lstm")
+
+    # Set device mps for mac cuda for nvidia else cpu
+    if args.device[0] != -1:
+        device = f'cuda:{args.device[0]}'
+    elif torch.backends.mps.is_available():
+        device = 'mps'
+    else:
+        device = 'cpu'
+    print(f'Running model {args.model_type} on {device}')
+
+    # Build model
+    #prediction_reshaper was genau?
+    model = prepare_model(prediction_reshaper,args, device)
+    model.train()
+
+    # as per usual: lazy modules so that we can get param count
+    pseudo_inputs = train_data.__getitem__(0)[0].unsqueeze(0).to(device)
+    model(pseudo_inputs)
+
+    print(f'Total params: {sum(p.numel() for p in model.parameters())}')
+
 
 
 

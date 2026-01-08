@@ -1,5 +1,19 @@
 #ListOps Dataset
 
+# Training
+To train run this script from the root level of the repository:
+```
+bash tasks/listops/scripts/train_ctm.sh
+```
+
+
+# Analysis
+Run analysis like in the other tasks:
+```
+python -m tasks.listops.analysis.run --log_dir <PATH_TO_LOG_DIR>
+```
+
+
 Download ListOps Dataset
 # From Huggingface below:
 ```
