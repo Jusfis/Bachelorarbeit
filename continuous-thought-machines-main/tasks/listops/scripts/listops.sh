@@ -15,7 +15,7 @@ python -m tasks.listops.train \
     --deep_memory \
     --no-do_normalisation \
     --positional_embedding_type="custom-rotational-1d" \
-    --backbone_type="parity_backbone" \
+    --backbone_type="none"\
     --no-full_eval \
     --weight_decay 0.0 \
     --gradient_clipping 0.9 \
@@ -30,9 +30,10 @@ python -m tasks.listops.train \
     --training_iterations 200001 \
     --warmup_steps 500 \
     --track_every 1000 \
-    --save_every 1000 \
+    --save_every 10000 \
     --no-reload \
     --no-reload_model_only \
     --no-use_amp \
     --neuron_select_type "random" \
-    --postactivation_production 'mlp' # MLP or linear for postactivation production
+    --postactivation_production 'kan' # MLP or linear for postactivation production
+

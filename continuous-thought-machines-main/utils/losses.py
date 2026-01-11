@@ -196,3 +196,30 @@ def qamnist_loss(predictions, certainties, targets, use_most_certain=True):
 
     loss = (loss_minimum_ce + loss_selected)/2
     return loss, loss_index_2
+
+def listops_loss(predictions, certainties, targets, use_most_certain=True):
+    """
+    Computes the listops loss.
+
+    Predictions are of shape: (B, class, internal_ticks),
+    Certainties are of shape: (B, 2, internal_ticks),
+        where the inside dimension (2) is [normalised_entropy, 1-normalised_entropy]
+    Targets are of shape: [B]
+
+    use_most_certain will select either the most certain point or the final point.
+    """
+
+    losses = nn.CrossEntropyLoss(reduction='none')(predictions,
+                                                   torch.repeat_interleave(targets.unsqueeze(-1), predictions.size(-1), -1))
+
+    loss_index_1 = losses.argmin(dim=1)
+    loss_index_2 = certainties[:,1].argmax(-1)
+    if not use_most_certain:
+        loss_index_2[:] = -1
+
+    batch_indexer = torch.arange(predictions.size(0), device=predictions.device)
+    loss_minimum_ce = losses[batch_indexer, loss_index_1].mean()
+    loss_selected = losses[batch_indexer, loss_index_2].mean()
+
+    loss = (loss_minimum_ce + loss_selected)/2
+    return loss, loss_index_2

@@ -236,30 +236,30 @@ class SuperLinearEfficientKan(nn.Module):
         if N != self.N or M != self.in_dims:
             raise ValueError(f"Shape mismatch: expected (B,{self.N},{self.in_dims}), got {x.shape}")
 
-        # A. Pre-Processing
+        #  Pre-Processing
         out = self.layernorm(x)
         out = self.dropout(out)
 
-        # B. Einsum Projection
+        #  Einsum Projection
         # (Batch, N, M) x (M, H*2, N) -> (Batch, N, H*2)
         # Dies ist effizienter als ein Loop über Linear Layer
         z = torch.einsum('BNM,MHN->BNH', out, self.w_proj)
 
-        # C. Gating (GLU)
+        # Gating (GLU)
         # Reduziert Dimension von H*2 auf H
         z = F.glu(z, dim=-1)  # -> (Batch, N, H)
 
-        # D. Efficient KAN Execution
+        # Efficient KAN Execution
         # Blealtan's KAN frisst (Total_Batch, Features).
         # Wir flachen Batch und Neuronen Dimension zusammen.
         z_reshaped = z.reshape(B * N, -1)  # -> (B*N, H)
 
         kan_out = self.kan(z_reshaped)  # -> (B*N, Out)
 
-        # E. Wiederherstellen der Struktur
+        # Wiederherstellen der Struktur
         kan_out = kan_out.reshape(B, N, self.out_dims)
 
-        # F. Final Bias & Scaling
+        # Final Bias & Scaling
         out_final = kan_out + self.b1
         out_final = out_final / self.T
 
@@ -366,6 +366,14 @@ class SuperLinear(nn.Module):
 
 
 # --- Backbone Modules ---
+class ListopsBackbone(nn.Module):
+    def __init__(self, n_embeddings, d_embedding):
+        super(ListopsBackbone, self).__init__()
+        self.embedding = nn.Embedding(n_embeddings, d_embedding)
+
+    def forward(self, x):
+        return self.embedding(x.long()).transpose(1, 2) # Transpose for compatibility with other backbones
+
 
 class ParityBackbone(nn.Module):
     def __init__(self, n_embeddings, d_embedding):
