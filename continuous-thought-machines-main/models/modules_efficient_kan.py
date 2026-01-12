@@ -372,7 +372,24 @@ class ListopsBackbone(nn.Module):
         self.embedding = nn.Embedding(n_embeddings, d_embedding)
 
     def forward(self, x):
+        # x shape: (Batch, Sequence_Length) -> Integer IDs
+        # output: (Batch, Sequence_Length, Embedding_Dim)
+        # return self.embedding(x
         return self.embedding(x.long()).transpose(1, 2) # Transpose for compatibility with other backbones
+
+class LearnablePositionalEncoding1D(nn.Module):
+    """
+    Standard Positional Embedding für Sequenzen (wie in BERT/GPT).
+    """
+    def __init__(self, d_model, max_len=512):
+        super().__init__()
+        self.encoding = nn.Embedding(max_len, d_model)
+
+    def forward(self, x):
+        # x ist der Output vom Backbone: (Batch, Seq_Len, Dim)
+        B, Seq_Len, Dim = x.shape
+        positions = torch.arange(0, Seq_Len, device=x.device).unsqueeze(0).expand(B, Seq_Len)
+        return self.encoding(positions)
 
 
 class ParityBackbone(nn.Module):

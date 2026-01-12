@@ -23,6 +23,7 @@ import torch.nn as nn
 from kan import KAN  # Erfordert 'pip install pykan'
 # fuer get_neuron_level_models
 from models.modules_efficient_kan import SuperLinearEfficientKan
+from modules_efficient_kan import ListopsBackbone
 
 
 # class SuperKAN(nn.Module):
@@ -143,7 +144,8 @@ class ContinuousThoughtMachine(nn.Module, PyTorchModelHubMixin):
                  dropout_nlm=None,
                  neuron_select_type='random-pairing',
                  n_random_pairing_self=0,
-                 postactivation_production="mlp"
+                 postactivation_production="mlp",
+                 vocab_size=20,
                  ):
         super(ContinuousThoughtMachine, self).__init__()
 #todo postactivation production implementation
@@ -161,7 +163,7 @@ class ContinuousThoughtMachine(nn.Module, PyTorchModelHubMixin):
         self.neuron_select_type = neuron_select_type
         self.memory_length = memory_length
         dropout_nlm = dropout if dropout_nlm is None else dropout_nlm
-
+        self.vocab_size = vocab_size  # for listops
         self.do_layernorm_nlm = do_layernorm_nlm
 
         ###### added for kan vs mlp  ######
@@ -395,6 +397,9 @@ class ContinuousThoughtMachine(nn.Module, PyTorchModelHubMixin):
                     return 1024
                 elif self.backbone_type.split('-')[1] == '4':
                     return 2048
+                elif self.backbone_type == 'listops':
+                    # Für ListOps ist der Output des Backbones gleich der Input-Dim der CTM
+                    return self.d_input
                 else:
                     raise NotImplementedError
         elif self.backbone_type == 'none':
@@ -413,6 +418,9 @@ class ContinuousThoughtMachine(nn.Module, PyTorchModelHubMixin):
             self.backbone = ParityBackbone(n_embeddings=2, d_embedding=d_backbone)
         elif 'resnet' in self.backbone_type:
             self.backbone = prepare_resnet_backbone(self.backbone_type)
+        elif self.backbone_type == 'listops':
+            # Wir nutzen d_input als Embedding Dimension
+            self.backbone = ListopsBackbone(self.vocab_size,self.d_input)
         elif self.backbone_type == 'none':
             self.backbone = nn.Identity()
         else:
@@ -444,6 +452,9 @@ class ContinuousThoughtMachine(nn.Module, PyTorchModelHubMixin):
             return CustomRotationalEmbedding(d_backbone)
         elif self.positional_embedding_type == 'custom-rotational-1d':
             return CustomRotationalEmbedding1D(d_backbone)
+        elif self.positional_embedding_type == 'learned-1d':  # <--- NEU: Beste Wahl für ListOps
+            # max_len sollte größer sein als deine längste ListOps Sequenz
+            return LearnablePositionalEncoding1D(d_backbone, max_len=2048)
         elif self.positional_embedding_type == 'none':
             return lambda x: 0  # Default no-op
         else:
