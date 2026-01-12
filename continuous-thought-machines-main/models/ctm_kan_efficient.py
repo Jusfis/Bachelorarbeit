@@ -397,13 +397,13 @@ class ContinuousThoughtMachine(nn.Module, PyTorchModelHubMixin):
                     return 1024
                 elif self.backbone_type.split('-')[1] == '4':
                     return 2048
-                elif self.backbone_type == 'listops':
-                    # Für ListOps ist der Output des Backbones gleich der Input-Dim der CTM
-                    return self.d_input
                 else:
                     raise NotImplementedError
         elif self.backbone_type == 'none':
             return None
+        elif self.backbone_type == 'listops':
+            # Für ListOps ist der Output des Backbones gleich der Input-Dim der CTM
+            return self.d_input
         else:
             raise ValueError(f"Invalid backbone_type: {self.backbone_type}")
 
