@@ -384,7 +384,4 @@ class ListOpsDataset(Dataset):
         else:
             token_ids += [0] * (self.max_len - len(token_ids))
 
-        return {
-            'input_ids': torch.tensor(token_ids, dtype=torch.long),
-            'label': torch.tensor(target, dtype=torch.long)
-        }
+        return torch.tensor(token_ids, dtype=torch.long), torch.tensor(target, dtype=torch.long)

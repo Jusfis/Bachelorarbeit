@@ -4,8 +4,8 @@ python -m tasks.listops.train \
     --iterations 75 \
     --memory_length 25 \
     --n_test_batches 20 \
-    --d_model 1024 \
-    --d_input 512 \
+    --d_model 128 \
+    --d_input 128 \
     --n_synch_out 32 \
     --n_synch_action 32 \
     --synapse_depth 1 \
@@ -14,8 +14,8 @@ python -m tasks.listops.train \
     --dropout 0.0 \
     --deep_memory \
     --no-do_normalisation \
-    --positional_embedding_type="custom-rotational-1d" \
-    --backbone_type="none"\
+    --positional_embedding_type="learned-1d" \
+    --backbone_type="listops"\
     --no-full_eval \
     --weight_decay 0.0 \
     --gradient_clipping 0.9 \

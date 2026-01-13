@@ -375,7 +375,11 @@ class ListopsBackbone(nn.Module):
         # x shape: (Batch, Sequence_Length) -> Integer IDs
         # output: (Batch, Sequence_Length, Embedding_Dim)
         # return self.embedding(x
-        return self.embedding(x.long()).transpose(1, 2) # Transpose for compatibility with other backbones
+        # return self.embedding(x.long()).transpose(1, 2) # Transpose for compatibility with other backbones
+        embed = self.embedding(x)
+        return embed.permute(0, 2, 1)
+
+
 
 class LearnablePositionalEncoding1D(nn.Module):
     """

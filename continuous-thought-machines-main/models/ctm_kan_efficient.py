@@ -22,8 +22,8 @@ import torch
 import torch.nn as nn
 from kan import KAN  # Erfordert 'pip install pykan'
 # fuer get_neuron_level_models
-from models.modules_efficient_kan import SuperLinearEfficientKan
-from modules_efficient_kan import ListopsBackbone
+from models.modules_efficient_kan import SuperLinearEfficientKan, LearnablePositionalEncoding1D
+from models.modules_efficient_kan import ListopsBackbone
 
 
 # class SuperKAN(nn.Module):
@@ -335,7 +335,15 @@ class ContinuousThoughtMachine(nn.Module, PyTorchModelHubMixin):
         """
         initial_rgb = self.initial_rgb(x)
         self.kv_features = self.backbone(initial_rgb)
-        pos_emb = self.positional_embedding(self.kv_features)
+        input_for_pos = self.kv_features.permute(0, 2, 1)  # Jetzt [Batch, 100, 128]
+
+        # Jetzt generiert es die korrekten Embeddings für 100 Schritte
+        pos_emb = self.positional_embedding(input_for_pos)  # Output [Batch, 100, 128]
+
+        # Wir drehen das Ergebnis zurück, damit es zum Backbone passt
+        pos_emb = pos_emb.permute(0, 2, 1)
+
+
         combined_features = (self.kv_features + pos_emb).flatten(2).transpose(1, 2)
         kv = self.kv_proj(combined_features)
         return kv
