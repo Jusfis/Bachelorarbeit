@@ -3,6 +3,9 @@ import re
 import math
 from models.ctm_kan_efficient import ContinuousThoughtMachine
 from models.lstm import LSTMBaseline # alternative baseline model
+from models.baseline_mlp import BaselineMLP
+import torch
+import torch.nn as nn
 
 def prepare_model(prediction_reshaper, args, device):
     if args.model_type == 'ctm':
@@ -83,3 +86,34 @@ def parse_folder_name(folder_path):
         return f"{model_type}, {iters} Iters.", model_type, iters
 
     return "Unknown", None, None
+
+
+def prepare_baseline(args, device):
+    """
+    Initializes the MLP and the Loss function.
+
+    Args:
+        args (dict): Must contain 'input_dim', 'hidden_dims', 'output_dim'.
+
+    Returns:
+        model (nn.Module): The initialized MLP.
+        loss (nn.Module): The loss function.
+    """
+    type = args.model_type
+    type = type
+    # 1. Extract Params
+    in_dim = 10
+    h_dims = [128,128]
+    out_dim = 1
+
+    # 2. Build Model
+    model = BaselineMLP(in_dim, h_dims, out_dim)
+
+    # # Move to GPU if available
+    # device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    model.to(device)
+
+    # 3. Define Loss
+    loss = nn.CrossEntropyLoss()
+
+    return model, loss
