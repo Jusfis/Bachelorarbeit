@@ -253,10 +253,11 @@ def main():
                                         enabled=args.use_amp):
 
                         predictions, certainties, synchronisation = model(inputs)
+                        # print(predictions.size())
                         # targets_pure = targets.view(targets.size(0), -1)[:, 0]
                         # targets_expanded = targets_pure.unsqueeze(-1).expand(-1, predictions.size(-1))
-                        print(predictions.size())
-                        print(targets.size())
+                        # print(predictions.size())
+                        # print(targets.size())
 
                         iterations = predictions.size(-1)
 
@@ -282,8 +283,6 @@ def main():
                         #
                         #     # Schritt 2: Sauber aufbauen zu [Batch, Time] (z.B. [64, 75])
                         # targets_expanded = targets_pure.unsqueeze(-1).expand(-1, predictions.size(-1))
-
-
 
 
                         if targets.dim() > 1:
@@ -332,9 +331,9 @@ def main():
                                 inputs, track=True)
 
                             predictions = reshape_predictions(predictions, prediction_reshaper)
+
                             # todo repair attention reshape
                             # attention = reshape_attention_weights(attention)
-
                             # inputs = reshape_inputs(inputs, args.iterations,
                             #                         grid_size=int(math.sqrt(args.parity_sequence_length)))
 
@@ -378,27 +377,38 @@ def main():
                                         targets = targets.to(device)
                                         these_predictions, certainties, synchronisation = model(inputs)
 
-                                        if targets.ndim > 1:
-                                            # Wir formen um zu [Batch, Alles_andere] und nehmen nur die erste Spalte.
-                                            # Da bei ListOps das Target über die Zeit konstant ist, ist index 0 korrekt.
+                                        # if targets.ndim > 1:
+                                        #     # Wir formen um zu [Batch, Alles_andere] und nehmen nur die erste Spalte.
+                                        #     # Da bei ListOps das Target über die Zeit konstant ist, ist index 0 korrekt.
+                                        #     targets_pure = targets.reshape(targets.size(0), -1)[:, 0]
+                                        # else:
+                                        #     targets_pure = targets
+                                        #
+                                        #     # Schritt 2: Sauber aufbauen zu [Batch, Time] (z.B. [64, 75])
+                                        # targets_expanded = targets_pure.unsqueeze(-1).expand(-1, these_predictions.size(-1))
+
+                                        if targets.dim() > 1:
+                                            # Falls targets z.B. [64, 1] oder [64, 75] ist, nehmen wir nur die erste Spalte
                                             targets_pure = targets.reshape(targets.size(0), -1)[:, 0]
                                         else:
+                                            # Falls targets schon [64] ist
                                             targets_pure = targets
 
-                                            # Schritt 2: Sauber aufbauen zu [Batch, Time] (z.B. [64, 75])
-                                        targets_expanded = targets_pure.unsqueeze(-1).expand(-1, these_predictions.size(-1))
 
-                                        these_predictions = reshape_predictions(these_predictions, prediction_reshaper)
-                                        loss, where_most_certain = listops_loss(these_predictions, certainties, targets_expanded,
+
+
+                                        print(these_predictions.size())
+                                        # these_predictions = reshape_predictions(these_predictions, prediction_reshaper)
+                                        loss, where_most_certain = listops_loss(predictions=these_predictions, certainties=certainties, targets=targets_pure,
                                                                                use_most_certain=args.use_most_certain)
                                         all_losses.append(loss.item())
 
                                         all_targets.append(targets.detach().cpu().numpy())
 
-                                        all_predictions_most_certain.append(these_predictions.argmax(2)[
+                                        all_predictions_most_certain.append(these_predictions.argmax(1)[
                                                                                 torch.arange(these_predictions.size(0),
-                                                                                             device=these_predictions.device), :, where_most_certain].detach().cpu().numpy())
-                                        all_predictions.append(these_predictions.argmax(2).detach().cpu().numpy())
+                                                                                             device=these_predictions.device),  where_most_certain].detach().cpu().numpy())
+                                        all_predictions.append(these_predictions.argmax(1).detach().cpu().numpy())
 
                                         if inferi % args.n_test_batches == 0 and inferi != 0 and not args.full_eval: break
                                         pbar_inner.set_description('Computing metrics for train')
@@ -440,28 +450,38 @@ def main():
                                         targets = targets.to(device)
                                         these_predictions, certainties, synchronisation = model(inputs)
 
-                                        # these_predictions = these_predictions.reshape(these_predictions.size(0), -1, 2,
-                                        #                                               these_predictions.size(-1))
-                                        if targets.ndim > 1:
-                                            # Wir formen um zu [Batch, Alles_andere] und nehmen nur die erste Spalte.
-                                            # Da bei ListOps das Target über die Zeit konstant ist, ist index 0 korrekt.
-                                            targets_pure = targets.reshape(targets.size(0), -1)[:, 0]
-                                        else:
-                                            targets_pure = targets
+                                        # # these_predictions = these_predictions.reshape(these_predictions.size(0), -1, 2,
+                                        # #                                               these_predictions.size(-1))
+                                        # if targets.ndim > 1:
+                                        #     # Wir formen um zu [Batch, Alles_andere] und nehmen nur die erste Spalte.
+                                        #     # Da bei ListOps das Target über die Zeit konstant ist, ist index 0 korrekt.
+                                        #     targets_pure = targets.reshape(targets.size(0), -1)[:, 0]
+                                        # else:
+                                        #     targets_pure = targets
 
                                             # Schritt 2: Sauber aufbauen zu [Batch, Time] (z.B. [64, 75])
-                                        targets_expanded = targets_pure.unsqueeze(-1).expand(-1,these_predictions.size(-1))
+                                        # targets_expanded = targets_pure.unsqueeze(-1).expand(-1,these_predictions.size(-1))
+                                        if targets.dim() > 1:
+                                            # Falls targets z.B. [64, 1] oder [64, 75] ist, nehmen wir nur die erste Spalte
+                                            targets_pure = targets.reshape(targets.size(0), -1)[:, 0]
+                                        else:
+                                            # Falls targets schon [64] ist
+                                            targets_pure = targets
 
-                                        loss, where_most_certain = listops_loss(these_predictions, certainties, targets_expanded,
+
+
+
+
+                                        loss, where_most_certain = listops_loss(predictions=these_predictions, certainties=certainties, targets=targets_pure,
                                                                                use_most_certain=args.use_most_certain)
                                         all_losses.append(loss.item())
 
                                         all_targets.append(targets.detach().cpu().numpy())
 
-                                        all_predictions_most_certain.append(these_predictions.argmax(2)[
+                                        all_predictions_most_certain.append(these_predictions.argmax(1)[
                                                                                 torch.arange(these_predictions.size(0),
-                                                                                             device=these_predictions.device), :, where_most_certain].detach().cpu().numpy())
-                                        all_predictions.append(these_predictions.argmax(2).detach().cpu().numpy())
+                                                                                             device=these_predictions.device), where_most_certain].detach().cpu().numpy())
+                                        all_predictions.append(these_predictions.argmax(1).detach().cpu().numpy())
 
                                         if inferi % args.n_test_batches == 0 and inferi != 0 and not args.full_eval: break
                                         pbar_inner.set_description('Computing metrics for test')
@@ -486,10 +506,18 @@ def main():
                                 cm = sns.color_palette("viridis", as_cmap=True)
 
                                 # Ensure data is numpy array for easier handling
+                                # Ensure data is numpy array and RESHAPE to 2D
                                 train_acc_arr = np.array(train_accuracies)
+                                if train_acc_arr.ndim == 1: train_acc_arr = train_acc_arr.reshape(-1, 1)
+
                                 test_acc_arr = np.array(test_accuracies)
+                                if test_acc_arr.ndim == 1: test_acc_arr = test_acc_arr.reshape(-1, 1)
+
                                 train_loss_arr = np.array(train_losses)
+                                if train_loss_arr.ndim == 1: train_loss_arr = train_loss_arr.reshape(-1, 1)
+
                                 test_loss_arr = np.array(test_losses)
+                                if test_loss_arr.ndim == 1: test_loss_arr = test_loss_arr.reshape(-1, 1)
 
                                 if args.dataset != 'sort':
                                     # =========================================================
