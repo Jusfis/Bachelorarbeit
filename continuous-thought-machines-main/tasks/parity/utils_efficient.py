@@ -92,28 +92,22 @@ def prepare_baseline(args, device):
     """
     Initializes the MLP and the Loss function.
 
-    Args:
-        args (dict): Must contain 'input_dim', 'hidden_dims', 'output_dim'.
-
     Returns:
         model (nn.Module): The initialized MLP.
         loss (nn.Module): The loss function.
     """
-    type = args.model_type
-    type = type
-    # 1. Extract Params
-    in_dim = 10
+
+    in_dim = args.parity_sequence_length
     h_dims = [128,128]
-    out_dim = 1
+    out_dim = 2
 
     # 2. Build Model
     model = BaselineMLP(in_dim, h_dims, out_dim)
 
-    # # Move to GPU if available
-    # device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    # check done before
     model.to(device)
 
-    # 3. Define Loss
-    loss = nn.CrossEntropyLoss()
 
-    return model, loss
+    # loss = nn.CrossEntropyLoss()
+
+    return model

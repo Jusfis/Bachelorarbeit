@@ -168,6 +168,19 @@ def parity_loss(predictions, certainties, targets, use_most_certain=True):
     loss = (loss_minimum_ce + loss_selected)/2
     return loss, loss_index_2
 
+def parity_loss_baseline(predictions, targets):
+    """
+    Computes the parity loss for baseline models.
+
+    predictions: [32, 2] (Batch, Classes)
+    targets:     [32, 64] (Batch, Sequence Length) -> We take just thel last target, as it is enough!
+    """
+    final_targets = targets[:,-1]
+    final_targets = final_targets.long()
+
+    loss = F.cross_entropy(predictions, final_targets)
+    return loss
+
 
 def qamnist_loss(predictions, certainties, targets, use_most_certain=True):
     """

@@ -30,7 +30,7 @@ from models.utils import reshape_predictions, get_latest_checkpoint
 from tasks.parity.plotting import make_parity_gif
 from tasks.parity.utils_efficient import prepare_baseline, reshape_attention_weights, reshape_inputs
 from utils.housekeeping import set_seed, zip_python_code
-from utils.losses import parity_loss
+from utils.losses import parity_loss_baseline
 from utils.schedulers import WarmupCosineAnnealingLR, WarmupMultiStepLR, warmup
 import wandb
 
@@ -112,21 +112,21 @@ def create_long_df(data_array, iters, metric_name='Accuracy'):
 
 def main():
     # todo anpassen an neue wandb api mlp vs kan
-    with wandb.init(entity="justus-fischer-ludwig-maximilian-university-of-munich",project="ctm-parity") as run:
-        config = wandb.config
+    # with wandb.init(entity="justus-fischer-ludwig-maximilian-university-of-munich",project="ctm-parity") as run:
+    #     config = wandb.config
         args = parse_args()
         # input from wandb sweep
-        args.batch_size = config.batch_size
-        args.lr = config.learning_rate
-        # args.postactivation_production = config.postactivation_production
-        args.training_iterations = config.training_iterations
-        # args.model_type = config.model_type
-        args.use_amp = config.use_amp
-        args.use_scheduler = config.use_scheduler
-        args.memory_length = config.memory_length
-        args.iterations = config.internal_ticks
+        # args.batch_size = config.batch_size
+        # args.lr = config.learning_rate
+        # # args.postactivation_production = config.postactivation_production
+        # args.training_iterations = config.training_iterations
+        # # args.model_type = config.model_type
+        # args.use_amp = config.use_amp
+        # args.use_scheduler = config.use_scheduler
+        # args.memory_length = config.memory_length
+        # args.iterations = config.internal_ticks
 
-        print(f"Using config: {config}\n Parsed args: {args}\n")
+        # print(f"Using config: {config}\n Parsed args: {args}\n")
 
 
         set_seed(args.seed)
@@ -143,6 +143,8 @@ def main():
         testloader = torch.utils.data.DataLoader(test_data, batch_size=args.batch_size_test, shuffle=True, num_workers=0, drop_last=False)
 
         prediction_reshaper = [args.parity_sequence_length, 2]
+
+        # ueberlegen wie
         args.out_dims = args.parity_sequence_length * 2
 
         args.use_most_certain = args.model_type == "ctm" or (args.use_most_certain_with_lstm and args.model_type == "lstm")
@@ -260,9 +262,12 @@ def main():
                 targets = targets.to(device)
 
                 with torch.autocast(device_type="cuda" if "cuda" in device else "cpu", dtype=torch.float16, enabled=args.use_amp):
-                    predictions, certainties, synchronisation = model(inputs)
-                    predictions = predictions.reshape(predictions.size(0), -1, 2, predictions.size(-1))
-                    loss, where_most_certain = parity_loss(predictions, certainties, targets, use_most_certain=args.use_most_certain)
+                    predictions = model(inputs)
+                    # predictions = predictions.reshape(predictions.size(0), -1, 2, predictions.size(-1))
+                    # loss, where_most_certain = parity_loss(predictions, certainties, targets, use_most_certain=args.use_most_certain)
+                    # print(f"Size of predictions:{predictions.size()}, Size of targets:{targets.size()}")
+                    loss = parity_loss_baseline(predictions,targets)
+                    # print(loss)
 
                 scaler.scale(loss).backward()
                 scaler.step(optimizer)
@@ -270,13 +275,19 @@ def main():
                 optimizer.zero_grad(set_to_none=True)
                 scheduler.step()
 
-                accuracy_finegrained = (predictions.argmax(2)[torch.arange(predictions.size(0), device=predictions.device),:,where_most_certain] == targets).float().mean().item()
-                pbar.set_description(f'Dataset=Parity. Loss={loss.item():0.3f}. Accuracy={accuracy_finegrained:0.3f}. LR={current_lr:0.6f}. Where_certain={where_most_certain.float().mean().item():0.2f}+-{where_most_certain.float().std().item():0.2f} ({where_most_certain.min().item():d}<->{where_most_certain.max().item():d})')
+                predicted_classes = predictions.argmax(dim=1)
 
-                run.log({
-                    "Train/Losses": loss.item(),
-                    "Train/Accuracies": accuracy_finegrained,
-                }, step=bi)
+                # targets: [32, 64] -> true_classes: [32]
+                true_classes = targets[:, -1]
+
+                accuracy = (predicted_classes == true_classes).float().mean().item()
+                # accuracy_finegrained = (predictions.argmax(2)[torch.arange(predictions.size(0), device=predictions.device),:,where_most_certain] == targets).float().mean().item()
+                pbar.set_description(f'Dataset=Parity. Loss={loss.item():0.3f}. Accuracy={accuracy:0.3f}. LR={current_lr:0.6f}. Iter={bi}')
+
+                # run.log({
+                #     "Train/Losses": loss.item(),
+                #     "Train/Accuracies": accuracy_finegrained,
+                # }, step=bi)
 
 
                 # Metrics tracking and plotting ####################### TRACK ##############
@@ -556,28 +567,29 @@ def main():
 
 
 if __name__=='__main__':
+        main()
         # Sweep configuration for wandb
-        sweep_configuration = {
-            "program": "parity_baseline_mlp.py",
-            "name": "ctm-parity",
-            "method": "random",
-            "metric": {
-                "name": "Train/Losses",
-                "goal": "minimize"# todo decide if maximize accuracies or minimize loss and add iterations and memory length
-            },
-            "parameters": {
-                "batch_size": {"values": [64]},
-                "learning_rate": {"min": 1e-4, "max": 3e-4},
-                "use_amp": {"values": [True]},
-                "use_scheduler": {"values": [True]},
-                "memory_length": {"values": [75]},
-                "internal_ticks": {"values": [100]},
-                "training_iterations": {"values": [200000]},
-                # "postactivation_production": {"values": ["kan"]},
-                # "model_type": {"values": ["ctm"]},
-                # Todo"parity_sequence_length": {"values": [16, 64]},
-            }
-        }
-
-        sweep_id = wandb.sweep(sweep_configuration, project="ctm-parity")
-        wandb.agent(sweep_id, function=main, count=50)
+        # sweep_configuration = {
+        #     "program": "parity_baseline_mlp.py",
+        #     "name": "ctm-parity",
+        #     "method": "random",
+        #     "metric": {
+        #         "name": "Train/Losses",
+        #         "goal": "minimize"# todo decide if maximize accuracies or minimize loss and add iterations and memory length
+        #     },
+        #     "parameters": {
+        #         "batch_size": {"values": [64]},
+        #         "learning_rate": {"min": 1e-4, "max": 3e-4},
+        #         "use_amp": {"values": [True]},
+        #         "use_scheduler": {"values": [True]},
+        #         "memory_length": {"values": [75]},
+        #         "internal_ticks": {"values": [100]},
+        #         "training_iterations": {"values": [200000]},
+        #         # "postactivation_production": {"values": ["kan"]},
+        #         # "model_type": {"values": ["ctm"]},
+        #         # Todo"parity_sequence_length": {"values": [16, 64]},
+        #     }
+        # }
+        #
+        # sweep_id = wandb.sweep(sweep_configuration, project="ctm-parity")
+        # wandb.agent(sweep_id, function=main, count=50)

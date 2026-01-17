@@ -4,7 +4,7 @@ python -m tasks.listops.train \
     --iterations 75 \
     --memory_length 25 \
     --n_test_batches 20 \
-    --d_model 128 \
+    --d_model 120 \
     --d_input 128 \
     --n_synch_out 32 \
     --n_synch_action 32 \
@@ -29,8 +29,8 @@ python -m tasks.listops.train \
     --lr 0.0002 \
     --training_iterations 200001 \
     --warmup_steps 500 \
-    --track_every 1000 \
-    --save_every 10000 \
+    --track_every 10 \
+    --save_every 20 \
     --no-reload \
     --no-reload_model_only \
     --no-use_amp \
