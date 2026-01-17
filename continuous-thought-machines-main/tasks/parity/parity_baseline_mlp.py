@@ -203,10 +203,10 @@ def main():
         test_losses = []
         train_accuracies = []  # This will be per internal tick, not so simple
         test_accuracies = []
-        train_accuracies_most_certain = []  # This will be selected according to what is returned by loss function
-        test_accuracies_most_certain = []
-        train_accuracies_most_certain_per_input = []
-        test_accuracies_most_certain_per_input = []
+        # train_accuracies_most_certain = []  # This will be selected according to what is returned by loss function
+        # test_accuracies_most_certain = []
+        # train_accuracies_most_certain_per_input = []
+        # test_accuracies_most_certain_per_input = []
         iters = []
         scaler = torch.amp.GradScaler("cuda" if "cuda" in device else "cpu", enabled=args.use_amp)
 
@@ -338,15 +338,22 @@ def main():
 
                                     inputs = inputs.to(device)
                                     targets = targets.to(device)
-                                    these_predictions, certainties, synchronisation = model(inputs)
+                                    these_predictions = model(inputs)
 
-                                    these_predictions = reshape_predictions(these_predictions, prediction_reshaper)
-                                    loss, where_most_certain = parity_loss(these_predictions, certainties, targets, use_most_certain=args.use_most_certain)
+                                    # these_predictions = reshape_predictions(these_predictions, prediction_reshaper)
+
+                                    loss = parity_loss_baseline(these_predictions, targets)
                                     all_losses.append(loss.item())
 
                                     all_targets.append(targets.detach().cpu().numpy())
+                                    predicted_classes = predictions.argmax(dim=1)
 
-                                    all_predictions_most_certain.append(these_predictions.argmax(2)[torch.arange(these_predictions.size(0), device=these_predictions.device), :, where_most_certain].detach().cpu().numpy())
+                                    # targets: [32, 64] -> true_classes: [32]
+                                    true_classes = targets[:, -1]
+                                    accuracy = (predicted_classes == true_classes).float().mean().item()
+
+                                    # all_predictions_most_certain.append(these_predictions.argmax(2)[torch.arange(these_predictions.size(0), device=these_predictions.device), :, where_most_certain].detach().cpu().numpy())
+                                    # accuracy = (predicted_classes == true_classes).float().mean().item()
                                     all_predictions.append(these_predictions.argmax(2).detach().cpu().numpy())
 
                                     if inferi%args.n_test_batches==0 and inferi!=0 and not args.full_eval: break
@@ -355,12 +362,12 @@ def main():
 
                             all_predictions = np.concatenate(all_predictions)
                             all_targets = np.concatenate(all_targets)
-                            all_predictions_most_certain = np.concatenate(all_predictions_most_certain)
+                            # all_predictions_most_certain = np.concatenate(all_predictions_most_certain)
 
 
-                            train_accuracies.append(np.mean(all_predictions == all_targets[...,np.newaxis], axis=tuple(range(all_predictions.ndim-1))))
-                            train_accuracies_most_certain.append((all_targets == all_predictions_most_certain).mean())
-                            train_accuracies_most_certain_per_input.append((all_targets == all_predictions_most_certain).reshape(all_targets.shape[0], -1).all(-1).mean())
+                            train_accuracies.append(accuracy)
+                            # train_accuracies_most_certain.append((all_targets == all_predictions_most_certain).mean())
+                            # train_accuracies_most_certain_per_input.append((all_targets == all_predictions_most_certain).reshape(all_targets.shape[0], -1).all(-1).mean())
                             train_losses.append(np.mean(all_losses))
 
                             # # log to wandb
@@ -386,7 +393,7 @@ def main():
                                     these_predictions, certainties, synchronisation = model(inputs)
 
                                     these_predictions = these_predictions.reshape(these_predictions.size(0), -1, 2, these_predictions.size(-1))
-                                    loss, where_most_certain = parity_loss(these_predictions, certainties, targets, use_most_certain=args.use_most_certain)
+                                    # loss, where_most_certain = parity_loss(these_predictions, certainties, targets, use_most_certain=args.use_most_certain)
                                     all_losses.append(loss.item())
 
                                     all_targets.append(targets.detach().cpu().numpy())
