@@ -1,3 +1,13 @@
+#SBATCH --job-name=CTM_listops_wandb_sweeps
+#SBATCH --comment="CTM tuning with wandb"
+#SBATCH --mail-type=ALL
+#SBATCH --mail-user=justus.fischer@campus.lmu.de
+#SBATCH --ntasks=1
+#SBATCH --chdir=/home/f/fischerjus/Bachelorarbeit/continuous-thought-machines-main/tasks/listops
+#SBATCH --output=/home/f/fischerjus/Bachelorarbeit/continuous-thought-machines-main/tasks/listops/slurm_mlp.%j.%N.out
+
+
+
 python -u tasks.listops.trainWANDB.py \
     --log_dir "logs/listops/run2/mlp"\
     --seed 1 \
