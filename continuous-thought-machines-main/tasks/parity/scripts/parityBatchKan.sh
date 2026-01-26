@@ -14,19 +14,22 @@
 #LOG_DIR="logs/parity/run${RUN}/ctm_${ITERATIONS}_${MEMORY_LENGTH}"
 #SEED=$((RUN - 1))
 #    --model_type "ctm"\
-python -m tasks.parity.parity_baseline_mlp \
-    --log_dir "logs/parity/run4/baseline_sweeps"\
+# IMPORTANT D_model % 5 == 0 for MLP postactivation production
+
+
+python -u train_sweeps_efficient.py \
+    --log_dir "logs/parity/run4/KAN"\
     --seed 1 \
     --iterations 75 \
     --memory_length 25 \
-    --parity_sequence_length 16  \
+    --parity_sequence_length 64  \
     --n_test_batches 20 \
-    --d_model 60 \
-    --d_input 64 \
-    --n_synch_out 16 \
-    --n_synch_action 16 \
+    --d_model 1020 \
+    --d_input 512 \
+    --n_synch_out 32 \
+    --n_synch_action 32 \
     --synapse_depth 1 \
-    --heads 4 \
+    --heads 8 \
     --memory_hidden_dims 16 \
     --dropout 0.0 \
     --deep_memory \
@@ -44,7 +47,7 @@ python -m tasks.parity.parity_baseline_mlp \
     --batch_size 32 \
     --batch_size_test 120 \
     --lr=0.0001 \
-    --training_iterations 200001 \
+    --training_iterations 50001 \
     --warmup_steps 500 \
     --track_every 1000 \
     --save_every 20000 \
@@ -52,8 +55,8 @@ python -m tasks.parity.parity_baseline_mlp \
     --no-reload_model_only \
     --no-use_amp \
     --neuron_select_type "random" \
+    --device 0 \
     --postactivation_production 'kan'
 
 #to submit the job on slurm, use from ctm main folder:
-#sbatch --partition=NvidiaAll parityBatchKan.sh
-# remove --device 0 to allow slurm to assign GPU automatically
+#sbatch --partition=NvidiaAll parityBatchKan.sh script for slurm #####

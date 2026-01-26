@@ -298,30 +298,30 @@ def main():
                         inputs, targets = next(iter(testloader))
                         inputs = inputs.to(device)
                         targets = targets.to(device)
-                        predictions, certainties, synchronisation, pre_activations, post_activations, attention = model(inputs, track=True)
+                        predictions = model(inputs)
 
-                        predictions = reshape_predictions(predictions, prediction_reshaper)
-                        attention = reshape_attention_weights(attention)
-                        inputs = reshape_inputs(inputs, args.iterations, grid_size=int(math.sqrt(args.parity_sequence_length)))
+                        # predictions = reshape_predictions(predictions, prediction_reshaper)
+                        # attention = reshape_attention_weights(attention)
+                        # inputs = reshape_inputs(inputs, args.iterations, grid_size=int(math.sqrt(args.parity_sequence_length)))
 
-                        pbar.set_description('Tracking: Neural dynamics')
-                        plot_neural_dynamics(post_activations, args.d_model, args.log_dir, axis_snap=True)
+                        # pbar.set_description('Tracking: Neural dynamics')
+                        # plot_neural_dynamics(post_activations, args.d_model, args.log_dir, axis_snap=True)
 
-                        pbar.set_description('Tracking: Producing attention gif')
+                        # pbar.set_description('Tracking: Producing attention gif')
 
-                        process = multiprocessing.Process(
-                            target=make_parity_gif,
-                            args=(
-                            predictions.detach().cpu().numpy(),
-                            certainties.detach().cpu().numpy(),
-                            targets.detach().cpu().numpy(),
-                            pre_activations,
-                            post_activations,
-                            attention,
-                            inputs,
-                            f"{args.log_dir}/eval_output_val_{0}_iter_{0}.gif",
-                        ))
-                        process.start()
+                        # process = multiprocessing.Process(
+                        #     target=make_parity_gif,
+                        #     args=(
+                        #     predictions.detach().cpu().numpy(),
+                        #     # certainties.detach().cpu().numpy(),
+                        #     targets.detach().cpu().numpy(),
+                        #     # pre_activations,
+                        #     # post_activations,
+                        #     # attention,
+                        #     inputs,
+                        #     f"{args.log_dir}/eval_output_val_{0}_iter_{0}.gif",
+                        # ))
+                        # process.start()
 
                         ##################################### TRAIN METRICS ##########################
                         all_predictions = []
@@ -346,7 +346,7 @@ def main():
                                     all_losses.append(loss.item())
 
                                     all_targets.append(targets.detach().cpu().numpy())
-                                    predicted_classes = predictions.argmax(dim=1)
+                                    predicted_classes = these_predictions.argmax(dim=1)
 
                                     # targets: [32, 64] -> true_classes: [32]
                                     true_classes = targets[:, -1]
@@ -354,14 +354,14 @@ def main():
 
                                     # all_predictions_most_certain.append(these_predictions.argmax(2)[torch.arange(these_predictions.size(0), device=these_predictions.device), :, where_most_certain].detach().cpu().numpy())
                                     # accuracy = (predicted_classes == true_classes).float().mean().item()
-                                    all_predictions.append(these_predictions.argmax(2).detach().cpu().numpy())
+                                    # all_predictions.append(these_predictions.argmax(2).detach().cpu().numpy())
 
                                     if inferi%args.n_test_batches==0 and inferi!=0 and not args.full_eval: break
                                     pbar_inner.set_description('Computing metrics for train')
                                     pbar_inner.update(1)
 
-                            all_predictions = np.concatenate(all_predictions)
-                            all_targets = np.concatenate(all_targets)
+                            # all_predictions = np.concatenate(all_predictions)
+                            # all_targets = np.concatenate(all_targets)
                             # all_predictions_most_certain = np.concatenate(all_predictions_most_certain)
 
 
@@ -381,7 +381,7 @@ def main():
 
                             ##################################### TEST METRICS ##################################
                             all_predictions = []
-                            all_predictions_most_certain = []
+                            # all_predictions_most_certain = []
                             all_targets = []
                             all_losses = []
                             loader = torch.utils.data.DataLoader(test_data, batch_size=args.batch_size_test, shuffle=True, num_workers=0)
@@ -390,28 +390,39 @@ def main():
 
                                     inputs = inputs.to(device)
                                     targets = targets.to(device)
-                                    these_predictions, certainties, synchronisation = model(inputs)
+                                    these_predictions = model(inputs)
 
-                                    these_predictions = these_predictions.reshape(these_predictions.size(0), -1, 2, these_predictions.size(-1))
+                                    # these_predictions = these_predictions.reshape(these_predictions.size(0), -1, 2, these_predictions.size(-1))
                                     # loss, where_most_certain = parity_loss(these_predictions, certainties, targets, use_most_certain=args.use_most_certain)
+                                    loss = parity_loss_baseline(these_predictions, targets)
                                     all_losses.append(loss.item())
 
                                     all_targets.append(targets.detach().cpu().numpy())
+                                    predicted_classes = these_predictions.argmax(dim=1)
 
-                                    all_predictions_most_certain.append(these_predictions.argmax(2)[torch.arange(these_predictions.size(0), device=these_predictions.device), :, where_most_certain].detach().cpu().numpy())
-                                    all_predictions.append(these_predictions.argmax(2).detach().cpu().numpy())
+                                    # targets: [32, 64] -> true_classes: [32]
+                                    true_classes = targets[:, -1]
+                                    accuracy = (predicted_classes == true_classes).float().mean().item()
+
+
+
+
+
+
+                                    # all_predictions_most_certain.append(these_predictions.argmax(2)[torch.arange(these_predictions.size(0), device=these_predictions.device), :, where_most_certain].detach().cpu().numpy())
+                                    # all_predictions.append(these_predictions.argmax(2).detach().cpu().numpy())
 
                                     if inferi%args.n_test_batches==0 and inferi!=0 and not args.full_eval: break
                                     pbar_inner.set_description('Computing metrics for test')
                                     pbar_inner.update(1)
 
-                            all_predictions = np.concatenate(all_predictions)
-                            all_targets = np.concatenate(all_targets)
-                            all_predictions_most_certain = np.concatenate(all_predictions_most_certain)
+                            # all_predictions = np.concatenate(all_predictions)
+                            # all_targets = np.concatenate(all_targets)
+                            # all_predictions_most_certain = np.concatenate(all_predictions_most_certain)
 
-                            test_accuracies.append(np.mean(all_predictions == all_targets[...,np.newaxis], axis=tuple(range(all_predictions.ndim-1))))
-                            test_accuracies_most_certain.append((all_targets == all_predictions_most_certain).mean())
-                            test_accuracies_most_certain_per_input.append((all_targets == all_predictions_most_certain).reshape(all_targets.shape[0], -1).all(-1).mean())
+                            test_accuracies.append(accuracy)
+                            # test_accuracies_most_certain.append((all_targets == all_predictions_most_certain).mean())
+                            # test_accuracies_most_certain_per_input.append((all_targets == all_predictions_most_certain).reshape(all_targets.shape[0], -1).all(-1).mean())
                             test_losses.append(np.mean(all_losses))
 
                             sns.set_theme(style="whitegrid")
@@ -426,65 +437,39 @@ def main():
                             test_loss_arr = np.array(test_losses)
 
                             if args.dataset != 'sort':
+
+
                                 # =========================================================
                                 # PART A: ACCURACIES
                                 # =========================================================
 
-                                # --- A1. Accuracies: Old Style (All Runs) ---
-                                figacc_raw = plt.figure(figsize=(10, 10))
-                                axacc_train = figacc_raw.add_subplot(211)
-                                axacc_test = figacc_raw.add_subplot(212)
-
-                                # Loop through runs (Transpose .T to iterate over columns/runs)
-                                num_runs = train_acc_arr.shape[1]
-                                for ti in range(num_runs):
-                                    color_val = ti / num_runs
-                                    axacc_train.plot(iters, train_acc_arr[:, ti], color=cm(color_val), alpha=0.3)
-                                    axacc_test.plot(iters, test_acc_arr[:, ti], color=cm(color_val), alpha=0.3)
-
-                                # Baselines
-                                for ax in [axacc_train, axacc_test]:
-                                    ax.plot(iters, train_accuracies_most_certain, 'k--', alpha=0.7,
-                                            label='Most certain')
-                                    ax.plot(iters, train_accuracies_most_certain_per_input, 'r', alpha=0.6,
-                                            label='Full Input')
-
-                                axacc_train.set_title('Train Accuracy (All Runs)')
-                                axacc_test.set_title('Test Accuracy (All Runs)')
-                                axacc_train.legend(loc='lower right')
-                                axacc_train.set_xlim([0, args.training_iterations])
-                                axacc_test.set_xlim([0, args.training_iterations])
-
-                                figacc_raw.tight_layout()
-                                figacc_raw.savefig(f'{args.log_dir}/accuracies_all_runs.png', dpi=150)
-                                plt.close(figacc_raw)
-
                                 # --- A2. Accuracies: New Style (Seaborn CI) ---
+
                                 figacc_ci, (ax_ci_train, ax_ci_test) = plt.subplots(2, 1, figsize=(10, 10), sharex=True)
+
 
                                 df_acc_train = create_long_df(train_acc_arr, iters, 'Accuracy')
                                 df_acc_test = create_long_df(test_acc_arr, iters, 'Accuracy')
 
+
+
+                                ax_ci_train.axhline(0.5, color='gray', linestyle=':', label='Random Guess (0.5)')
+                                ax_ci_test.axhline(0.5, color='gray', linestyle=':', label='Random Guess (0.5)')
+
+                                # 2. Plotting
                                 sns.lineplot(data=df_acc_train, x='Iteration', y='Accuracy', ax=ax_ci_train,
-                                             color='tab:blue', errorbar=('ci', 95), label='Mean Train Acc')
+                                             color='tab:blue', errorbar=('ci', 95), label='Baseline Train Acc')
                                 sns.lineplot(data=df_acc_test, x='Iteration', y='Accuracy', ax=ax_ci_test,
-                                             color='tab:green', errorbar=('ci', 95), label='Mean Test Acc')
+                                             color='tab:green', errorbar=('ci', 95), label='Baseline Test Acc')
 
-                                # Baselines
-                                ax_ci_train.plot(iters, train_accuracies_most_certain, 'k--', alpha=0.7,
-                                                 label='Most certain')
-                                ax_ci_train.plot(iters, train_accuracies_most_certain_per_input, 'r', alpha=0.6,
-                                                 label='Full Input')
-                                ax_ci_test.plot(iters, test_accuracies_most_certain, 'k--', alpha=0.7,
-                                                label='Most certain')
-                                ax_ci_test.plot(iters, test_accuracies_most_certain_per_input, 'r', alpha=0.6,
-                                                label='Full Input')
-
+                                # Styling
                                 ax_ci_train.set_title('Train Accuracy (Mean + 95% CI)')
                                 ax_ci_test.set_title('Test Accuracy (Mean + 95% CI)')
                                 ax_ci_train.legend(loc='lower right')
                                 ax_ci_test.legend(loc='lower right')
                                 ax_ci_train.set_xlim([0, args.training_iterations])
+                                ax_ci_train.set_ylim([0, 1.05])  # Accuracy geht max bis 1.0
+                                ax_ci_test.set_ylim([0, 1.05])
 
                                 figacc_ci.tight_layout()
                                 figacc_ci.savefig(f'{args.log_dir}/accuracies.png', dpi=150)
@@ -494,30 +479,6 @@ def main():
                                 # PART B: LOSSES
                                 # =========================================================
 
-                                # --- B1. Losses: Old Style (All Runs) ---
-                                figloss_raw = plt.figure(figsize=(10, 5))
-                                axloss_raw = figloss_raw.add_subplot(111)
-
-                                # Loop through runs
-                                num_runs_loss = train_loss_arr.shape[1]
-                                for ti in range(num_runs_loss):
-                                    # We use a very low alpha (0.2) because losses can be noisy
-                                    axloss_raw.plot(iters, train_loss_arr[:, ti], 'b-', alpha=0.2)
-                                    axloss_raw.plot(iters, test_loss_arr[:, ti], 'r-', alpha=0.2)
-
-                                # Create custom legend handles since we plotted many lines
-                                from matplotlib.lines import Line2D
-                                custom_lines = [Line2D([0], [0], color='blue', lw=2),
-                                                Line2D([0], [0], color='red', lw=2)]
-                                axloss_raw.legend(custom_lines, ['Train Loss', 'Test Loss'], loc='upper right')
-
-                                axloss_raw.set_title('Losses (All Runs)')
-                                axloss_raw.set_xlim([0, args.training_iterations])
-
-                                figloss_raw.tight_layout()
-                                figloss_raw.savefig(f'{args.log_dir}/losses_all_runs.png', dpi=150)
-                                plt.close(figloss_raw)
-
                                 # --- B2. Losses: New Style (Seaborn CI) ---
                                 figloss_ci = plt.figure(figsize=(10, 5))
                                 axloss_ci = figloss_ci.add_subplot(111)
@@ -525,7 +486,13 @@ def main():
                                 df_loss_train = create_long_df(train_loss_arr, iters, 'Loss')
                                 df_loss_test = create_long_df(test_loss_arr, iters, 'Loss')
 
-                                # Seaborn automatically handles the mean line and shadow
+                                # 1. Random Loss Line
+                                # Bei CrossEntropy mit 2 Klassen ist der Loss bei Raten: ln(2) ~= 0.693
+                                random_loss = np.log(2)
+                                axloss_ci.axhline(random_loss, color='gray', linestyle=':',
+                                                  label=f'Random Loss (ln(2))')
+
+                                # 2. Plotting
                                 sns.lineplot(data=df_loss_train, x='Iteration', y='Loss', ax=axloss_ci,
                                              color='blue', errorbar=('ci', 95), label='Train Loss')
                                 sns.lineplot(data=df_loss_test, x='Iteration', y='Loss', ax=axloss_ci,
@@ -540,7 +507,7 @@ def main():
                                 plt.close(figloss_ci)
 
 
-                # todo why model.train() twice?
+
                     model.train()
 
 
@@ -554,11 +521,11 @@ def main():
                         'scheduler_state_dict':scheduler.state_dict(),
                         'scaler_state_dict':scaler.state_dict(),
                         'iteration':bi,
-                        'train_accuracies_most_certain':train_accuracies_most_certain,
-                        'train_accuracies_most_certain_per_input':train_accuracies_most_certain_per_input,
+                        # 'train_accuracies_most_certain':train_accuracies_most_certain,
+                        # 'train_accuracies_most_certain_per_input':train_accuracies_most_certain_per_input,
                         'train_accuracies':train_accuracies,
-                        'test_accuracies_most_certain':test_accuracies_most_certain,
-                        'test_accuracies_most_certain_per_input':test_accuracies_most_certain_per_input,
+                        # 'test_accuracies_most_certain':test_accuracies_most_certain,
+                        # 'test_accuracies_most_certain_per_input':test_accuracies_most_certain_per_input,
                         'test_accuracies':test_accuracies,
                         'train_losses':train_losses,
                         'test_losses':test_losses,

@@ -14,14 +14,17 @@
 #LOG_DIR="logs/parity/run${RUN}/ctm_${ITERATIONS}_${MEMORY_LENGTH}"
 #SEED=$((RUN - 1))
 #    --model_type "ctm"\
+
+# IMPORTANT D_model % 5 == 0 for MLP postactivation production
+
 python -u train_sweeps_efficient.py \
-    --log_dir "logs/parity/run3/parity-cip"\
+    --log_dir "logs/parity/run4/MLP"\
     --seed 1 \
     --iterations 75 \
     --memory_length 25 \
     --parity_sequence_length 64  \
     --n_test_batches 20 \
-    --d_model 1024 \
+    --d_model 1020 \
     --d_input 512 \
     --n_synch_out 32 \
     --n_synch_action 32 \
@@ -44,7 +47,7 @@ python -u train_sweeps_efficient.py \
     --batch_size 32 \
     --batch_size_test 120 \
     --lr=0.0001 \
-    --training_iterations 200001 \
+    --training_iterations 50001 \
     --warmup_steps 500 \
     --track_every 1000 \
     --save_every 20000 \
@@ -53,7 +56,7 @@ python -u train_sweeps_efficient.py \
     --no-use_amp \
     --neuron_select_type "random" \
     --device 0 \
-    --postactivation_production 'kan'
+    --postactivation_production 'mlp'
 
 #to submit the job on slurm, use from ctm main folder:
-#sbatch --partition=NvidiaAll parityBatch.sh script for slurm #####
+#sbatch --partition=NvidiaAll parityBatchKan.sh script for slurm #####
