@@ -18,7 +18,7 @@ from torch.utils.data.distributed import DistributedSampler
 from utils.samplers import FastRandomDistributedSampler 
 from tqdm.auto import tqdm
 
-from tasks.image_classification.train import get_dataset # Use shared get_dataset
+from image_classification.train import get_dataset # Use shared get_dataset
 
 # Model Imports
 from models.ctm import ContinuousThoughtMachine
@@ -26,7 +26,7 @@ from models.lstm import LSTMBaseline
 from models.ff import FFBaseline
 
 # Plotting/Utils Imports
-from tasks.image_classification.plotting import plot_neural_dynamics, make_classification_gif
+from image_classification.plotting import plot_neural_dynamics, make_classification_gif
 from utils.housekeeping import set_seed, zip_python_code
 from utils.losses import image_classification_loss # For CTM, LSTM
 from utils.schedulers import WarmupCosineAnnealingLR, WarmupMultiStepLR, warmup

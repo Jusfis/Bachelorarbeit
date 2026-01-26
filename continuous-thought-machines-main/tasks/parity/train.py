@@ -19,7 +19,7 @@ from tqdm.auto import tqdm # Used for progress bars
 
 from autoclip.torch import QuantileClip # Used for gradient clipping
 from data.custom_datasets import ParityDataset
-from tasks.image_classification.plotting import plot_neural_dynamics
+from image_classification.plotting import plot_neural_dynamics
 from models.utils import reshape_predictions, get_latest_checkpoint
 from tasks.parity.plotting import make_parity_gif
 from tasks.parity.utils import prepare_model, reshape_attention_weights, reshape_inputs

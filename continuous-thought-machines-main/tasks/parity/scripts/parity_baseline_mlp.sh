@@ -15,11 +15,11 @@
 #SEED=$((RUN - 1))
 #    --model_type "ctm"\
 python -m tasks.parity.parity_baseline_mlp \
-    --log_dir "logs/parity/run4/baseline_sweeps"\
+    --log_dir "logs/parity/run5/baseline_sweeps"\
     --seed 1 \
     --iterations 75 \
     --memory_length 25 \
-    --parity_sequence_length 16  \
+    --parity_sequence_length 64  \
     --n_test_batches 20 \
     --d_model 60 \
     --d_input 64 \

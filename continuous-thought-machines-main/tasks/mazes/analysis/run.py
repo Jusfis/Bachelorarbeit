@@ -15,7 +15,7 @@ import imageio # Used for saving GIFs in viz
 from data.custom_datasets import MazeImageFolder
 from models.ctm import ContinuousThoughtMachine
 from tasks.mazes.plotting import draw_path # 
-from tasks.image_classification.plotting import save_frames_to_mp4
+from image_classification.plotting import save_frames_to_mp4
 
 def has_solved_checker(x_maze, route, valid_only=True, fault_tolerance=1, exclusions=[]):
     """Checks if a route solves a maze."""

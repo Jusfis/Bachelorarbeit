@@ -1,5 +1,4 @@
 import argparse
-import math
 import random # Used for saving/loading RNG state
 import os
 import sys
@@ -25,12 +24,10 @@ from autoclip.torch import QuantileClip # Used for gradient clipping
 from data.custom_datasets import ListOpsDataset
 from tasks.image_classification.plotting import plot_neural_dynamics
 from models.utils import reshape_predictions, get_latest_checkpoint
-
 # from tasks.listops import prepare_model, reshape_attention_weights, reshape_inputs
-from utils.housekeeping import set_seed, zip_python_code
+from utils.housekeeping import set_seed
 # from utils.losses import listops_loss
 from utils.schedulers import WarmupCosineAnnealingLR, WarmupMultiStepLR, warmup
-import wandb
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
 

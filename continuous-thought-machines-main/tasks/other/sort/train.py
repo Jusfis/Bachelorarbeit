@@ -14,16 +14,14 @@ from tqdm.auto import tqdm
 
 from data.custom_datasets import SortDataset
 from models.ctm_sort import ContinuousThoughtMachineSORT
-from tasks.image_classification.plotting import plot_neural_dynamics, make_classification_gif
+from image_classification.plotting import plot_neural_dynamics
 from utils.housekeeping import set_seed, zip_python_code
 from utils.losses import sort_loss
-from tasks.sort.utils import compute_ctc_accuracy, decode_predictions
+from other.sort.utils import compute_ctc_accuracy, decode_predictions
 from utils.schedulers import WarmupCosineAnnealingLR, WarmupMultiStepLR, warmup
 
 import torchvision
 torchvision.disable_beta_transforms_warning()
-
-from autoclip.torch import QuantileClip
 
 import warnings
 warnings.filterwarnings("ignore", message="using precomputed metric; inverse_transform will be unavailable")

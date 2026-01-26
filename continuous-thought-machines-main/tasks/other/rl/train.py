@@ -13,7 +13,6 @@ import torch.optim as optim
 from torch.distributions.categorical import Categorical
 from torch.utils.tensorboard import SummaryWriter
 from gymnasium.wrappers import NormalizeReward
-import minigrid
 from minigrid.wrappers import ImgObsWrapper
 import argparse
 from tqdm import tqdm
@@ -21,10 +20,10 @@ from tqdm import tqdm
 from models.ctm_rl import ContinuousThoughtMachineRL
 from models.lstm_rl import LSTMBaseline
 from utils.housekeeping import set_seed
-from tasks.rl.envs import MaskVelocityWrapper
-from tasks.rl.utils import combine_tracking_data
-from tasks.rl.plotting import make_rl_gif
-from tasks.image_classification.plotting import plot_neural_dynamics
+from other.rl.envs import MaskVelocityWrapper
+from other.rl.utils import combine_tracking_data
+from other.rl.plotting import make_rl_gif
+from image_classification.plotting import plot_neural_dynamics
 
 
 def parse_args():

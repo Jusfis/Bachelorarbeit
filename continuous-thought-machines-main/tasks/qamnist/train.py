@@ -13,7 +13,7 @@ if torch.cuda.is_available():
 from tqdm.auto import tqdm
 
 from utils.samplers import QAMNISTSampler
-from tasks.image_classification.plotting import plot_neural_dynamics
+from image_classification.plotting import plot_neural_dynamics
 from tasks.qamnist.plotting import make_qamnist_gif
 from utils.housekeeping import set_seed, zip_python_code
 from utils.losses import qamnist_loss

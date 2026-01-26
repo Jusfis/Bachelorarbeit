@@ -14,11 +14,11 @@
 #LOG_DIR="logs/parity/run${RUN}/ctm_${ITERATIONS}_${MEMORY_LENGTH}"
 #SEED=$((RUN - 1))
 #    --model_type "ctm"\
-python -m train_sweeps_efficient\
-    --log_dir "logs/parity/run3/ctm_kan_sweeps"\
+python -m tasks.parity.train_sweeps_efficient\
+    --log_dir "logs/parity/run6/ctm_kan_sweeps"\
     --seed 1 \
-    --iterations 75 \
-    --memory_length 25 \
+    --iterations 100 \
+    --memory_length 50 \
     --parity_sequence_length 64  \
     --n_test_batches 20 \
     --d_model 60 \

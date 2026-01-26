@@ -27,7 +27,7 @@ from models.ff import FFBaseline
 
 # Plotting/Utils Imports
 from tasks.mazes.plotting import make_maze_gif
-from tasks.image_classification.plotting import plot_neural_dynamics
+from image_classification.plotting import plot_neural_dynamics
 from utils.housekeeping import set_seed, zip_python_code
 from utils.losses import maze_loss
 from utils.schedulers import WarmupCosineAnnealingLR, WarmupMultiStepLR, warmup

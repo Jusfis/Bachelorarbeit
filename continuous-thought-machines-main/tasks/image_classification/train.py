@@ -16,16 +16,14 @@ from tqdm.auto import tqdm
 from data.custom_datasets import ImageNet
 from torchvision import datasets
 from torchvision import transforms
-from tasks.image_classification.imagenet_classes import IMAGENET2012_CLASSES
+from image_classification.imagenet_classes import IMAGENET2012_CLASSES
 from models.ctm import ContinuousThoughtMachine
 from models.lstm import LSTMBaseline
 from models.ff import FFBaseline
-from tasks.image_classification.plotting import plot_neural_dynamics, make_classification_gif
+from image_classification.plotting import plot_neural_dynamics, make_classification_gif
 from utils.housekeeping import set_seed, zip_python_code
 from utils.losses import image_classification_loss # Used by CTM, LSTM
 from utils.schedulers import WarmupCosineAnnealingLR, WarmupMultiStepLR, warmup
-
-from autoclip.torch import QuantileClip
 
 import gc
 import torchvision

@@ -15,9 +15,8 @@ sns.set_style('darkgrid')
 from matplotlib import patheffects
 import seaborn as sns
 import imageio
-import cv2
 from scipy.special import softmax
-from tasks.image_classification.plotting import save_frames_to_mp4
+from image_classification.plotting import save_frames_to_mp4
 
 # --- Data Handling & Model ---
 from torchvision import transforms
@@ -25,8 +24,8 @@ from torchvision import datasets # Only used for CIFAR100 in debug mode
 from scipy import ndimage # Used in find_island_centers
 from data.custom_datasets import ImageNet 
 from models.ctm import ContinuousThoughtMachine 
-from tasks.image_classification.imagenet_classes import IMAGENET2012_CLASSES 
-from tasks.image_classification.plotting import plot_neural_dynamics
+from image_classification.imagenet_classes import IMAGENET2012_CLASSES
+from image_classification.plotting import plot_neural_dynamics
 
 # --- Global Settings ---
 np.seterr(divide='ignore') 

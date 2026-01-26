@@ -4,9 +4,7 @@ import multiprocessing # Used for GIF generation
 import random # Used for saving/loading RNG state
 import os
 import sys
-import seaborn as sns
 import pandas as pd
-import numpy as np
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
 

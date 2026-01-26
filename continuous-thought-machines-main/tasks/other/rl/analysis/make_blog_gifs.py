@@ -5,13 +5,11 @@ import numpy as np
 import umap
 from matplotlib import pyplot as plt
 import imageio
-from scipy.special import softmax
 
-
-from tasks.rl.train import Agent
-from tasks.rl.analysis.run import get_training_data_from_checkpoint_path, get_size_action_space, prepare_env
-from tasks.rl.utils import combine_tracking_data
-from tasks.image_classification.plotting import save_frames_to_mp4
+from other.rl.train import Agent
+from other.rl.analysis.run import get_training_data_from_checkpoint_path, get_size_action_space, prepare_env
+from other.rl.utils import combine_tracking_data
+from image_classification.plotting import save_frames_to_mp4
 
 
 def load_model(agent, checkpoint_path, device):

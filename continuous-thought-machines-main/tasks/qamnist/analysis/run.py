@@ -11,7 +11,7 @@ from tqdm import tqdm
 
 from utils.housekeeping import set_seed
 from tasks.qamnist.plotting import make_qamnist_gif
-from tasks.image_classification.plotting import plot_neural_dynamics
+from image_classification.plotting import plot_neural_dynamics
 from tasks.parity.plotting import plot_training_curve_all_runs
 from models.utils import load_checkpoint, get_all_log_dirs, get_model_args_from_checkpoint, get_latest_checkpoint_file
 from tasks.parity.utils import reshape_attention_weights

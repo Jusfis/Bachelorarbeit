@@ -7,7 +7,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.patches import FancyArrowPatch
 from scipy.special import softmax
-import matplotlib.cm as cm
 from data.custom_datasets import ParityDataset
 import umap
 from tqdm import tqdm
@@ -17,7 +16,7 @@ from models.utils import reshape_predictions
 from tasks.parity.utils import reshape_inputs
 from tasks.parity.analysis.run import build_model_from_checkpoint_path
 
-from tasks.image_classification.plotting import save_frames_to_mp4
+from image_classification.plotting import save_frames_to_mp4
 
 
 def make_parity_gif(

@@ -1,12 +1,9 @@
 import argparse
 import math
-import multiprocessing # Used for GIF generation
 import random # Used for saving/loading RNG state
 import os
 import sys
-import seaborn as sns
 import pandas as pd
-import numpy as np
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
 
@@ -25,14 +22,11 @@ from tqdm.auto import tqdm # Used for progress bars
 
 from autoclip.torch import QuantileClip # Used for gradient clipping
 from data.custom_datasets import ParityDataset
-from tasks.image_classification.plotting import plot_neural_dynamics
-from models.utils import reshape_predictions, get_latest_checkpoint
-from tasks.parity.plotting import make_parity_gif
-from tasks.parity.utils_efficient import prepare_baseline, reshape_attention_weights, reshape_inputs
+from models.utils import get_latest_checkpoint
+from tasks.parity.utils_efficient import prepare_baseline
 from utils.housekeeping import set_seed, zip_python_code
 from utils.losses import parity_loss_baseline
 from utils.schedulers import WarmupCosineAnnealingLR, WarmupMultiStepLR, warmup
-import wandb
 
 torchvision.disable_beta_transforms_warning()
 torch.serialization.add_safe_globals([argparse.Namespace])

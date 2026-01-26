@@ -5,17 +5,16 @@ from torch import optim
 import numpy as np
 import matplotlib.pyplot as plt
 import argparse
-from collections import defaultdict
 from scipy.interpolate import interp1d
 from collections import defaultdict
 import csv
 import multiprocessing
 
-from tasks.rl.train import Agent, make_env_classic_control, make_env_minigrid, load_model
+from other.rl.train import Agent, make_env_classic_control, make_env_minigrid, load_model
 from utils.housekeeping import set_seed
-from tasks.rl.utils import combine_tracking_data
-from tasks.rl.plotting import make_rl_gif
-from tasks.image_classification.plotting import plot_neural_dynamics
+from other.rl.utils import combine_tracking_data
+from other.rl.plotting import make_rl_gif
+from image_classification.plotting import plot_neural_dynamics
 
 import seaborn as sns
 sns.set_palette("hls")
