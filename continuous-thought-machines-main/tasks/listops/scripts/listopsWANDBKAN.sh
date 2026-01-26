@@ -1,3 +1,5 @@
+#!/bin/bash
+#
 #SBATCH --job-name=CTM_listops_wandb_sweeps
 #SBATCH --comment="CTM tuning with wandb"
 #SBATCH --mail-type=ALL
