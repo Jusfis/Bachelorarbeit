@@ -1,5 +1,5 @@
-python -m tasks.listops.train \
-    --log_dir "logs/listops/run2"\
+python -u tasks.listops.trainWANDB.py \
+    --log_dir "logs/listops/run2/kan"\
     --seed 1 \
     --iterations 75 \
     --memory_length 25 \
@@ -35,5 +35,5 @@ python -m tasks.listops.train \
     --no-reload_model_only \
     --no-use_amp \
     --neuron_select_type "random" \
-    --postactivation_production 'mlp' # MLP or linear for postactivation production
+    --postactivation_production 'kan' # MLP or linear for postactivation production
 

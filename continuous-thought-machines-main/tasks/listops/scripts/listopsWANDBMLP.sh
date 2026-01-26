@@ -1,5 +1,5 @@
-python -m tasks.listops.train \
-    --log_dir "logs/listops/run2"\
+python -u tasks.listops.trainWANDB.py \
+    --log_dir "logs/listops/run2/mlp"\
     --seed 1 \
     --iterations 75 \
     --memory_length 25 \
