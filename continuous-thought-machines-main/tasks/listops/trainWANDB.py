@@ -108,7 +108,7 @@ def create_long_df(data_array, iters, metric_name='Accuracy'):
     return df_long
 
 def main():
-    with wandb.init(entity="justus-fischer-ludwig-maximilian-university-of-munich", project="ctm-parity") as run:
+    with wandb.init(entity="justus-fischer-ludwig-maximilian-university-of-munich", project="ctm-listops") as run:
             config = wandb.config
             args = parse_args()
             #print(f"Using config: {config}\n Parsed args: {args}\n")
