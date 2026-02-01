@@ -1,6 +1,8 @@
 import os
 import re
 import math
+
+from models.baseline_mlp import BaselineMLP
 from models.ctm_kan_efficient import ContinuousThoughtMachine
 from models.lstm import LSTMBaseline # alternative baseline model
 
@@ -42,5 +44,29 @@ def prepare_model(prediction_reshaper, args, device):
     #     ).to(device)
     else:
         raise ValueError(f"Model must be either ctm or baseline, not {args.model_type}")
+
+    return model
+
+def prepare_baseline(args, device):
+    """
+    Initializes the MLP and the Loss function.
+
+    Returns:
+        model (nn.Module): The initialized MLP.
+        loss (nn.Module): The loss function.
+    """
+
+    in_dim = args.max_sequence_length
+    h_dims = [128,64]
+    out_dim = 10
+
+    # 2. Build Model
+    model = BaselineMLP(in_dim, h_dims, out_dim)
+
+    # check done before
+    model.to(device)
+
+
+    # loss = nn.CrossEntropyLoss()
 
     return model

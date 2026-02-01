@@ -138,7 +138,7 @@ def main():
 
         prediction_reshaper = [args.parity_sequence_length, 2]
 
-        # ueberlegen wie
+        # todo  prediction reshaper anpassen an parity
         args.out_dims = args.parity_sequence_length * 2
 
         args.use_most_certain = args.model_type == "ctm" or (args.use_most_certain_with_lstm and args.model_type == "lstm")
@@ -214,7 +214,7 @@ def main():
                 optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
                 scheduler.load_state_dict(checkpoint['scheduler_state_dict'])
                 scaler.load_state_dict(checkpoint['scaler_state_dict'])
-                start_iter = checkpoint['iteration']
+                # start_iter = checkpoint['iteration']
                 train_losses = checkpoint['train_losses']
                 train_accuracies_most_certain = checkpoint['train_accuracies_most_certain']
                 train_accuracies_most_certain_per_input = checkpoint['train_accuracies_most_certain_per_input'] if 'train_accuracies_most_certain_per_input' in checkpoint else train_accuracies_most_certain_per_input

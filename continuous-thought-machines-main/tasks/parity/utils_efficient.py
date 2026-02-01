@@ -98,7 +98,7 @@ def prepare_baseline(args, device):
     """
 
     in_dim = args.parity_sequence_length
-    h_dims = [128,64]
+    h_dims = [1024,512,256]
     out_dim = 2
 
     # 2. Build Model

@@ -52,8 +52,10 @@ python -m tasks.parity.train_sweeps_efficient\
     --no-reload_model_only \
     --no-use_amp \
     --neuron_select_type "random" \
-    --postactivation_production 'kan'
+    --postactivation_production 'kan' \
+    --useWandb 0
 
-#to submit the job on slurm, use from ctm main folder:
-#sbatch --partition=NvidiaAll parityBatchKan.sh
+# use Wandb set to 0 for local testing, set to 1 for slurm runs
+# to submit the job on slurm, use from ctm main folder:
+# sbatch --partition=NvidiaAll parityBatchKan.sh
 # remove --device 0 to allow slurm to assign GPU automatically

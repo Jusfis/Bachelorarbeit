@@ -15,8 +15,8 @@
 #SEED=$((RUN - 1))
 #    --model_type "ctm"\
 python -m tasks.parity.parity_baseline_mlp \
-    --log_dir "logs/parity/run5/baseline_sweeps"\
-    --seed 1 \
+    --log_dir "logs/parity/run7/baseline_sweeps"\
+    --seed 42 \
     --iterations 75 \
     --memory_length 25 \
     --parity_sequence_length 64  \
