@@ -56,7 +56,8 @@ python -u train_sweeps_efficient.py \
     --no-use_amp \
     --neuron_select_type "random" \
     --device 0 \
-    --postactivation_production 'kan'
+    --postactivation_production 'kan' \
+    --useWand 1
 
 #to submit the job on slurm, use from ctm main folder:
 #sbatch --partition=NvidiaAll parityBatchKan.sh script for slurm #####

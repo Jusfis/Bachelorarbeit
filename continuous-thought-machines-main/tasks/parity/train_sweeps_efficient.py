@@ -88,7 +88,7 @@ def parse_args():
     parser.add_argument('--full_eval',  action=argparse.BooleanOptionalAction, default=False, help='Perform full evaluation instead of approx.')
     parser.add_argument('--device', type=int, nargs='+', default=[-1], help='GPU(s) or -1 for CPU.')
     parser.add_argument('--use_amp', action=argparse.BooleanOptionalAction, default=False, help='AMP autocast.')
-    parser.add_argument('--useWandb', type=Boolean, help='Use wandb logging.', default = False)
+    parser.add_argument('--useWandb', type=int, help='Use wandb logging.', default = 0)
     args = parser.parse_args()
     return args
 
@@ -264,7 +264,7 @@ def parity_model(args, config, run):
             pbar.set_description(
                 f'Dataset=Parity. Loss={loss.item():0.3f}. Accuracy={accuracy_finegrained:0.3f}. LR={current_lr:0.6f}. Where_certain={where_most_certain.float().mean().item():0.2f}+-{where_most_certain.float().std().item():0.2f} ({where_most_certain.min().item():d}<->{where_most_certain.max().item():d})')
 
-            if args.useWandb:
+            if args.useWandb == True:
                 run.log({
                     "Train/Losses": loss.item(),
                     "Train/Accuracies": accuracy_finegrained,
@@ -564,8 +564,38 @@ def parity_model(args, config, run):
 
 
 def main():
+
+
     args = parse_args()
-    if args.useWandb:
+
+    if args.useWandb == 1:
+        # Sweep configuration for wandb
+        sweep_configuration = {
+            "program": "train_sweeps_efficient.py",
+            "name": "ctm-parity",
+            "method": "random",
+            "metric": {
+                "name": "Train/Losses",
+                "goal": "minimize"
+                # todo decide if maximize accuracies or minimize loss and add iterations and memory length
+            },
+            "parameters": {
+                "batch_size": {"values": [32, 64]},
+                "learning_rate": {"min": 2e-4, "max": 3e-4},
+                "use_amp": {"values": [True]},
+                "use_scheduler": {"values": [False]},
+                "memory_length": {"values": [50]},
+                "internal_ticks": {"values": [100]},
+                "training_iterations": {"values": [200000]},
+                # "postactivation_production": {"values": ["kan"]},
+                # "model_type": {"values": ["ctm"]},
+                # Todo"parity_sequence_length": {"values": [16, 64]},
+            }
+        }
+
+        sweep_id = wandb.sweep(sweep_configuration, project="ctm-parity")
+        wandb.agent(sweep_id, function=main, count=50)
+
         with wandb.init(entity="justus-fischer-ludwig-maximilian-university-of-munich",project="ctm-parity") as run:
             config = wandb.config
 
@@ -589,31 +619,5 @@ def main():
 
 
 if __name__=='__main__':
-        # args = parse_args()
-        # if args.useWandb:
 
-            # Sweep configuration for wandb
-            sweep_configuration = {
-                "program": "train_sweeps_efficient.py",
-                "name": "ctm-parity",
-                "method": "random",
-                "metric": {
-                    "name": "Train/Losses",
-                    "goal": "minimize"# todo decide if maximize accuracies or minimize loss and add iterations and memory length
-                },
-                "parameters": {
-                    "batch_size": {"values": [32, 64]},
-                    "learning_rate": {"min": 2e-4, "max": 3e-4},
-                    "use_amp": {"values": [True]},
-                    "use_scheduler": {"values": [False]},
-                    "memory_length": {"values": [50]},
-                    "internal_ticks": {"values": [100]},
-                    "training_iterations": {"values": [200000]},
-                    # "postactivation_production": {"values": ["kan"]},
-                    # "model_type": {"values": ["ctm"]},
-                    # Todo"parity_sequence_length": {"values": [16, 64]},
-                }
-            }
-
-            sweep_id = wandb.sweep(sweep_configuration, project="ctm-parity")
-            wandb.agent(sweep_id, function=main, count=50)
+            main()
