@@ -46,7 +46,7 @@ python -m tasks.parity.train_sweeps_efficient\
     --lr=0.0001 \
     --training_iterations 200001 \
     --warmup_steps 500 \
-    --track_every 1000 \
+    --track_every 10 \
     --save_every 20000 \
     --no-reload \
     --no-reload_model_only \

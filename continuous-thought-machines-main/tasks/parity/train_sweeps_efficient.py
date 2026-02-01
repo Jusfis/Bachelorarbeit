@@ -490,10 +490,11 @@ def parity_model(args, config, run):
 
                             # Loop through runs
                             if train_loss_arr.ndim == 1:
-                                # Fall: Nur ein Run (1D Array) -> 0. Dimension ist Zeit, Runs = 1
+
                                 num_runs_loss = 1
-                                # Optional: Mache es 2D, falls der nachfolgende Code das erwartet (N, 1)
+
                                 train_loss_arr = train_loss_arr[:, None]
+                                test_loss_arr = test_loss_arr[:, None]
                             else:
                                 # Fall: Mehrere Runs (2D Array)
                                 num_runs_loss = train_loss_arr.shape[1]
