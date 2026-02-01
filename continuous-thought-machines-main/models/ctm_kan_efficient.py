@@ -479,7 +479,7 @@ class ContinuousThoughtMachine(nn.Module, PyTorchModelHubMixin):
         NOTE: We used GLU() nonlinearities because they worked well in practice.
         """
         if deep_nlms:
-            return nn.Sequential(
+            returnModel = nn.Sequential(
                 nn.Sequential(
                     SuperLinear(in_dims=memory_length, out_dims=2 * memory_hidden_dims, N=d_model,
                                 do_norm=do_layernorm_nlm, dropout=dropout),
@@ -490,8 +490,11 @@ class ContinuousThoughtMachine(nn.Module, PyTorchModelHubMixin):
                     Squeeze(-1)
                 )
             )
+            print("created: returnModel", returnModel)
+            return returnModel
         else:
-            return nn.Sequential(
+
+            returnModel =  nn.Sequential(
                 nn.Sequential(
                     SuperLinear(in_dims=memory_length, out_dims=2, N=d_model,
                                 do_norm=do_layernorm_nlm, dropout=dropout),
@@ -499,6 +502,8 @@ class ContinuousThoughtMachine(nn.Module, PyTorchModelHubMixin):
                     Squeeze(-1)
                 )
             )
+            print("created: returnModel", returnModel)
+            return returnModel
 
     def get_kan_network(self, deep_nlms, memory_length, memory_hidden_dims, d_model,
                         grid_size=3, k=2, dropout_nlm=None):
@@ -523,7 +528,7 @@ class ContinuousThoughtMachine(nn.Module, PyTorchModelHubMixin):
             spline_order=k,
             # noise_scale=0.01, left out
         )
-
+        print("created: kan_module", kan_module)
         return nn.Sequential(kan_module, Squeeze(-1))
 
 

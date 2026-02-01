@@ -15,7 +15,7 @@
 #SEED=$((RUN - 1))
 #    --model_type "ctm"\
 python -m tasks.parity.train_sweeps_efficient\
-    --log_dir "logs/parity/run6/ctm_kan_sweeps"\
+    --log_dir "logs/parity/run1/local"\
     --seed 1 \
     --iterations 100 \
     --memory_length 50 \
@@ -46,7 +46,7 @@ python -m tasks.parity.train_sweeps_efficient\
     --lr=0.0001 \
     --training_iterations 200001 \
     --warmup_steps 500 \
-    --track_every 10 \
+    --track_every 1000 \
     --save_every 20000 \
     --no-reload \
     --no-reload_model_only \

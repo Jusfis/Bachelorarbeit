@@ -1,5 +1,5 @@
 #!/bin/bash
-RUN=1
+RUN=2
 MEMORY_LENGTH=3
 MODEL_TYPE="ctm"
 Q_NUM_REPEATS_PER_INPUT=1
@@ -42,6 +42,8 @@ python -m tasks.qamnist.train \
     --save_every 10000 \
     --no-reload \
     --no-reload_model_only \
-    --device 0 \
     --no-use_amp \
-    --neuron_select_type "random"
+    --neuron_select_type "random" \
+    --postactivation_production 'kan'
+
+    #    --device 0 \

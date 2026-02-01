@@ -25,37 +25,37 @@ from kan import KAN  # Erfordert 'pip install pykan'
 from models.modules import SuperLinearKan
 
 
-
-class SuperKAN(nn.Module):
-    def __init__(self, width, N, grid_size=5, k=3, **kwargs):
-        super().__init__()
-        self.N = N
-        if isinstance(width, (list, tuple)):
-            self.in_dims = int(width[0])
-            self.out_dims = int(width[-1])
-        else:
-            self.in_dims = int(width)
-            self.out_dims = 1
-        # width: array of number of neurons in each layer
-        self.models = nn.ModuleList([
-            KAN(width=width, grid=grid_size, k=k, **kwargs) for _ in range(N)
-        ])
-# Todo review forward pass function
-    def forward(self, x):
-        # if x.shape[1] != self.N or x.shape[2] != self.in_dims:
-        #     raise ValueError(
-        #         f"Erwartete Input-Shape (B, {self.N}, {self.in_dims}), "
-        #         f"aber erhielt {x.shape}"
-        #     )
-
-        outputs = []
-        for i in range(self.N):
-            x_i = x[:, i, :]
-            out_i = self.models[i](x_i)
-            outputs.append(out_i)
-
-        result = torch.stack(outputs, dim=1)
-        return result
+## old version mit performance problemen
+# class SuperKAN(nn.Module):
+#     def __init__(self, width, N, grid_size=5, k=3, **kwargs):
+#         super().__init__()
+#         self.N = N
+#         if isinstance(width, (list, tuple)):
+#             self.in_dims = int(width[0])
+#             self.out_dims = int(width[-1])
+#         else:
+#             self.in_dims = int(width)
+#             self.out_dims = 1
+#         # width: array of number of neurons in each layer
+#         self.models = nn.ModuleList([
+#             KAN(width=width, grid=grid_size, k=k, **kwargs) for _ in range(N)
+#         ])
+# # Treview forward pass function
+#     def forward(self, x):
+#         # if x.shape[1] != self.N or x.shape[2] != self.in_dims:
+#         #     raise ValueError(
+#         #         f"Erwartete Input-Shape (B, {self.N}, {self.in_dims}), "
+#         #         f"aber erhielt {x.shape}"
+#         #     )
+#
+#         outputs = []
+#         for i in range(self.N):
+#             x_i = x[:, i, :]
+#             out_i = self.models[i](x_i)
+#             outputs.append(out_i)
+#
+#         result = torch.stack(outputs, dim=1)
+#         return result
 
 
 
@@ -193,7 +193,7 @@ class ContinuousThoughtMachine(nn.Module, PyTorchModelHubMixin):
         self.register_parameter('start_activated_state', nn.Parameter(
             torch.zeros((d_model)).uniform_(-math.sqrt(1 / (d_model)), math.sqrt(1 / (d_model)))))
 
-        # Todo repair kan degrees of freedom issue
+
 
         self.register_parameter('start_trace', nn.Parameter(
             torch.zeros((d_model, memory_length)).uniform_(-math.sqrt(1 / (d_model + memory_length)),
@@ -509,7 +509,7 @@ class ContinuousThoughtMachine(nn.Module, PyTorchModelHubMixin):
 
         return nn.Sequential(kan_module, Squeeze(-1))
 
-
+        # old version with performance issues
         # kan_module = SuperKAN(
         #     width=width,
         #     N=d_model,

@@ -13,7 +13,7 @@ if torch.cuda.is_available():
 from tqdm.auto import tqdm
 
 from utils.samplers import QAMNISTSampler
-from image_classification.plotting import plot_neural_dynamics
+from tasks.image_classification.plotting import plot_neural_dynamics
 from tasks.qamnist.plotting import make_qamnist_gif
 from utils.housekeeping import set_seed, zip_python_code
 from utils.losses import qamnist_loss
@@ -95,6 +95,8 @@ def parse_args():
     parser.add_argument('--milestones', type=int, default=[8000, 15000, 20000], nargs='+', help='Learning rate scheduler milestones.')
     parser.add_argument('--gamma', type=float, default=0.1, help='Learning rate scheduler gamma for multistep.')
     parser.add_argument('--weight_decay', type=float, default=0.0, help='Weight decay factor.')
+    parser.add_argument('--postactivation_production', type=str, default='mlp', choices=['mlp', 'kan'],
+                        help='Type neural network for post-activiation production.')
 
     # Housekeeping
     parser.add_argument('--log_dir', type=str, default='logs/qamnist', help='Directory for logging.')
@@ -192,6 +194,8 @@ if __name__=='__main__':
     train_accuracies_most_certain = []  # This will be selected according to what is returned by loss function
     test_accuracies_most_certain = []
     iters = []
+
+
     scaler = torch.amp.GradScaler("cuda" if "cuda" in device else "cpu", enabled=args.use_amp)
 
     # Now that everything is initliased, reload if desired

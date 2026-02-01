@@ -4,6 +4,8 @@ from models.ctm import ContinuousThoughtMachine
 from models.ctm_kan_efficient import ContinuousThoughtMachine as ContinuousThoughtMachineKAN
 from models.modules import MNISTBackbone, QAMNISTIndexEmbeddings, QAMNISTOperatorEmbeddings
 
+import torch.nn as nn
+
 class ContinuousThoughtMachineQAMNIST(ContinuousThoughtMachine):
     def __init__(self,
                  iterations,

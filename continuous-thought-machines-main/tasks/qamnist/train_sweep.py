@@ -84,6 +84,8 @@ def parse_args():
     parser.add_argument('--memory_hidden_dims', type=int, default=4, help='Hidden dimensions of the memory if using deep memory.')
     parser.add_argument('--dropout', type=float, default=0.0, help='Dropout rate.')
     parser.add_argument('--do_normalisation', action=argparse.BooleanOptionalAction, default=False, help='Apply normalization in NLMs.')
+    parser.add_argument('--postactivation_production', type=str, default='mlp', choices=['mlp', 'kan'],
+                        help='Type neural network for post-activiation production.')
 
     # Training
     parser.add_argument('--batch_size', type=int, default=64, help='Batch size for training.')
