@@ -119,7 +119,7 @@ def parse_args():
 def main():
 
         # todo anpassen an neue wandb api mlp vs kan
-    with wandb.init(entity="justus-fischer-ludwig-maximilian-university-of-munich", project="ctm-mnist") as run:
+    with wandb.init(entity="justus-fischer-ludwig-maximilian-university-of-munich", project="ctm-qamnist") as run:
 
         # arguments and config
         config = wandb.config
@@ -127,8 +127,10 @@ def main():
         args.batch_size = config.batch_size
         args.lr = config.learning_rate
         # args.postactivation_production = config.postactivation_production
-        args.training_iterations = config.training_iterations
+        # args.training_iterations = config.training_iterations
+
         # args.model_type = config.model_type
+        args.repeats_per_input = config.repeats_per_input
         args.use_amp = config.use_amp
         args.use_scheduler = config.use_scheduler
         args.memory_length = config.memory_length
@@ -169,7 +171,7 @@ def main():
         print(f'Running model {args.model} on {device}')
 
 
-        # TODO prepare model KAN
+
         # Build model
         model = prepare_model(args, device)
 
@@ -490,18 +492,18 @@ if __name__=='__main__':
             },
             "parameters": {
                 "batch_size": {"values": [64]},
-                "learning_rate": {"min": 2e-4, "max": 3e-4},
+                "learning_rate": {"min": 1e-4, "max": 3e-4},
                 "use_amp": {"values": [True]},
                 "use_scheduler": {"values": [True]},
-                "memory_length": {"values": [50]},
-                "internal_ticks": {"values": [100]},
-                "training_iterations": {"values": [200000]},
-                # "postactivation_production": {"values": ["kan"]},
-                # "model_type": {"values": ["ctm"]},
+                "memory_length": {"values": [3]},
+                "repeats_per_input": {"values": [1]},
+                "training_iterations": {"values": [100000]},
+                "postactivation_production": {"values": ["kan"]},
+                "model_type": {"values": ["ctm"]},
 
             }
         }
 
-        sweep_id = wandb.sweep(sweep_configuration, project="ctm-mnist")
+        sweep_id = wandb.sweep(sweep_configuration, project="ctm-qamnist")
         wandb.agent(sweep_id, function=main, count=50)
 
