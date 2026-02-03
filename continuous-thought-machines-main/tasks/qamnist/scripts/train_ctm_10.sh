@@ -43,7 +43,7 @@ python -m tasks.qamnist.train \
     --no-reload \
     --no-reload_model_only \
     --no-use_amp \
-    --neuron_select_type "random"
-    --postactivation_production 'mlp'
+    --neuron_select_type "random" \
+    --postactivation_production 'kan'
 
     #--device 0 # CUDA device ID

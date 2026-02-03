@@ -61,8 +61,7 @@ python -u train_sweep.py \
     --no-use_amp \
     --neuron_select_type "random" \
     --postactivation_production 'kan'
-
-    #    --device 0 \
+#    --device 0
 
 # use Wandb set to 0 for local testing, set to 1 for slurm runs
 # to submit the job on slurm, use from ctm main folder:
