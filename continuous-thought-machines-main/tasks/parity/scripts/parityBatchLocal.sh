@@ -17,16 +17,16 @@
 python -m tasks.parity.train_sweeps_efficient\
     --log_dir "logs/parity/run1/local"\
     --seed 1 \
-    --iterations 100 \
-    --memory_length 50 \
+    --iterations 25 \
+    --memory_length 25 \
     --parity_sequence_length 64  \
     --n_test_batches 20 \
-    --d_model 60 \
+    --d_model 1024 \
     --d_input 64 \
-    --n_synch_out 16 \
-    --n_synch_action 16 \
+    --n_synch_out 32 \
+    --n_synch_action 32 \
     --synapse_depth 1 \
-    --heads 4 \
+    --heads 8 \
     --memory_hidden_dims 16 \
     --dropout 0.0 \
     --deep_memory \
@@ -41,8 +41,8 @@ python -m tasks.parity.train_sweeps_efficient\
     --milestones 0 0 0 \
     --gamma 0 \
     --dataset "parity" \
-    --batch_size 32 \
-    --batch_size_test 120 \
+    --batch_size 64 \
+    --batch_size_test 256 \
     --lr=0.0001 \
     --training_iterations 200001 \
     --warmup_steps 500 \

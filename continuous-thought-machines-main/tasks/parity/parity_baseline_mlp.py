@@ -105,7 +105,6 @@ def create_long_df(data_array, iters, metric_name='Accuracy'):
     return df_long
 
 def main():
-    # todo anpassen an neue wandb api mlp vs kan
     # with wandb.init(entity="justus-fischer-ludwig-maximilian-university-of-munich",project="ctm-parity") as run:
     #     config = wandb.config
         args = parse_args()

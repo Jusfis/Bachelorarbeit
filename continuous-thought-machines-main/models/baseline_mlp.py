@@ -42,3 +42,28 @@ class BaselineMLP(nn.Module):
         if x.dim() > 2:
             x = x.view(x.size(0), -1)
         return self.model(x)
+
+
+class SequentialBaselineMLP(nn.Module):
+
+
+    def __init__(self, hidden_dim=512):
+        super().__init__()
+        #[act_pix. logits from before...]
+        self.fc1 = nn.Linear(1, hidden_dim)
+        self.fc2 = nn.Linear(hidden_dim, hidden_dim)
+        self.fc3 = nn.Linear(hidden_dim, 2)  # outpu: Logits for Parität 0 und 1
+        self.relu = nn.ReLU()
+
+
+    def forward(self, x):
+        # x: [Batch, 64]
+        batch_size, seq_len = x.size()
+        x = x.unsqueeze(-1).float()  # [Batch, 64, 1]
+
+        # use on every time step window
+        out = self.relu(self.fc1(x))
+        out = self.relu(self.fc2(out))
+        logits = self.fc3(out)  # [Batch, 64, 2]
+
+        return logits

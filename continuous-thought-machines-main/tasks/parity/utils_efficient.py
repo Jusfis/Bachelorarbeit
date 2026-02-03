@@ -3,7 +3,7 @@ import re
 import math
 from models.ctm_kan_efficient import ContinuousThoughtMachine
 from models.lstm import LSTMBaseline # alternative baseline model
-from models.baseline_mlp import BaselineMLP
+from models.baseline_mlp import BaselineMLP, SequentialBaselineMLP
 import torch
 import torch.nn as nn
 
@@ -97,15 +97,27 @@ def prepare_baseline(args, device):
         loss (nn.Module): The loss function.
     """
 
-    in_dim = args.parity_sequence_length
-    h_dims = [1024,512,256]
-    out_dim = 2
+    # sliding window mlp 8x8 vs full sequence mlp 4x4
+    if (args.parity_sequence_length == 16):
+        in_dim = args.parity_sequence_length
+        h_dims = [1024, 512, 256]
+        out_dim = 2
 
-    # 2. Build Model
-    model = BaselineMLP(in_dim, h_dims, out_dim)
+        # 2. Build Model
+        model = BaselineMLP(in_dim, h_dims, out_dim)
 
-    # check done before
-    model.to(device)
+        model.to(device)
+
+    elif (args.parity_sequence_length == 64):
+        print("Using sliding window MLP for 8x8 Paritymatrices\n")
+        model = SequentialBaselineMLP(hidden_dim=args.d_model)
+        model.to(device)
+        return model
+
+    else:
+        raise ValueError(f"Model must be for sequence length 16 or 64, not {args.parity_sequence_length}")
+
+
 
 
     # loss = nn.CrossEntropyLoss()
