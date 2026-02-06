@@ -170,16 +170,19 @@ def parity_loss(predictions, certainties, targets, use_most_certain=True):
 
 def parity_loss_baseline(predictions, targets):
     """
-    Computes the parity loss for baseline models.
-
-    predictions: [32, 2] (Batch, Classes)
-    targets:     [32, 64] (Batch, Sequence Length) -> We take just thel last target, as it is enough!
+    predictions: [32, 64, 2]
+    targets:     [32, 64]
     """
-    final_targets = targets[:,-1]
-    final_targets = final_targets.long()
+    # CrossEntropy in PyTorch möchte (N, C, d1, d2...)
+    # oder man flacht es ab zu (N*Seq_Len, C)
 
-    loss = F.cross_entropy(predictions, final_targets)
-    return loss
+    logits_flat = predictions.view(-1, 2)       # [2048, 2]
+    targets_flat = targets.view(-1).long()      # [2048]
+
+
+    targets_flat = (targets_flat + 1) // 2
+
+    return F.cross_entropy(logits_flat, targets_flat)
 
 
 def qamnist_loss(predictions, certainties, targets, use_most_certain=True):

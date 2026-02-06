@@ -268,10 +268,15 @@ def main():
                 optimizer.zero_grad(set_to_none=True)
                 scheduler.step()
 
-                predicted_classes = predictions.argmax(dim=1)
+                last_step_logits = predictions[:, -1, :]
+                predicted_classes = last_step_logits.argmax(dim=-1)
 
                 # targets: [32, 64] -> true_classes: [32]
                 true_classes = targets[:, -1]
+                if true_classes.min() < 0:
+                    true_classes_mapped = (true_classes + 1) // 2
+                else:
+                    true_classes_mapped = true_classes
 
                 accuracy = (predicted_classes == true_classes).float().mean().item()
                 # accuracy_finegrained = (predictions.argmax(2)[torch.arange(predictions.size(0), device=predictions.device),:,where_most_certain] == targets).float().mean().item()
@@ -286,12 +291,17 @@ def main():
                 # Metrics tracking and plotting ####################### TRACK ##############
                 if bi%args.track_every==0 and bi != 0:
                     model.eval()
+
+
                     with torch.inference_mode():
 
                         inputs, targets = next(iter(testloader))
                         inputs = inputs.to(device)
                         targets = targets.to(device)
                         predictions = model(inputs)
+
+
+
 
                         # predictions = reshape_predictions(predictions, prediction_reshaper)
                         # attention = reshape_attention_weights(attention)
@@ -321,6 +331,8 @@ def main():
                         all_targets = []
                         all_predictions_most_certain = []
                         all_losses = []
+                        temp_train_acc = []
+                        temp_train_loss = []
 
                         iters.append(bi)
                         with torch.inference_mode():
@@ -332,36 +344,28 @@ def main():
                                     inputs = inputs.to(device)
                                     targets = targets.to(device)
                                     these_predictions = model(inputs)
+                                    # [Batch, 64, 2] now returns this
+                                    loss_val = parity_loss_baseline(these_predictions, targets)
+                                    temp_train_loss.append(loss_val.item())
+
 
                                     # these_predictions = reshape_predictions(these_predictions, prediction_reshaper)
-
-                                    loss = parity_loss_baseline(these_predictions, targets)
-                                    all_losses.append(loss.item())
-
-                                    all_targets.append(targets.detach().cpu().numpy())
-                                    predicted_classes = these_predictions.argmax(dim=1)
-
-                                    # targets: [32, 64] -> true_classes: [32]
+                                    last_step_logits = these_predictions[:,-1,:]
+                                    predicted_classes = last_step_logits.argmax(dim=-1)
                                     true_classes = targets[:, -1]
+                                    if true_classes.min() < 0: true_classes = (true_classes + 1) // 2
                                     accuracy = (predicted_classes == true_classes).float().mean().item()
 
-                                    # all_predictions_most_certain.append(these_predictions.argmax(2)[torch.arange(these_predictions.size(0), device=these_predictions.device), :, where_most_certain].detach().cpu().numpy())
-                                    # accuracy = (predicted_classes == true_classes).float().mean().item()
-                                    # all_predictions.append(these_predictions.argmax(2).detach().cpu().numpy())
 
-                                    if inferi%args.n_test_batches==0 and inferi!=0 and not args.full_eval: break
-                                    pbar_inner.set_description('Computing metrics for train')
-                                    pbar_inner.update(1)
+                                    accuracy = (predicted_classes == true_classes).float().mean().item()
+                                    temp_train_acc.append(accuracy)
 
-                            # all_predictions = np.concatenate(all_predictions)
-                            # all_targets = np.concatenate(all_targets)
-                            # all_predictions_most_certain = np.concatenate(all_predictions_most_certain)
+                            train_accuracies.append(np.mean(temp_train_acc))
+                            train_losses.append(np.mean(temp_train_loss))
 
-
-                            train_accuracies.append(accuracy)
-                            # train_accuracies_most_certain.append((all_targets == all_predictions_most_certain).mean())
-                            # train_accuracies_most_certain_per_input.append((all_targets == all_predictions_most_certain).reshape(all_targets.shape[0], -1).all(-1).mean())
-                            train_losses.append(np.mean(all_losses))
+                                    # if inferi%args.n_test_batches==0 and inferi!=0 and not args.full_eval: break
+                                    # pbar_inner.set_description('Computing metrics for train')
+                                    # pbar_inner.update(1)
 
                             # # log to wandb
                             # run.log({
@@ -373,8 +377,9 @@ def main():
 
 
                             ##################################### TEST METRICS ##################################
-                            all_predictions = []
-                            # all_predictions_most_certain = []
+
+                            temp_test_acc = []
+                            temp_test_loss = []
                             all_targets = []
                             all_losses = []
                             loader = torch.utils.data.DataLoader(test_data, batch_size=args.batch_size_test, shuffle=True, num_workers=0)
@@ -385,38 +390,29 @@ def main():
                                     targets = targets.to(device)
                                     these_predictions = model(inputs)
 
-                                    # these_predictions = these_predictions.reshape(these_predictions.size(0), -1, 2, these_predictions.size(-1))
-                                    # loss, where_most_certain = parity_loss(these_predictions, certainties, targets, use_most_certain=args.use_most_certain)
                                     loss = parity_loss_baseline(these_predictions, targets)
-                                    all_losses.append(loss.item())
+                                    temp_test_loss.append(loss.item())
+                                    pred_labels = these_predictions[:, -1, :].argmax(dim=-1)
 
-                                    all_targets.append(targets.detach().cpu().numpy())
-                                    predicted_classes = these_predictions.argmax(dim=1)
 
-                                    # targets: [32, 64] -> true_classes: [32]
+
                                     true_classes = targets[:, -1]
-                                    accuracy = (predicted_classes == true_classes).float().mean().item()
+                                    if true_classes.min() < 0: true_classes = (true_classes + 1) // 2
 
-
-
-
-
-
-                                    # all_predictions_most_certain.append(these_predictions.argmax(2)[torch.arange(these_predictions.size(0), device=these_predictions.device), :, where_most_certain].detach().cpu().numpy())
-                                    # all_predictions.append(these_predictions.argmax(2).detach().cpu().numpy())
-
-                                    if inferi%args.n_test_batches==0 and inferi!=0 and not args.full_eval: break
-                                    pbar_inner.set_description('Computing metrics for test')
+                                    # print(predicted_classes.shape, true_classes.shape)
+                                    accuracy = (pred_labels == true_classes).float().mean().item()
+                                    temp_test_acc.append(accuracy)
+                                    if inferi % args.n_test_batches == 0 and inferi != 0 and not args.full_eval: break
                                     pbar_inner.update(1)
 
-                            # all_predictions = np.concatenate(all_predictions)
-                            # all_targets = np.concatenate(all_targets)
-                            # all_predictions_most_certain = np.concatenate(all_predictions_most_certain)
+                            test_accuracies.append(np.mean(temp_test_acc))
+                            test_losses.append(np.mean(temp_test_loss))
 
-                            test_accuracies.append(accuracy)
-                            # test_accuracies_most_certain.append((all_targets == all_predictions_most_certain).mean())
-                            # test_accuracies_most_certain_per_input.append((all_targets == all_predictions_most_certain).reshape(all_targets.shape[0], -1).all(-1).mean())
-                            test_losses.append(np.mean(all_losses))
+
+
+
+
+
 
                             sns.set_theme(style="whitegrid")
 
