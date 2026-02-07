@@ -199,14 +199,10 @@ def parity_baseline_model(args, config=None, run=None):
                 optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
                 scheduler.load_state_dict(checkpoint['scheduler_state_dict'])
                 scaler.load_state_dict(checkpoint['scaler_state_dict'])
-                # start_iter = checkpoint['iteration']
+                start_iter = checkpoint['iteration']
                 train_losses = checkpoint['train_losses']
-                train_accuracies_most_certain = checkpoint['train_accuracies_most_certain']
-                train_accuracies_most_certain_per_input = checkpoint['train_accuracies_most_certain_per_input'] if 'train_accuracies_most_certain_per_input' in checkpoint else train_accuracies_most_certain_per_input
                 train_accuracies = checkpoint['train_accuracies']
                 test_losses = checkpoint['test_losses']
-                test_accuracies_most_certain = checkpoint['test_accuracies_most_certain']
-                test_accuracies_most_certain_per_input = checkpoint['test_accuracies_most_certain_per_input'] if 'test_accuracies_most_certain_per_input' in checkpoint else test_accuracies_most_certain_per_input
                 test_accuracies = checkpoint['test_accuracies']
                 iters = checkpoint['iters']
             else:
@@ -225,7 +221,7 @@ def parity_baseline_model(args, config=None, run=None):
                 torch.cuda.empty_cache()
 
 
-        # Training
+        # ------------------------------------------ TRAINING ------------------------------------ #
         iterator = iter(trainloader)  # Not training in epochs, but rather iterations. Need to reset this from time to time
         with tqdm(total=args.training_iterations, initial=start_iter, leave=False, position=0, dynamic_ncols=True) as pbar:
             for bi in range(start_iter, args.training_iterations):
@@ -242,8 +238,6 @@ def parity_baseline_model(args, config=None, run=None):
 
                 with torch.autocast(device_type="cuda" if "cuda" in device else "cpu", dtype=torch.float16, enabled=args.use_amp):
                     predictions = model(inputs)
-                    # predictions = predictions.reshape(predictions.size(0), -1, 2, predictions.size(-1))
-                    # loss, where_most_certain = parity_loss(predictions, certainties, targets, use_most_certain=args.use_most_certain)
                     # print(f"Size of predictions:{predictions.size()}, Size of targets:{targets.size()}")
                     loss = parity_loss_baseline(predictions,targets)
 
@@ -272,8 +266,8 @@ def parity_baseline_model(args, config=None, run=None):
                         "Train/Accuracies": accuracy,
                     }, step=bi)
 
-                # Metrics tracking and plotting ####################### TRACK ##############
-                if bi%args.track_every==0 and bi != 0:
+                ######################## TRACK METRICS TRACKING AND PLOTTING ##############
+                if bi%args.track_every == 0 and bi != 0:
                     model.eval()
 
 
@@ -284,11 +278,7 @@ def parity_baseline_model(args, config=None, run=None):
                         targets = targets.to(device)
                         predictions = model(inputs)
 
-                        ##################################### TRAIN METRICS ##########################
-                        all_predictions = []
-                        all_targets = []
-                        all_predictions_most_certain = []
-                        all_losses = []
+                        ##################################### TRACK TRAIN METRICS ##########################
                         temp_train_acc = []
                         temp_train_loss = []
 
@@ -302,44 +292,35 @@ def parity_baseline_model(args, config=None, run=None):
                                     inputs = inputs.to(device)
                                     targets = targets.to(device)
                                     these_predictions = model(inputs)
+
                                     # [Batch, 64, 2] now returns this
                                     loss_val = parity_loss_baseline(these_predictions, targets)
                                     temp_train_loss.append(loss_val.item())
 
-
-                                    # these_predictions = reshape_predictions(these_predictions, prediction_reshaper)
                                     last_step_logits = these_predictions[:,-1,:]
+
                                     predicted_classes = last_step_logits.argmax(dim=-1)
                                     true_classes = targets[:, -1]
                                     if true_classes.min() < 0: true_classes = (true_classes + 1) // 2
-                                    accuracy = (predicted_classes == true_classes).float().mean().item()
 
 
                                     accuracy = (predicted_classes == true_classes).float().mean().item()
                                     temp_train_acc.append(accuracy)
 
+                                    # PROGRESS BAR
+                                    if inferi % args.n_test_batches == 0 and inferi != 0 and not args.full_eval: break
+                                    pbar_inner.set_description('Computing metrics for train')
+                                    pbar_inner.update(1)
+
                             train_accuracies.append(np.mean(temp_train_acc))
                             train_losses.append(np.mean(temp_train_loss))
 
-                                    # if inferi%args.n_test_batches==0 and inferi!=0 and not args.full_eval: break
-                                    # pbar_inner.set_description('Computing metrics for train')
-                                    # pbar_inner.update(1)
 
-                            # # log to wandb
-                            # run.log({
-                            #     "Train/Accuracies_Most_Certain": train_accuracies_most_certain[-1] if len(train_accuracies_most_certain) > 0 else 0,
-                            #     "Test/Accuracies_Most_Certain": test_accuracies_most_certain[-1] if len(test_accuracies_most_certain) > 0 else 0,
-                            #     "Train/Losses": train_losses[-1] if len(train_losses) > 0 else 0,
-                            #     "Train/Accuracies": train_accuracies[-1] if len(train_accuracies) > 0 else 0,
-                            # }, step=bi)
-
-
-                            ##################################### TEST METRICS ##################################
+                            ##################################### TRACK TEST METRICS ##################################
 
                             temp_test_acc = []
                             temp_test_loss = []
-                            all_targets = []
-                            all_losses = []
+
                             loader = torch.utils.data.DataLoader(test_data, batch_size=args.batch_size_test, shuffle=True, num_workers=0)
                             with tqdm(total=len(loader), initial=0, leave=False, position=1, dynamic_ncols=True) as pbar_inner:
                                 for inferi, (inputs, targets) in enumerate(loader):
@@ -352,26 +333,25 @@ def parity_baseline_model(args, config=None, run=None):
                                     temp_test_loss.append(loss.item())
                                     pred_labels = these_predictions[:, -1, :].argmax(dim=-1)
 
-
-
                                     true_classes = targets[:, -1]
                                     if true_classes.min() < 0: true_classes = (true_classes + 1) // 2
 
                                     # print(predicted_classes.shape, true_classes.shape)
                                     accuracy = (pred_labels == true_classes).float().mean().item()
                                     temp_test_acc.append(accuracy)
+
+
+                                    # PROGRESS BAR
                                     if inferi % args.n_test_batches == 0 and inferi != 0 and not args.full_eval: break
+                                    pbar_inner.set_description('Computing metrics for test')
                                     pbar_inner.update(1)
 
                             test_accuracies.append(np.mean(temp_test_acc))
                             test_losses.append(np.mean(temp_test_loss))
 
-
-
-
-
-
-
+                            # =========================================================
+                            # PLOTTING WITH SEABORN
+                            # =========================================================
                             sns.set_theme(style="whitegrid")
 
                             # Define Color Palette for the "All Runs" plots
@@ -384,8 +364,6 @@ def parity_baseline_model(args, config=None, run=None):
                             test_loss_arr = np.array(test_losses)
 
                             if args.dataset != 'sort':
-
-
                                 # =========================================================
                                 # PART A: ACCURACIES
                                 # =========================================================
@@ -394,11 +372,8 @@ def parity_baseline_model(args, config=None, run=None):
 
                                 figacc_ci, (ax_ci_train, ax_ci_test) = plt.subplots(2, 1, figsize=(10, 10), sharex=True)
 
-
                                 df_acc_train = create_long_df(train_acc_arr, iters, 'Accuracy')
                                 df_acc_test = create_long_df(test_acc_arr, iters, 'Accuracy')
-
-
 
                                 ax_ci_train.axhline(0.5, color='gray', linestyle=':', label='Random Guess (0.5)')
                                 ax_ci_test.axhline(0.5, color='gray', linestyle=':', label='Random Guess (0.5)')
@@ -454,13 +429,10 @@ def parity_baseline_model(args, config=None, run=None):
                                 figloss_ci.savefig(f'{args.log_dir}/overall_losses.png', dpi=150)
                                 plt.close(figloss_ci)
 
-
-
                     model.train()
 
 
-
-                # Save model ########################### AND make fig##############################
+                ###########################  SAVE MODEL ##############################
                 if (bi%args.save_every==0 or bi==args.training_iterations-1):
                     torch.save(
                         {

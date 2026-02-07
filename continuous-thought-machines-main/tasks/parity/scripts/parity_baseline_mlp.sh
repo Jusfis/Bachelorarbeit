@@ -56,8 +56,7 @@ python -m tasks.parity.parity_baseline_mlp \
 #    --deep_memory \
 #    --iterations 75 \
 
+# set --device 0 to allow slurm to assign GPU automatically
 # use Wandb set to 0 for local testing, set to 1 for slurm runs
 # to submit the job on slurm, use from ctm main folder:
 # sbatch --partition=NvidiaAll parity_baseline_mlp.sh
-#
-# remove --device 0 to allow slurm to assign GPU automatically
