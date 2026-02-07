@@ -65,5 +65,5 @@ python -u train_sweep.py \
 
 # use Wandb set to 0 for local testing, set to 1 for slurm runs
 # to submit the job on slurm, use from ctm main folder:
-# sbatch --partition=NvidiaAll parityBatchKan.sh
+# sbatch --partition=NvidiaAll parityBatchKAN.sh
 # remove --device 0 to allow slurm to assign GPU automatically

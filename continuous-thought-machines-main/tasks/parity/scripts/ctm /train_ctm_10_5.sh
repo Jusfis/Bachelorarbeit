@@ -6,7 +6,6 @@ LOG_DIR="logs/parity/run${RUN}/ctm_${ITERATIONS}_${MEMORY_LENGTH}"
 SEED=$((RUN - 1))
 
 python -m tasks.parity.train \
-#    --model_type "ctm"\
     --log_dir $LOG_DIR \
     --seed $SEED \
     --iterations $ITERATIONS \

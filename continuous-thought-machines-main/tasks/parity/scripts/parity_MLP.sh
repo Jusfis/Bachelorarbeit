@@ -14,17 +14,17 @@
 #LOG_DIR="logs/parity/run${RUN}/ctm_${ITERATIONS}_${MEMORY_LENGTH}"
 #SEED=$((RUN - 1))
 #    --model_type "ctm"\
+
 # IMPORTANT D_model % 5 == 0 for MLP postactivation production
 
-
-python -u train_sweeps_efficient.py \
-    --log_dir "logs/parity/run4/KAN"\
+python -m tasks.parity.train_sweeps_efficient \
+    --log_dir "logs/parity/run10/MLP"\
     --seed 1 \
-    --iterations 75 \
-    --memory_length 25 \
+    --iterations 10 \
+    --memory_length 5 \
     --parity_sequence_length 64  \
     --n_test_batches 20 \
-    --d_model 1020 \
+    --d_model 1024 \
     --d_input 512 \
     --n_synch_out 32 \
     --n_synch_action 32 \
@@ -44,8 +44,8 @@ python -u train_sweeps_efficient.py \
     --milestones 0 0 0 \
     --gamma 0 \
     --dataset "parity" \
-    --batch_size 32 \
-    --batch_size_test 120 \
+    --batch_size 64 \
+    --batch_size_test 256 \
     --lr=0.0001 \
     --training_iterations 50001 \
     --warmup_steps 500 \
@@ -56,8 +56,11 @@ python -u train_sweeps_efficient.py \
     --no-use_amp \
     --neuron_select_type "random" \
     --device 0 \
-    --postactivation_production 'kan' \
-    --useWand 1
+    --postactivation_production 'mlp'\
+    --useWandb 0
 
-#to submit the job on slurm, use from ctm main folder:
-#sbatch --partition=NvidiaAll parityBatchKan.sh script for slurm #####
+
+# set --device 0 to allow slurm to assign GPU automatically
+# use Wandb set to 0 for local testing, set to 1 for slurm runs
+# to submit the job on slurm, use from ctm main folder:
+#sbatch --partition=NvidiaAll parityBatchKAN.sh script for slurm
