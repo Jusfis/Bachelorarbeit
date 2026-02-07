@@ -3,7 +3,7 @@ import re
 import math
 from models.ctm_kan_efficient import ContinuousThoughtMachine
 from models.lstm import LSTMBaseline # alternative baseline model
-from models.baseline_mlp import BaselineMLP
+from models.baseline_mlp import BaselineMLPParity
 import torch
 import torch.nn as nn
 
@@ -96,7 +96,7 @@ def prepare_baseline(args, device):
         model (nn.Module): The initialized MLP.
     """
 
-    # sliding window mlp 8x8 vs full sequence mlp 4x4
+    # sliding window mlp
     in_dim = args.parity_sequence_length
 
 
@@ -104,7 +104,7 @@ def prepare_baseline(args, device):
     out_dim = 2  # even odd
 
     # Modell erstellen
-    model = BaselineMLP(in_dim=in_dim, h_dims=h_dims, out_dim=out_dim)
+    model = BaselineMLPParity(in_dim=in_dim, h_dims=h_dims, out_dim=out_dim)
 
 
     model.to(device)
