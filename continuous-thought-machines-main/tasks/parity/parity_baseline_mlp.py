@@ -282,9 +282,9 @@ def parity_baseline_model(args, config=None, run=None):
 
                 if run is not None:
                     run.log({
-                        "Train/Losses on all bits": loss.item(),
+                        "Train/Losses": loss.item(),
                         "Train/Accuracies final ": accuracy,
-                        "Train/Accuracies on all bits": accuracy_all,
+                        "Train/Accuracies": accuracy_all,
                         "Train/Losses final": loss_final.item(),
                     }, step=bi)
 
