@@ -239,6 +239,8 @@ def parity_baseline_model(args, config=None, run=None):
                 with torch.autocast(device_type="cuda" if "cuda" in device else "cpu", dtype=torch.float16, enabled=args.use_amp):
                     predictions = model(inputs)
                     # print(f"Size of predictions:{predictions.size()}, Size of targets:{targets.size()}")
+
+                    ################################### LOSS ON ALL BITS ########################################
                     loss = parity_loss_baseline(predictions,targets)
 
 
@@ -251,19 +253,39 @@ def parity_baseline_model(args, config=None, run=None):
                 last_step_logits = predictions[:, -1, :]
                 predicted_classes = last_step_logits.argmax(dim=-1)
 
+
+
                 # targets: [32, 64] -> true_classes: [32]
-                true_classes = targets[:, -1]
-                if true_classes.min() < 0:
-                    true_classes = (true_classes + 1) // 2
+                final_target = targets[:, -1]
+                if final_target.min() < 0:
+                    final_target = (final_target + 1) // 2
 
-                accuracy = (predicted_classes == true_classes).float().mean().item()
+                targets_mapped = (targets + 1) // 2 if targets.min() < 0 else targets
 
-                pbar.set_description(f'Dataset=Parity. Loss={loss.item():0.3f}. Accuracy={accuracy:0.3f}. LR={current_lr:0.6f}. Iter={bi}')
+                ################################### ACCURACY ONLY ON LAST BIT ########################################
+                # only final accuracy, not all bits
+                accuracy = (predicted_classes == final_target).float().mean().item()
+
+                ################################### ACCURACY ON ALL BITS ########################################
+                # predictions [batch, seq_len, 2] -> [batch, seq_len]
+                accuracy_all = (predictions.argmax(dim=-1) == targets_mapped).float().mean().item()
+
+                ################################### LOSS ONLY ON LAST BIT ########################################
+                # last step logits: [batch, 2]
+                last_step_logits = predictions[:, -1, :]
+                # last step targets: [batch]
+                last_step_targets = targets_mapped[:, -1].long()
+                loss_final = torch.nn.functional.cross_entropy(last_step_logits, last_step_targets)
+
+
+                pbar.set_description(f'Dataset=Parity. Loss_on_all_bits={loss.item():0.3f}. Accuracy_on_all_bits: {accuracy_all:0.3f}. Accuracy_final={accuracy:0.3f}. Loss_final: {loss_final:0.3f} LR={current_lr:0.6f}. Iter={bi}')
 
                 if run is not None:
                     run.log({
-                        "Train/Losses": loss.item(),
-                        "Train/Accuracies": accuracy,
+                        "Train/Losses on all bits": loss.item(),
+                        "Train/Accuracies final ": accuracy,
+                        "Train/Accuracies on all bits": accuracy_all,
+                        "Train/Losses final": loss_final.item(),
                     }, step=bi)
 
                 ######################## TRACK METRICS TRACKING AND PLOTTING ##############
