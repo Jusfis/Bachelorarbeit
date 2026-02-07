@@ -335,14 +335,8 @@ class ContinuousThoughtMachine(nn.Module, PyTorchModelHubMixin):
         """
         initial_rgb = self.initial_rgb(x)
         self.kv_features = self.backbone(initial_rgb)
-        input_for_pos = self.kv_features.permute(0, 2, 1)  # Jetzt [Batch, 100, 128]
 
-        # Jetzt generiert es die korrekten Embeddings für 100 Schritte
-        pos_emb = self.positional_embedding(input_for_pos)  # Output [Batch, 100, 128]
-
-        # Wir drehen das Ergebnis zurück, damit es zum Backbone passt
-        pos_emb = pos_emb.permute(0, 2, 1)
-
+        pos_emb = self.positional_embedding(self.kv_features)
 
         combined_features = (self.kv_features + pos_emb).flatten(2).transpose(1, 2)
         kv = self.kv_proj(combined_features)

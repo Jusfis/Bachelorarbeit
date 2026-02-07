@@ -29,7 +29,7 @@ def prepare_model(prediction_reshaper, args, device):
             neuron_select_type=args.neuron_select_type,
             n_random_pairing_self=args.n_random_pairing_self,
             postactivation_production=args.postactivation_production,
-        ).to(device) # below baseline model #todo add other baseline model cnn for instance
+        ).to(device) # below baseline model
     elif args.model_type == 'lstm':
         model = LSTMBaseline(
             iterations=args.iterations,

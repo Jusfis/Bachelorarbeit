@@ -111,8 +111,10 @@ def create_long_df(data_array, iters, metric_name='Accuracy'):
     return df_long
 
 def parity_model(args, config, run):
-
-    print(f"Using config: {config}\n Parsed args: {args}\n")
+    if config is not None:
+        print(f"Using config: {config}\n Parsed args: {args}\n")
+    else:
+        print(f"Using config: {args}")
 
     set_seed(args.seed)
 
@@ -140,7 +142,6 @@ def parity_model(args, config, run):
         print(args, file=f)
 
     # Configure device string (support MPS on macOS)
-    # todo repair cuda init for multi-gpu
     if args.device[0] != -1:
         device = f'cuda:{args.device[0]}'
     elif torch.backends.mps.is_available():
@@ -538,10 +539,10 @@ def parity_model(args, config, run):
                             figloss_ci.savefig(f'{args.log_dir}/losses.png', dpi=150)
                             plt.close(figloss_ci)
 
-                # todo why model.train() twice?
+
                 model.train()
 
-            # Save model ########################### AND make fig##############################
+            ############################ SAVE MODEL ##############################
             if (bi % args.save_every == 0 or bi == args.training_iterations - 1):
                 torch.save(
                     {
@@ -572,13 +573,37 @@ def parity_model(args, config, run):
 
 
 
-def main():
+def run_sweep():
 
 
+
+
+
+    with wandb.init(entity="justus-fischer-ludwig-maximilian-university-of-munich", project="ctm-parity") as run:
+        config = wandb.config
+        args = parse_args()
+
+        # input from wandb sweep
+        args.batch_size = config.batch_size
+        args.lr = config.learning_rate
+        args.training_iterations = config.training_iterations
+        args.use_amp = config.use_amp
+        args.use_scheduler = config.use_scheduler
+        args.memory_length = config.memory_length
+        args.iterations = config.internal_ticks
+        args.postactivation_production = config.postactivation_production
+        args.model_type = config.model_type
+        args.parity_sequence_length = config.parity_sequence_length
+
+        # modell laufen lassen
+        parity_model(args, config, run)
+
+
+
+if __name__=='__main__':
     args = parse_args()
 
     if args.useWandb == 1:
-        # Sweep configuration for wandb
         sweep_configuration = {
             "program": "train_sweeps_efficient.py",
             "name": "ctm-parity",
@@ -586,47 +611,27 @@ def main():
             "metric": {
                 "name": "Train/Losses",
                 "goal": "minimize"
-                # todo decide if maximize accuracies or minimize loss and add iterations and memory length
+
             },
             "parameters": {
-                "batch_size": {"values": [32, 64]},
+                "batch_size": {"values": [64]},
                 "learning_rate": {"min": 1e-4, "max": 3e-4},
                 "use_amp": {"values": [True]},
-                "use_scheduler": {"values": [False]},
+                "use_scheduler": {"values": [True]},
                 "memory_length": {"values": [50]},
                 "internal_ticks": {"values": [100]},
                 "training_iterations": {"values": [200000]},
-                # "postactivation_production": {"values": ["kan"]},
-                # "model_type": {"values": ["ctm"]},
-                # Todo"parity_sequence_length": {"values": [16, 64]},
+                "model_type": {"values": ["ctm"]},
+                "parity_sequence_length": {"values": [64]},
+                "postactivation_production": {"values": ["mlp"]}
             }
         }
 
+        # ------------------ RUN WITH WANDB SWEEPS ------------------------- #
         sweep_id = wandb.sweep(sweep_configuration, project="ctm-parity")
-        wandb.agent(sweep_id, function=main, count=50)
+        wandb.agent(sweep_id, function=run_sweep, count=50)
 
-        with wandb.init(entity="justus-fischer-ludwig-maximilian-university-of-munich",project="ctm-parity") as run:
-            config = wandb.config
-
-            # input from wandb sweep
-            args.batch_size = config.batch_size
-            args.lr = config.learning_rate
-            # args.postactivation_production = config.postactivation_production
-
-            args.training_iterations = config.training_iterations
-
-            # args.model_type = config.model_type
-
-            args.use_amp = config.use_amp
-            args.use_scheduler = config.use_scheduler
-            args.memory_length = config.memory_length
-            args.iterations = config.internal_ticks
-            # modell laufen lassen
-            parity_model(args ,config, run)
     else:
+        # ------------------- RUN WITHOUT WANDB ------------------------ #
         parity_model(args, None, None)
 
-
-if __name__=='__main__':
-
-            main()

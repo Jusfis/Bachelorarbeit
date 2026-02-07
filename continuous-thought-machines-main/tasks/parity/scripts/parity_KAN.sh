@@ -55,7 +55,6 @@ python -m tasks.parity.train_sweeps_efficient \
     --no-reload_model_only \
     --no-use_amp \
     --neuron_select_type "random" \
-    --device 0 \
     --postactivation_production 'kan' \
     --useWandb 0
 
