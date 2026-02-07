@@ -3,6 +3,9 @@ import math
 import random # Used for saving/loading RNG state
 import os
 import sys
+from os.path import exists
+import wandb
+
 import pandas as pd
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
@@ -82,6 +85,7 @@ def parse_args():
     parser.add_argument('--full_eval',  action=argparse.BooleanOptionalAction, default=False, help='Perform full evaluation instead of approx.')
     parser.add_argument('--device', type=int, nargs='+', default=[-1], help='GPU(s) or -1 for CPU.')
     parser.add_argument('--use_amp', action=argparse.BooleanOptionalAction, default=False, help='AMP autocast.')
+    parser.add_argument('--useWandb', type=int, help='Use wandb logging.', default=0)
 
     args = parser.parse_args()
     return args
@@ -104,23 +108,14 @@ def create_long_df(data_array, iters, metric_name='Accuracy'):
     df_long = df.melt(id_vars='Iteration', var_name='Run', value_name=metric_name)
     return df_long
 
-def main():
-    # with wandb.init(entity="justus-fischer-ludwig-maximilian-university-of-munich",project="ctm-parity") as run:
-    #     config = wandb.config
-        args = parse_args()
-        # input from wandb sweep
-        # args.batch_size = config.batch_size
-        # args.lr = config.learning_rate
-        # # args.postactivation_production = config.postactivation_production
-        # args.training_iterations = config.training_iterations
-        # # args.model_type = config.model_type
-        # args.use_amp = config.use_amp
-        # args.use_scheduler = config.use_scheduler
-        # args.memory_length = config.memory_length
-        # args.iterations = config.internal_ticks
+def parity_baseline_model(args, config=None, run=None):
 
-        # print(f"Using config: {config}\n Parsed args: {args}\n")
 
+
+        if config is not None:
+            print(f"Using config: {config}\n Parsed args: {args}\n")
+        else:
+            print(f"Using config: {args}")
 
         set_seed(args.seed)
 
@@ -135,12 +130,8 @@ def main():
         trainloader = torch.utils.data.DataLoader(train_data, batch_size=args.batch_size, shuffle=True, num_workers=0)
         testloader = torch.utils.data.DataLoader(test_data, batch_size=args.batch_size_test, shuffle=True, num_workers=0, drop_last=False)
 
-        prediction_reshaper = [args.parity_sequence_length, 2]
-
-        # todo  prediction reshaper anpassen an parity
         args.out_dims = args.parity_sequence_length * 2
 
-        args.use_most_certain = args.model_type == "ctm" or (args.use_most_certain_with_lstm and args.model_type == "lstm")
 
         # For total reproducibility
         # Python 3.x
@@ -156,10 +147,9 @@ def main():
             device = 'mps'
         else:
             device = 'cpu'
-        print(f'Running model {args.model_type} on {device}')
+        print(f'Running model baseline_mlp on {device}')
 
         # Build model
-        # Prediction Reshaper
         model = prepare_baseline(args=args, device=device)
 
         model.train()
@@ -189,17 +179,13 @@ def main():
                 raise NotImplementedError
 
 
-        # Metrics tracking (I like custom)
+
         # Using batched estimates
         start_iter = 0  # For reloading, keep track of this (pretty tqdm stuff needs it)
         train_losses = []
         test_losses = []
-        train_accuracies = []  # This will be per internal tick, not so simple
+        train_accuracies = []
         test_accuracies = []
-        # train_accuracies_most_certain = []  # This will be selected according to what is returned by loss function
-        # test_accuracies_most_certain = []
-        # train_accuracies_most_certain_per_input = []
-        # test_accuracies_most_certain_per_input = []
         iters = []
         scaler = torch.amp.GradScaler("cuda" if "cuda" in device else "cpu", enabled=args.use_amp)
 
@@ -260,7 +246,7 @@ def main():
                     # loss, where_most_certain = parity_loss(predictions, certainties, targets, use_most_certain=args.use_most_certain)
                     # print(f"Size of predictions:{predictions.size()}, Size of targets:{targets.size()}")
                     loss = parity_loss_baseline(predictions,targets)
-                    # print(loss)
+
 
                 scaler.scale(loss).backward()
                 scaler.step(optimizer)
@@ -274,19 +260,17 @@ def main():
                 # targets: [32, 64] -> true_classes: [32]
                 true_classes = targets[:, -1]
                 if true_classes.min() < 0:
-                    true_classes_mapped = (true_classes + 1) // 2
-                else:
-                    true_classes_mapped = true_classes
+                    true_classes = (true_classes + 1) // 2
 
                 accuracy = (predicted_classes == true_classes).float().mean().item()
-                # accuracy_finegrained = (predictions.argmax(2)[torch.arange(predictions.size(0), device=predictions.device),:,where_most_certain] == targets).float().mean().item()
+
                 pbar.set_description(f'Dataset=Parity. Loss={loss.item():0.3f}. Accuracy={accuracy:0.3f}. LR={current_lr:0.6f}. Iter={bi}')
 
-                # run.log({
-                #     "Train/Losses": loss.item(),
-                #     "Train/Accuracies": accuracy_finegrained,
-                # }, step=bi)
-
+                if run is not None:
+                    run.log({
+                        "Train/Losses": loss.item(),
+                        "Train/Accuracies": accuracy,
+                    }, step=bi)
 
                 # Metrics tracking and plotting ####################### TRACK ##############
                 if bi%args.track_every==0 and bi != 0:
@@ -299,32 +283,6 @@ def main():
                         inputs = inputs.to(device)
                         targets = targets.to(device)
                         predictions = model(inputs)
-
-
-
-
-                        # predictions = reshape_predictions(predictions, prediction_reshaper)
-                        # attention = reshape_attention_weights(attention)
-                        # inputs = reshape_inputs(inputs, args.iterations, grid_size=int(math.sqrt(args.parity_sequence_length)))
-
-                        # pbar.set_description('Tracking: Neural dynamics')
-                        # plot_neural_dynamics(post_activations, args.d_model, args.log_dir, axis_snap=True)
-
-                        # pbar.set_description('Tracking: Producing attention gif')
-
-                        # process = multiprocessing.Process(
-                        #     target=make_parity_gif,
-                        #     args=(
-                        #     predictions.detach().cpu().numpy(),
-                        #     # certainties.detach().cpu().numpy(),
-                        #     targets.detach().cpu().numpy(),
-                        #     # pre_activations,
-                        #     # post_activations,
-                        #     # attention,
-                        #     inputs,
-                        #     f"{args.log_dir}/eval_output_val_{0}_iter_{0}.gif",
-                        # ))
-                        # process.start()
 
                         ##################################### TRAIN METRICS ##########################
                         all_predictions = []
@@ -461,7 +419,8 @@ def main():
                                 ax_ci_test.set_ylim([0, 1.05])
 
                                 figacc_ci.tight_layout()
-                                figacc_ci.savefig(f'{args.log_dir}/accuracies.png', dpi=150)
+                                # accuracies last bit (show it performs badly)
+                                figacc_ci.savefig(f'{args.log_dir}/accuracies_last_bit.png', dpi=150)
                                 plt.close(figacc_ci)
 
                                 # =========================================================
@@ -492,7 +451,7 @@ def main():
                                 axloss_ci.set_xlim([0, args.training_iterations])
 
                                 figloss_ci.tight_layout()
-                                figloss_ci.savefig(f'{args.log_dir}/losses.png', dpi=150)
+                                figloss_ci.savefig(f'{args.log_dir}/overall_losses.png', dpi=150)
                                 plt.close(figloss_ci)
 
 
@@ -529,30 +488,52 @@ def main():
 
 
 
+
+def run_sweep():
+    with wandb.init(entity="justus-fischer-ludwig-maximilian-university-of-munich",
+                    project="ctm-parity-baseline") as run:
+        config = wandb.config
+        args = parse_args()
+
+        # input from wandb sweep
+        args.batch_size = config.batch_size
+        args.lr = config.learning_rate
+        args.training_iterations = config.training_iterations
+        args.use_amp = config.use_amp
+        args.use_scheduler = config.use_scheduler
+        args.parity_sequence_length = config.parity_sequence_length
+        parity_baseline_model(args, config, run)
+
 if __name__=='__main__':
-        main()
-        # Sweep configuration for wandb
-        # sweep_configuration = {
-        #     "program": "parity_baseline_mlp.py",
-        #     "name": "ctm-parity",
-        #     "method": "random",
-        #     "metric": {
-        #         "name": "Train/Losses",
-        #         "goal": "minimize"# todo decide if maximize accuracies or minimize loss and add iterations and memory length
-        #     },
-        #     "parameters": {
-        #         "batch_size": {"values": [64]},
-        #         "learning_rate": {"min": 1e-4, "max": 3e-4},
-        #         "use_amp": {"values": [True]},
-        #         "use_scheduler": {"values": [True]},
-        #         "memory_length": {"values": [75]},
-        #         "internal_ticks": {"values": [100]},
-        #         "training_iterations": {"values": [200000]},
-        #         # "postactivation_production": {"values": ["kan"]},
-        #         # "model_type": {"values": ["ctm"]},
-        #         # Todo"parity_sequence_length": {"values": [16, 64]},
-        #     }
-        # }
-        #
-        # sweep_id = wandb.sweep(sweep_configuration, project="ctm-parity")
-        # wandb.agent(sweep_id, function=main, count=50)
+
+        args = parse_args()
+
+        if args.useWandb == 1:
+            # Sweep configuration for wandb
+            sweep_configuration = {
+                "program": "parity_baseline_mlp.py",
+                "name": "ctm-parity",
+                "method": "random",
+                "metric": {
+                    "name": "Train/Losses",
+                    "goal": "minimize"
+                },
+                "parameters": {
+                    "seed": {"min": 1, "max": 100},
+                    "batch_size": {"values": [64]},
+                    "learning_rate": {"min": 2e-4, "max": 3e-4},
+                    "use_amp": {"values": [True]},
+                    "use_scheduler": {"values": [True]},
+                    "memory_length": {"values": [50]},
+                    "internal_ticks": {"values": [100]},
+                    "training_iterations": {"values": [200000]},
+                    "parity_sequence_length": {"values": [64]},
+                }
+            }
+            # ------------------ RUN WITH WANDB SWEEPS ------------------------- #
+            sweep_id = wandb.sweep(sweep_configuration, project="ctm-parity-baseline")
+            wandb.agent(sweep_id, function=run_sweep, count=50)
+
+        else:
+            # ------------------- RUN WITHOUT WANDB ------------------------ #
+            parity_baseline_model(args, None, None)

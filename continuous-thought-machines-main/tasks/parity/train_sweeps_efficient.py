@@ -590,7 +590,7 @@ def main():
             },
             "parameters": {
                 "batch_size": {"values": [32, 64]},
-                "learning_rate": {"min": 2e-4, "max": 3e-4},
+                "learning_rate": {"min": 1e-4, "max": 3e-4},
                 "use_amp": {"values": [True]},
                 "use_scheduler": {"values": [False]},
                 "memory_length": {"values": [50]},

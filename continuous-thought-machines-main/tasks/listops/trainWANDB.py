@@ -688,7 +688,6 @@ if __name__ == "__main__":
         "metric": {
             "name": "Train/Losses",
             "goal": "minimize"
-            # todo decide if maximize accuracies or minimize loss and add iterations and memory length
         },
         "parameters": {
 

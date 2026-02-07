@@ -1,35 +1,26 @@
 #!/bin/bash
 #
-#SBATCH --job-name=CTM_parity_wandb_sweeps
+#SBATCH --job-name=Base_parity_wandb_sweeps
 #SBATCH --comment="CTM tuning with wandb"
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=justus.fischer@campus.lmu.de
 #SBATCH --ntasks=1
 #SBATCH --chdir=/home/f/fischerjus/Bachelorarbeit/continuous-thought-machines-main/tasks/parity
-#SBATCH --output=/home/f/fischerjus/Bachelorarbeit/continuous-thought-machines-main/tasks/parity/slurm_kan.%j.%N.out
+#SBATCH --output=/home/f/fischerjus/Bachelorarbeit/continuous-thought-machines-main/tasks/parity/slurm_baseline.%j.%N.out
 
 #RUN=1
 #ITERATIONS=10
 #MEMORY_LENGTH=5
 #LOG_DIR="logs/parity/run${RUN}/ctm_${ITERATIONS}_${MEMORY_LENGTH}"
 #SEED=$((RUN - 1))
-#    --model_type "ctm"\
+
 python -m tasks.parity.parity_baseline_mlp \
-    --log_dir "logs/parity/run7/baseline_sweeps"\
+    --log_dir "logs/parity/run7/baseline_sweeps" \
     --seed 42 \
-    --iterations 75 \
-    --memory_length 25 \
     --parity_sequence_length 64  \
     --n_test_batches 20 \
-    --d_model 60 \
-    --d_input 64 \
-    --n_synch_out 16 \
-    --n_synch_action 16 \
-    --synapse_depth 1 \
-    --heads 4 \
     --memory_hidden_dims 16 \
     --dropout 0.0 \
-    --deep_memory \
     --no-do_normalisation \
     --positional_embedding_type="custom-rotational-1d" \
     --backbone_type="parity_backbone" \
@@ -51,9 +42,22 @@ python -m tasks.parity.parity_baseline_mlp \
     --no-reload \
     --no-reload_model_only \
     --no-use_amp \
-    --neuron_select_type "random" \
-    --postactivation_production 'kan'
+    --useWandb 0
 
-#to submit the job on slurm, use from ctm main folder:
-#sbatch --partition=NvidiaAll parityBatchKan.sh
+#    --neuron_select_type "random" \
+#    --postactivation_production 'kan'
+#    --d_model 60 \
+#    --d_input 64 \
+#    --n_synch_out 16 \
+#    --n_synch_action 16 \
+#    --synapse_depth 1 \
+#    --heads 4 \
+#    --memory_length 25 \
+#    --deep_memory \
+#    --iterations 75 \
+
+# use Wandb set to 0 for local testing, set to 1 for slurm runs
+# to submit the job on slurm, use from ctm main folder:
+# sbatch --partition=NvidiaAll parity_baseline_mlp.sh
+#
 # remove --device 0 to allow slurm to assign GPU automatically
