@@ -42,7 +42,7 @@ python -m tasks.parity.parity_baseline_mlp \
     --no-reload \
     --no-reload_model_only \
     --no-use_amp \
-    --useWandb 0
+    --useWandb 1
 
 #    --neuron_select_type "random" \
 #    --postactivation_production 'kan'
