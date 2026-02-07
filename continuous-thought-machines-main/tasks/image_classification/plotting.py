@@ -228,6 +228,9 @@ def find_island_centers(array_2d, threshold):
     return centers, areas
 
 def plot_neural_dynamics(post_activations_history, N_to_plot, save_location, axis_snap=False, N_per_row=5, which_neurons_mid=None, mid_colours=None, use_most_active_neurons=False):
+    if N_to_plot%N_per_row!=0:
+        N_to_plot = N_to_plot - (N_to_plot % 5)
+
     assert N_to_plot%N_per_row==0, f'For nice visualisation, N_to_plot={N_to_plot} must be a multiple of N_per_row={N_per_row}'
     assert post_activations_history.shape[-1] >= N_to_plot
     figscale = 2
