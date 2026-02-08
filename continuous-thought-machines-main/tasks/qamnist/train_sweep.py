@@ -110,33 +110,18 @@ def parse_args():
     parser.add_argument('--n_test_batches', type=int, default=20, help='How many minibatches to approx metrics. Set to -1 for full eval')
     parser.add_argument('--device', type=int, nargs='+', default=[-1], help='List of GPU(s) to use. Set to -1 to use CPU.')
     parser.add_argument('--use_amp', action=argparse.BooleanOptionalAction, default=False, help='AMP autocast.')
-
+    parser.add_argument('--useWandb', type=int, help='Use wandb logging.', default=0)
 
     args = parser.parse_args()
     return args
 
 
-def main():
+def qamnist_model(args, config, run):
 
-        # todo anpassen an neue wandb api mlp vs kan
-    with wandb.init(entity="justus-fischer-ludwig-maximilian-university-of-munich", project="ctm-qamnist") as run:
-
-        # arguments and config
-        config = wandb.config
-        args = parse_args()
-        args.batch_size = config.batch_size
-        args.lr = config.learning_rate
-        # args.postactivation_production = config.postactivation_production
-        # args.training_iterations = config.training_iterations
-
-        # args.model_type = config.model_type
-        args.repeats_per_input = config.repeats_per_input
-        args.use_amp = config.use_amp
-        args.use_scheduler = config.use_scheduler
-        args.memory_length = config.memory_length
-        args.iterations = config.internal_ticks
-
-
+    if config is not None:
+        print(f"Using config: {config}\n Parsed args: {args}\n")
+    else:
+        print(f"Using config: {args}")
 
         set_seed(args.seed)
 
@@ -280,10 +265,13 @@ def main():
                 scheduler.step()
 
                 accuracy = (predictions_answer_steps.argmax(1)[torch.arange(predictions_answer_steps.size(0), device=predictions.device),where_most_certain] == targets).float().mean().item()
+
                 pbar.set_description(f'Dataset=QAMNIST. Loss={loss.item():0.3f}. Accuracy={accuracy:0.3f}. LR={current_lr:0.6f}. Where_certain={where_most_certain.float().mean().item():0.2f}+-{where_most_certain.float().std().item():0.2f} ({where_most_certain.min().item():d}<->{where_most_certain.max().item():d})')
-                run.log({
-                    "Train/Losses": loss.item()
-                }, step=bi)
+                if run is not None:
+                    run.log({
+                        "Train/Losses": loss.item(),
+                        "Train/Accuracy": accuracy,
+                    }, step=bi)
 
 
                 # Metrics tracking and plotting
@@ -478,17 +466,46 @@ def main():
 
                 pbar.update(1)
 
+def run_sweep():
+
+
+    with wandb.init(entity="justus-fischer-ludwig-maximilian-university-of-munich", project="ctm-parity") as run:
+        config = wandb.config
+        args = parse_args()
+
+        # input from wandb sweep
+        args.batch_size = config.batch_size
+        args.lr = config.learning_rate
+        args.training_iterations = config.training_iterations
+        args.use_amp = config.use_amp
+        args.use_scheduler = config.use_scheduler
+        args.memory_length = config.memory_length
+
+        # args.iterations = config.internal_ticks
+
+        args.postactivation_production = config.postactivation_production
+        args.model_type = config.model_type
+        args.q_num_repeats_per_input = config.q_num_repeats_per_input
+        args.q_num_answer_steps = config.q_num_answer_steps
+
+        #modell laufen lassen
+        qamnist_model(args, config, run)
+
+
 
 
 if __name__=='__main__':
+    args = parse_args()
+
+    if args.useWandb == 1:
         # Sweep configuration for wandb
         sweep_configuration = {
             "program": "train_sweeps.py",
-            "name": "ctm-mnist",
+            "name": "ctm-gamnist",
             "method": "random",
             "metric": {
                 "name": "Train/Losses",
-                "goal": "minimize"# todo decide if maximize accuracies or minimize loss and add iterations and memory length
+                "goal": "minimize"
             },
             "parameters": {
                 "batch_size": {"values": [64]},
@@ -496,14 +513,21 @@ if __name__=='__main__':
                 "use_amp": {"values": [True]},
                 "use_scheduler": {"values": [True]},
                 "memory_length": {"values": [3]},
-                "repeats_per_input": {"values": [1]},
-                "training_iterations": {"values": [100000]},
+                "training_iterations": {"values": [200000]},
                 "postactivation_production": {"values": ["kan"]},
                 "model_type": {"values": ["ctm"]},
+
+                "q_num_repeats_per_input": {'values': [1]},
+                "q_num_answer_steps": {'values': [1]},
 
             }
         }
 
+        # ------------------ RUN WITH WANDB SWEEPS ------------------------- #
         sweep_id = wandb.sweep(sweep_configuration, project="ctm-qamnist")
-        wandb.agent(sweep_id, function=main, count=50)
+        wandb.agent(sweep_id, function=run_sweep, count=50)
+
+    else:
+        # ------------------- RUN WITHOUT WANDB ------------------------ #
+        qamnist_model(args, None, None)
 
