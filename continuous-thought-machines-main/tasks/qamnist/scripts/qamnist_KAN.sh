@@ -1,16 +1,13 @@
 #!/bin/bash
 #
-#SBATCH --job-name=CTM_qamnist_kan
+#SBATCH --job-name=qamnist_kan_wandb_sweeps
 #SBATCH --comment="CTM tuning with wandb"
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=justus.fischer@campus.lmu.de
 #SBATCH --ntasks=1
 #SBATCH --chdir=/home/f/fischerjus/Bachelorarbeit/continuous-thought-machines-main/tasks/qamnist
 #SBATCH --output=/home/f/fischerjus/Bachelorarbeit/continuous-thought-machines-main/tasks/qamnist/slurm_kan.%j.%N.out
-
 #RUN=1
-#ITERATIONS=10
-#MEMORY_LENGTH=5
 #LOG_DIR="logs/parity/run${RUN}/ctm_${ITERATIONS}_${MEMORY_LENGTH}"
 #SEED=$((RUN - 1))
 
@@ -19,10 +16,10 @@ RUN=2
 MEMORY_LENGTH=3
 MODEL_TYPE="ctm"
 Q_NUM_REPEATS_PER_INPUT=1
-LOG_DIR="logs/qamnist/run${RUN}/${MODEL_TYPE}_${Q_NUM_REPEATS_PER_INPUT}"
+LOG_DIR="logs/qamnist/run1"
 SEED=$((RUN - 1))
 
-python -u train_sweep.py \
+python -u qamnist_KAN.py \
     --log_dir $LOG_DIR \
     --seed $SEED \
     --memory_length $MEMORY_LENGTH \
@@ -60,10 +57,11 @@ python -u train_sweep.py \
     --no-reload_model_only \
     --no-use_amp \
     --neuron_select_type "random" \
-    --postactivation_production 'kan'
+    --postactivation_production 'kan'\
+    --useWandb 0
 #    --device 0
 
 # use Wandb set to 0 for local testing, set to 1 for slurm runs
 # to submit the job on slurm, use from ctm main folder:
-# sbatch --partition=NvidiaAll parityBatchKAN.sh
+# sbatch --partition=NvidiaAll parity_Batch_KAN.sh
 # remove --device 0 to allow slurm to assign GPU automatically

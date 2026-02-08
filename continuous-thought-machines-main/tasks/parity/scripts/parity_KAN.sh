@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-#SBATCH --job-name=CTM_parity_wandb_sweeps
+#SBATCH --job-name=parity_kan_wandb_sweeps
 #SBATCH --comment="CTM tuning with wandb"
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=justus.fischer@campus.lmu.de
