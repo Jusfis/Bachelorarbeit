@@ -19,7 +19,8 @@ Q_NUM_REPEATS_PER_INPUT=1
 LOG_DIR="logs/qamnist/run1"
 SEED=$((RUN - 1))
 
-python -u qamnist_KAN.py \
+python -m tasks.qamnist.train_sweep \
+    --model "ctm" \
     --log_dir $LOG_DIR \
     --seed $SEED \
     --memory_length $MEMORY_LENGTH \
@@ -57,8 +58,8 @@ python -u qamnist_KAN.py \
     --no-reload_model_only \
     --no-use_amp \
     --neuron_select_type "random" \
-    --postactivation_production 'kan'\
-    --useWandb 0
+    --postactivation_production 'mlp'\
+    --useWandb 1
 #    --device 0
 
 # use Wandb set to 0 for local testing, set to 1 for slurm runs

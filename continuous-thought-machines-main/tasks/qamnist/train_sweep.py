@@ -13,7 +13,7 @@ if torch.cuda.is_available():
 from tqdm.auto import tqdm
 
 from utils.samplers import QAMNISTSampler
-from image_classification.plotting import plot_neural_dynamics
+from tasks.image_classification.plotting import plot_neural_dynamics
 from tasks.qamnist.plotting import make_qamnist_gif
 from utils.housekeeping import set_seed, zip_python_code
 from utils.losses import qamnist_loss
@@ -118,16 +118,18 @@ def parse_args():
 
 def qamnist_model(args, config, run):
 
-    if config is not None:
-        print(f"Using config: {config}\n Parsed args: {args}\n")
-    else:
-        print(f"Using config: {args}")
+        if config is not None:
+            print(f"Using config: {config}\n Parsed args: {args}\n")
+        else:
+            print(f"Using args: {args}")
 
         set_seed(args.seed)
+        print("after seed")
 
         if not os.path.exists(args.log_dir): os.makedirs(args.log_dir)
-
+        print("after path")
         # Data
+        print("Loading dataset...\n")
         train_data, test_data, class_labels, dataset_mean, dataset_std = get_dataset(args.q_num_images, args.q_num_images_delta, args.q_num_repeats_per_input, args.q_num_operations, args.q_num_operations_delta)
         train_sampler = QAMNISTSampler(train_data, batch_size=args.batch_size)
         trainloader = torch.utils.data.DataLoader(train_data, num_workers=0, batch_sampler=train_sampler)
@@ -153,7 +155,7 @@ def qamnist_model(args, config, run):
             device = 'mps'
         else:
             device = 'cpu'
-        print(f'Running model {args.model} on {device}')
+        print(f'Running model {args.model_type} on {device}')
 
 
 
@@ -299,8 +301,9 @@ def qamnist_model(args, config, run):
                         pad_width = ((0, 0), (0, 0), (0, (32*32)-args.d_input))
                         embedding_padded = np.pad(embedding_tracking, pad_width, mode='constant')
                         reshaped = embedding_padded.reshape(T_embed,B, 1, 32, 32)
-                        embedding_input = np.zeros((T_embed, B, 1, 32, 32))
+                        embedding_input = np.zeros((T_embed, B, 1, 32, 32),dtype=np.float32)
                         embedding_input[:T_embed] = reshaped
+
 
                         embedding_tensor = torch.from_numpy(embedding_input).to(gif_inputs.device)
                         gif_inputs[digits_input.size(0):digits_input.size(0) + T_embed] = embedding_tensor[:T_embed]
@@ -469,26 +472,24 @@ def qamnist_model(args, config, run):
 def run_sweep():
 
 
-    with wandb.init(entity="justus-fischer-ludwig-maximilian-university-of-munich", project="ctm-parity") as run:
+    with wandb.init(entity="justus-fischer-ludwig-maximilian-university-of-munich", project="ctm-gamnist") as run:
         config = wandb.config
-        args = parse_args()
+        # args = parse_args()
 
-        # input from wandb sweep
+        # --------------------- Input from wandb sweep -------------------------- #
         args.batch_size = config.batch_size
         args.lr = config.learning_rate
         args.training_iterations = config.training_iterations
         args.use_amp = config.use_amp
         args.use_scheduler = config.use_scheduler
-        args.memory_length = config.memory_length
-
-        # args.iterations = config.internal_ticks
-
         args.postactivation_production = config.postactivation_production
         args.model_type = config.model_type
+        # ------------------ Hyperparameters from paper  ------------------------ #
+        args.memory_length = config.memory_length
         args.q_num_repeats_per_input = config.q_num_repeats_per_input
         args.q_num_answer_steps = config.q_num_answer_steps
 
-        #modell laufen lassen
+        # ------------------ Modell laufen lassen ------------------------------- #
         qamnist_model(args, config, run)
 
 
@@ -512,11 +513,11 @@ if __name__=='__main__':
                 "learning_rate": {"min": 1e-4, "max": 3e-4},
                 "use_amp": {"values": [True]},
                 "use_scheduler": {"values": [True]},
-                "memory_length": {"values": [3]},
                 "training_iterations": {"values": [200000]},
                 "postactivation_production": {"values": ["kan"]},
                 "model_type": {"values": ["ctm"]},
-
+                # ------------------ Hyperparameters from paper  ------------------------- #
+                "memory_length": {"values": [3]},
                 "q_num_repeats_per_input": {'values': [1]},
                 "q_num_answer_steps": {'values': [1]},
 
@@ -524,7 +525,7 @@ if __name__=='__main__':
         }
 
         # ------------------ RUN WITH WANDB SWEEPS ------------------------- #
-        sweep_id = wandb.sweep(sweep_configuration, project="ctm-qamnist")
+        sweep_id = wandb.sweep(sweep_configuration, project="ctm-gamnist")
         wandb.agent(sweep_id, function=run_sweep, count=50)
 
     else:
