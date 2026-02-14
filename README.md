@@ -1,5 +1,48 @@
 # Bachelorarbeit
-Bachelorarbeit Continuous Thought Machines with Kolmogorov Arnold Network
+Bachelor Thesis on the Topic on Kolmogorov Arnold Networks for Continuous Thought Machines 
+
+This Repository consists of an aggregation of useful repositories and contents for the thesis.
+
+Project Structure from  └── continuous-thought-machines-main on
+├── data
+│   ├── ListOps
+│   ├── MNIST   
+│   └── mazes
+├── dataset
+├── logs
+│    ├── listops   
+│    ├── mazes
+│    ├── parity
+│    └── qamnist
+├── models
+├── parity_logs_kan
+├── tasks
+│   ├── image_classification
+│   │   ├── analysis
+│   │   └── scripts
+│   ├── listops
+│   │   ├── analysis
+│   │   ├── dataset
+│   │   ├── depr
+│   │   └── scripts
+│   ├── mazes
+│   │   ├── analysis
+│   │   └── scripts
+│   ├── other
+│   │   ├── rl
+│   │   └── sort
+│   ├── parity
+│   │   ├── analysis
+│   │   ├── depr
+│   │   ├── logs
+│   │   ├── model
+│   │   ├── scripts
+│   │   └── wandb
+│   └── qamnist
+│       ├── analysis
+│       └── scripts
+├── tests
+└── utils
 
 
 to install efficient-kan package:
