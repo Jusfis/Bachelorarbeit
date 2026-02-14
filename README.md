@@ -5,7 +5,7 @@ This Repository consists of an aggregation of useful repositories and contents f
 
 Project Structure from  └── continuous-thought-machines-main on
 
-´´´ text
+``` text
 ├── data
 │   ├── ListOps
 │   ├── MNIST   
@@ -45,7 +45,7 @@ Project Structure from  └── continuous-thought-machines-main on
 │       └── scripts
 ├── tests
 └── utils
-´´´
+```
 
 to install efficient-kan package:
 ```bash
