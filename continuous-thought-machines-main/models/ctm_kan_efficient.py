@@ -40,7 +40,7 @@ from models.modules_efficient_kan import ListopsBackbone
 #         self.models = nn.ModuleList([
 #             KAN(width=width, grid=grid_size, k=k, **kwargs) for _ in range(N)
 #         ])
-# # Todo review forward pass function
+# # odo review forward pass function
 #     def forward(self, x):
 #         # if x.shape[1] != self.N or x.shape[2] != self.in_dims:
 #         #     raise ValueError(
@@ -148,7 +148,7 @@ class ContinuousThoughtMachine(nn.Module, PyTorchModelHubMixin):
                  vocab_size=20,
                  ):
         super(ContinuousThoughtMachine, self).__init__()
-#todo postactivation production implementation
+
         # --- Core Parameters ---
         self.iterations = iterations
         self.d_model = d_model
@@ -194,7 +194,7 @@ class ContinuousThoughtMachine(nn.Module, PyTorchModelHubMixin):
         self.register_parameter('start_activated_state', nn.Parameter(
             torch.zeros((d_model)).uniform_(-math.sqrt(1 / (d_model)), math.sqrt(1 / (d_model)))))
 
-        # Todo repair kan degrees of freedom issue
+
 
         self.register_parameter('start_trace', nn.Parameter(
             torch.zeros((d_model, memory_length)).uniform_(-math.sqrt(1 / (d_model + memory_length)),
@@ -496,7 +496,7 @@ class ContinuousThoughtMachine(nn.Module, PyTorchModelHubMixin):
                     Squeeze(-1)
                 )
             )
-            print("created: returnModel", returnModel)
+            print("created: mlp_module", returnModel)
             return returnModel
 
     def get_kan_network(self, deep_nlms, memory_length, memory_hidden_dims, d_model,

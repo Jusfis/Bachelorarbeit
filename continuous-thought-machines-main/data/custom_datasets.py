@@ -325,7 +325,7 @@ class ParityDataset(Dataset):
         return vector, target
 
 
-# TODO implement
+
 # class ListOpsDataset(Dataset):
 #     def __init__(self, length=100000):
 #         self.length = length

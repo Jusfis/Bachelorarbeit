@@ -2,7 +2,7 @@ python -m tasks.mazes.train_mazes \
 --model ctm \
 --log_dir logs/mazes/ctm/d=2048--i=512--heads=16--sd=8--nlm=32--synch=64-32-h=32-first-last--iters=75x25--backbone=34-2 \
 --neuron_select_type first-last \
---dataset mazes-large \
+--dataset mazes-small \
 --synapse_depth 8 \
 --heads 16 \
 --iterations 75 \
@@ -31,10 +31,10 @@ python -m tasks.mazes.train_mazes \
 --positional_embedding_type none  \
 --maze_route_length 100 \
 --cirriculum_lookahead 5 \
---device 0 \
 --no-expand_range \
---useWandb 0
-
+--useWandb 0 \
+--postactivation_production "mlp"
+#--device 0 \
 # set --device 0 to allow slurm to assign GPU automatically
 # use Wandb set to 0 for local testing, set to 1 for slurm runs
 # to submit the job on slurm, use from ctm main folder:
