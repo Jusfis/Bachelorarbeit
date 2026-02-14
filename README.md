@@ -43,7 +43,19 @@ Project Structure from  └── continuous-thought-machines-main on
 │       └── scripts
 ├── tests
 └── utils
-
+/////
+.
+├── data/               # Raw datasets (MNIST, ListOps, Mazes)
+├── dataset/            # Processed data and loaders
+├── logs/               # Training logs & checkpoints (organized by task)
+├── models/             # Core architecture definitions
+├── tasks/              # Task-specific logic & experiments
+│   ├── listops/        # Scripts, analysis, and task-specific datasets
+│   ├── mazes/          # Pathfinding experiments
+│   ├── parity/         # Parity & logic tasks (incl. wandb logs)
+│   └── ...             # Other modules (image_classification, qamnist)
+├── tests/              # Unit tests for core components
+└── utils/              # Helper functions & shared tools
 
 to install efficient-kan package:
 ```bash
