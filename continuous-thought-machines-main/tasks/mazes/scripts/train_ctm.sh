@@ -1,4 +1,4 @@
-python -m tasks.mazes.train \
+python -m tasks.mazes.train_mazes \
 --model ctm \
 --log_dir logs/mazes/ctm/d=2048--i=512--heads=16--sd=8--nlm=32--synch=64-32-h=32-first-last--iters=75x25--backbone=34-2 \
 --neuron_select_type first-last \
@@ -32,4 +32,10 @@ python -m tasks.mazes.train \
 --maze_route_length 100 \
 --cirriculum_lookahead 5 \
 --device 0 \
---no-expand_range
+--no-expand_range \
+--useWandb 0
+
+# set --device 0 to allow slurm to assign GPU automatically
+# use Wandb set to 0 for local testing, set to 1 for slurm runs
+# to submit the job on slurm, use from ctm main folder:
+#sbatch --partition=NvidiaAll train_ctm.sh script for slurm

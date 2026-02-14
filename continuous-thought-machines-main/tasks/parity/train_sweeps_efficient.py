@@ -265,7 +265,7 @@ def parity_model(args, config, run):
             pbar.set_description(
                 f'Dataset=Parity. Loss={loss.item():0.3f}. Accuracy={accuracy_finegrained:0.3f}. LR={current_lr:0.6f}. Where_certain={where_most_certain.float().mean().item():0.2f}+-{where_most_certain.float().std().item():0.2f} ({where_most_certain.min().item():d}<->{where_most_certain.max().item():d})')
 
-            if args.useWandb == True:
+            if args.useWandb == 1:
                 run.log({
                     "Train/Losses": loss.item(),
                     "Train/Accuracies": accuracy_finegrained,

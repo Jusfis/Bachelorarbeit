@@ -316,11 +316,11 @@ def listops_model(args, config, run):
                                 f'Dataset=Listops. Loss={loss.item():0.3f}. Accuracy={accuracy_finegrained:0.3f}. LR={current_lr:0.6f}. Where_certain={where_most_certain.float().mean().item():0.2f}+-{where_most_certain.float().std().item():0.2f} ({where_most_certain.min().item():d}<->{where_most_certain.max().item():d})')
 
 
-                        if args.useWandb == 1:
-                            run.log({
-                                "Train/Losses": loss.item(),
-                                "Train/Accuracies": accuracy_finegrained,
-                            }, step=bi)
+                            if args.useWandb == 1:
+                                run.log({
+                                    "Train/Losses": loss.item(),
+                                    "Train/Accuracies": accuracy_finegrained,
+                                }, step=bi)
 
                             # ----------------------------- TRACKING BEGINS ------------------------------- #
                             if bi % args.track_every == 0 and bi != 0:
@@ -335,7 +335,7 @@ def listops_model(args, config, run):
 
                                     predictions = reshape_predictions(predictions, prediction_reshaper)
 
-                                    # todo repair attention reshape
+
                                     # attention = reshape_attention_weights(attention)
                                     # inputs = reshape_inputs(inputs, args.iterations,
                                     #                         grid_size=int(math.sqrt(args.parity_sequence_length)))

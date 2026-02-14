@@ -17,7 +17,7 @@ python -m tasks.listops.train_listops \
     --iterations 75 \
     --memory_length 25 \
     --n_test_batches 20 \
-    --d_model 1024 \
+    --d_model 512 \
     --d_input 100 \
     --n_synch_out 32 \
     --n_synch_action 32 \
