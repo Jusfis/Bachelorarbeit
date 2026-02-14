@@ -16,7 +16,7 @@ RUN=2
 MEMORY_LENGTH=3
 MODEL_TYPE="ctm"
 Q_NUM_REPEATS_PER_INPUT=1
-LOG_DIR="logs/qamnist/run1"
+LOG_DIR="logs/qamnist/kan/run1"
 SEED=$((RUN - 1))
 
 python -m tasks.qamnist.train_sweep \

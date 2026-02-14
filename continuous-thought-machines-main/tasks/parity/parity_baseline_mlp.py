@@ -498,6 +498,10 @@ def run_sweep():
         args.parity_sequence_length = config.parity_sequence_length
         parity_baseline_model(args, config, run)
 
+
+
+
+
 if __name__=='__main__':
 
         args = parse_args()

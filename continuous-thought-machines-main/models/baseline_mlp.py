@@ -29,3 +29,11 @@ class BaselineMLPParity(nn.Module):
 
         # Transform from [Batch, Seq_Len, Classes] -> [32, 64, 2]
         return logits.view(-1, self.seq_len, 2)
+
+
+
+class BaselineMLPListops(nn.Module):
+    def __init__(self, in_dim=64, h_dims=[1024, 512], out_dim=2):
+        pass
+    def forward(self, x):
+        pass

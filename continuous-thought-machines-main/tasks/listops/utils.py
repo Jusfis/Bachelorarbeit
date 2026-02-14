@@ -2,7 +2,7 @@ import os
 import re
 import math
 
-from models.baseline_mlp import BaselineMLP
+from models.baseline_mlp import BaselineMLPListops
 from models.ctm_kan_efficient import ContinuousThoughtMachine
 from models.lstm import LSTMBaseline # alternative baseline model
 
@@ -28,7 +28,7 @@ def prepare_model(prediction_reshaper, args, device):
             neuron_select_type=args.neuron_select_type,
             n_random_pairing_self=args.n_random_pairing_self,
             postactivation_production=args.postactivation_production,
-        ).to(device) # below baseline model # todo add other baseline model cnn for instance
+        ).to(device) # below baseline model
     # elif args.model_type == 'lstm':
     #     model = LSTMBaseline(
     #         iterations=args.iterations,
@@ -61,7 +61,7 @@ def prepare_baseline(args, device):
     out_dim = 10
 
     # 2. Build Model
-    model = BaselineMLP(in_dim, h_dims, out_dim)
+    model = BaselineMLPListops(in_dim, h_dims, out_dim)
 
     # check done before
     model.to(device)

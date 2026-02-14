@@ -124,12 +124,11 @@ def qamnist_model(args, config, run):
             print(f"Using args: {args}")
 
         set_seed(args.seed)
-        print("after seed")
+
 
         if not os.path.exists(args.log_dir): os.makedirs(args.log_dir)
-        print("after path")
+
         # Data
-        print("Loading dataset...\n")
         train_data, test_data, class_labels, dataset_mean, dataset_std = get_dataset(args.q_num_images, args.q_num_images_delta, args.q_num_repeats_per_input, args.q_num_operations, args.q_num_operations_delta)
         train_sampler = QAMNISTSampler(train_data, batch_size=args.batch_size)
         trainloader = torch.utils.data.DataLoader(train_data, num_workers=0, batch_sampler=train_sampler)
@@ -472,7 +471,7 @@ def qamnist_model(args, config, run):
 def run_sweep():
 
 
-    with wandb.init(entity="justus-fischer-ludwig-maximilian-university-of-munich", project="ctm-gamnist") as run:
+    with wandb.init(entity="justus-fischer-ludwig-maximilian-university-of-munich", project="ctm-qamnist") as run:
         config = wandb.config
         # args = parse_args()
 
@@ -502,7 +501,7 @@ if __name__=='__main__':
         # Sweep configuration for wandb
         sweep_configuration = {
             "program": "train_sweeps.py",
-            "name": "ctm-gamnist",
+            "name": "ctm-qamnist",
             "method": "random",
             "metric": {
                 "name": "Train/Losses",
@@ -525,7 +524,7 @@ if __name__=='__main__':
         }
 
         # ------------------ RUN WITH WANDB SWEEPS ------------------------- #
-        sweep_id = wandb.sweep(sweep_configuration, project="ctm-gamnist")
+        sweep_id = wandb.sweep(sweep_configuration, project="ctm-qamnist")
         wandb.agent(sweep_id, function=run_sweep, count=50)
 
     else:

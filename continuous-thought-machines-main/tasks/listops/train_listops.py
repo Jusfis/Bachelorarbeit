@@ -19,7 +19,7 @@ if torch.cuda.is_available():
 import torchvision # For disabling warning
 from tqdm.auto import tqdm # Used for progress bars
 
-from tasks.listops.utils  import prepare_model
+from tasks.listops.utils import prepare_model
 from autoclip.torch import QuantileClip # Used for gradient clipping
 from data.custom_datasets import ListOpsDataset
 from tasks.image_classification.plotting import plot_neural_dynamics
@@ -86,6 +86,7 @@ def parse_args():
     parser.add_argument('--full_eval',  action=argparse.BooleanOptionalAction, default=False, help='Perform full evaluation instead of approx.')
     parser.add_argument('--device', type=int, nargs='+', default=[-1], help='GPU(s) or -1 for CPU.')
     parser.add_argument('--use_amp', action=argparse.BooleanOptionalAction, default=False, help='AMP autocast.')
+    parser.add_argument('--useWandb', type=int, help='Use wandb logging.', default=0)
 
     args = parser.parse_args()
     return args
@@ -107,31 +108,23 @@ def create_long_df(data_array, iters, metric_name='Accuracy'):
     df_long = df.melt(id_vars='Iteration', var_name='Run', value_name=metric_name)
     return df_long
 
-def main():
-    with wandb.init(entity="justus-fischer-ludwig-maximilian-university-of-munich", project="ctm-listops") as run:
-            config = wandb.config
-            args = parse_args()
-            #print(f"Using config: {config}\n Parsed args: {args}\n")
-            args.lr = config.learning_rate
-            # args.postactivation_production = config.postactivation_production
-            args.training_iterations = config.training_iterations
-            # args.model_type = config.model_type
-            args.use_amp = config.use_amp
-            args.use_scheduler = config.use_scheduler
-            args.memory_length = config.memory_length
-            args.iterations = config.internal_ticks
-            print(f"Using config: {config} Parsed args: {args}\n")
-            set_seed(args.seed)
+def listops_model(args, config, run):
+
+            if config is not None:
+                print(f"Using config: {config}\n Parsed args: {args}\n")
+            else:
+                print(f"Using args: {args}")
 
 
             if not os.path.exists(args.log_dir): os.makedirs(args.log_dir)
 
-
+            # ----------------------------- LOAD DATA ------------------------------- #
             csv_train_file='tasks/listops/dataset/train_d20s.tsv'
             csv_test_file='tasks/listops/dataset/test_d20s.tsv'
             if not os.path.exists('tasks/listops/dataset'):
                 os.makedirs('tasks/listops/dataset')
                 print("Fehler, dataset folder is missing, created dataset")
+
             train_data = ListOpsDataset(csv_train_file)
             test_data = ListOpsDataset(csv_test_file)
             # loads batches from train_data and test_data which are insctances of torch.utils.data.Dataset
@@ -157,7 +150,7 @@ def main():
             print(f'Running model {args.model_type} on {device}')
 
             # Build model
-            #prediction_reshaper was genau?
+
             model = prepare_model(prediction_reshaper,args, device)
             model.train()
 
@@ -203,7 +196,7 @@ def main():
 
 
 
-            #################   Reload ################
+            #################   Reload   ################
             # Now that everything is initliased, reload if desired
             if args.reload and (latest_checkpoint_path := get_latest_checkpoint(args.log_dir)):
                 print(f'Reloading from: {latest_checkpoint_path}')
@@ -241,7 +234,7 @@ def main():
                 if torch.cuda.is_available():
                     torch.cuda.empty_cache()
 
-          #################   Train   ################
+          # ----------------------------- TRAIN ------------------------------- #
                     # Training
             iterator = iter(
                         trainloader)  # Not training in epochs, but rather iterations. Need to reset this from time to time
@@ -323,13 +316,13 @@ def main():
                                 f'Dataset=Listops. Loss={loss.item():0.3f}. Accuracy={accuracy_finegrained:0.3f}. LR={current_lr:0.6f}. Where_certain={where_most_certain.float().mean().item():0.2f}+-{where_most_certain.float().std().item():0.2f} ({where_most_certain.min().item():d}<->{where_most_certain.max().item():d})')
 
 
-                            # todo uncomment when using wandb
+                        if args.useWandb == 1:
                             run.log({
                                 "Train/Losses": loss.item(),
                                 "Train/Accuracies": accuracy_finegrained,
                             }, step=bi)
 
-                            # Metrics tracking and plotting ####################### TRACK ##############
+                            # ----------------------------- TRACKING BEGINS ------------------------------- #
                             if bi % args.track_every == 0 and bi != 0:
                                 model.eval()
                                 with torch.inference_mode():
@@ -352,23 +345,7 @@ def main():
 
                                     pbar.set_description('Tracking: Producing attention gif')
 
-
-                                    # todo gif for listops?
-                                    # process = multiprocessing.Process(
-                                    #     target=make_parity_gif,
-                                    #     args=(
-                                    #         predictions.detach().cpu().numpy(),
-                                    #         certainties.detach().cpu().numpy(),
-                                    #         targets.detach().cpu().numpy(),
-                                    #         pre_activations,
-                                    #         post_activations,
-                                    #         attention,
-                                    #         inputs,
-                                    #         f"{args.log_dir}/eval_output_val_{0}_iter_{0}.gif",
-                                    #     ))
-                                    # process.start()
-
-                                    ##################################### TRAIN METRICS ##########################
+                                     # ----------------------------- TRACK TRAIN METRICS ------------------------------- #
                                     all_predictions = []
                                     all_targets = []
                                     all_predictions_most_certain = []
@@ -445,7 +422,7 @@ def main():
                                         #     "Train/Accuracies": train_accuracies[-1] if len(train_accuracies) > 0 else 0,
                                         # }, step=bi)
 
-                                        ##################################### TEST METRICS ##################################
+                                        # ----------------------------- TESTING BEGINS ------------------------------- #
                                         all_predictions = []
                                         all_predictions_most_certain = []
                                         all_targets = []
@@ -644,10 +621,10 @@ def main():
                                             figloss_ci.savefig(f'{args.log_dir}/losses.png', dpi=150)
                                             plt.close(figloss_ci)
 
-                                # todo why model.train() twice?
+
                                 model.train()
 
-                            # Save model ########################### AND make fig##############################
+                            # ----------------------------- SAVING MODEL ------------------------------- #
                             if (bi % args.save_every == 0 or bi == args.training_iterations - 1):
                                 torch.save(
                                     {
@@ -673,6 +650,22 @@ def main():
 
                             pbar.update(1)
 
+def run_sweep():
+    """ Function to be called by wandb agent for hyperparameter sweeps """
+    with wandb.init(entity="justus-fischer-ludwig-maximilian-university-of-munich", project="ctm-listops") as run:
+        config = wandb.config
+        args = parse_args()
+        # --------------------- Input from wandb sweep -------------------------- #
+        args.batch_size = config.batch_size
+        args.lr = config.learning_rate
+        args.training_iterations = config.training_iterations
+        args.use_amp = config.use_amp
+        args.use_scheduler = config.use_scheduler
+        args.model_type = config.model_type
+        # args.postactivation_production = config.postactivation_production
+        # args.model_type = config.model_type
+        # ------------------ Modell laufen lassen ------------------------------- #
+        listops_model(args, config, run)
 
 
 
@@ -680,28 +673,35 @@ def main():
 
 
 if __name__ == "__main__":
-    # Sweep configuration for wandb
-    sweep_configuration = {
-        "program": "train_sweeps_efficient.py",
-        "name": "ctm-parity",
-        "method": "random",
-        "metric": {
-            "name": "Train/Losses",
-            "goal": "minimize"
-        },
-        "parameters": {
+    args = parse_args()
 
-            "learning_rate": {"min": 2e-4, "max": 3e-4},
-            "use_amp": {"values": [True]},
-            "use_scheduler": {"values": [False]},
-            "memory_length": {"values": [75]},
-            "internal_ticks": {"values": [100]},
-            "training_iterations": {"values": [200000]},
-            # "postactivation_production": {"values": ["kan"]},
-            # "model_type": {"values": ["ctm"]},
+    if args.useWandb == 1:
+        # Sweep configuration for wandb
+        sweep_configuration = {
+            "program": "train_listops.py",
+            "name": "ctm-listops",
+            "method": "random",
+            "metric": {
+                "name": "Train/Losses",
+                "goal": "minimize"
+            },
+            "parameters": {
+                "batch_size": {"values": [64]},
+                "learning_rate": {"min": 1e-4, "max": 3e-4},
+                "use_amp": {"values": [True]},
+                "use_scheduler": {"values": [True]},
+                "training_iterations": {"values": [200000]},
+                # "postactivation_production": {"values": ["kan"]},
+                "model_type": {"values": ["ctm"]},
 
+
+            }
         }
-    }
 
-    sweep_id = wandb.sweep(sweep_configuration, project="ctm-listops")
-    wandb.agent(sweep_id, function=main, count=50)
+        # ------------------ RUN WITH WANDB SWEEPS ------------------------- #
+        sweep_id = wandb.sweep(sweep_configuration, project="ctm-listops")
+        wandb.agent(sweep_id, function=run_sweep, count=50)
+
+    else:
+        # ------------------- RUN WITHOUT WANDB ------------------------ #
+        listops_model(args, None, None)
