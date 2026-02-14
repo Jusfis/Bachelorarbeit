@@ -5,7 +5,7 @@ This Repository consists of an aggregation of useful repositories and contents f
 
 Project Structure from  └── continuous-thought-machines-main on
 
-´´´
+´´´ text
 ├── data
 │   ├── ListOps
 │   ├── MNIST   
