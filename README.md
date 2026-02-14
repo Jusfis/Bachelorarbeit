@@ -4,6 +4,8 @@ Bachelor Thesis on the Topic on Kolmogorov Arnold Networks for Continuous Though
 This Repository consists of an aggregation of useful repositories and contents for the thesis.
 
 Project Structure from  └── continuous-thought-machines-main on
+
+´´´
 ├── data
 │   ├── ListOps
 │   ├── MNIST   
@@ -43,6 +45,7 @@ Project Structure from  └── continuous-thought-machines-main on
 │       └── scripts
 ├── tests
 └── utils
+´´´
 
 to install efficient-kan package:
 ```bash
