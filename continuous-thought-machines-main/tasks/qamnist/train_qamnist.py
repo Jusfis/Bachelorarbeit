@@ -500,7 +500,7 @@ if __name__=='__main__':
     if args.useWandb == 1:
         # Sweep configuration for wandb
         sweep_configuration = {
-            "program": "train_sweeps.py",
+            "program": "train_qamnist.py",
             "name": "ctm-qamnist",
             "method": "random",
             "metric": {
@@ -513,8 +513,8 @@ if __name__=='__main__':
                 "use_amp": {"values": [True]},
                 "use_scheduler": {"values": [True]},
                 "training_iterations": {"values": [200000]},
-                "postactivation_production": {"values": ["kan"]},
-                "model_type": {"values": ["ctm"]},
+                # "postactivation_production": {"values": ["kan"]},
+                # "model_type": {"values": ["ctm"]},
                 # ------------------ Hyperparameters from paper  ------------------------- #
                 "memory_length": {"values": [3]},
                 "q_num_repeats_per_input": {'values': [1]},

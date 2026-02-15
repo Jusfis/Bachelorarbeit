@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-#SBATCH --job-name=KAN_Parity
+#SBATCH --job-name=MLP_Parity
 #SBATCH --comment="CTM tuning with wandb"
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=justus.fischer@campus.lmu.de
@@ -14,11 +14,11 @@
 #LOG_DIR="logs/parity/run${RUN}/ctm_${ITERATIONS}_${MEMORY_LENGTH}"
 #SEED=$((RUN - 1))
 #    --model_type "ctm"\
+
 # IMPORTANT D_model % 5 == 0 for MLP postactivation production
 
-
 python -u train_sweeps_efficient.py \
-    --log_dir "logs/parity/run1/KAN"\
+    --log_dir "logs/parity/kan"\
     --seed 1 \
     --iterations 10 \
     --memory_length 5 \
@@ -57,10 +57,10 @@ python -u train_sweeps_efficient.py \
     --neuron_select_type "random" \
     --device 0 \
     --postactivation_production 'kan' \
-    --useWandb 0
+    --useWandb 1
 
 
 # set --device 0 to allow slurm to assign GPU automatically
 # use Wandb set to 0 for local testing, set to 1 for slurm runs
 # to submit the job on slurm, use from ctm main folder:
-# sbatch --partition=NvidiaAll parityBatchKAN.sh script for slurm
+#sbatch --partition=NvidiaAll parity_kan_batch.sh script for slurm

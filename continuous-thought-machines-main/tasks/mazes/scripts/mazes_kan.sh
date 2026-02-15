@@ -33,9 +33,9 @@ python -m tasks.mazes.train_mazes \
 --cirriculum_lookahead 5 \
 --no-expand_range \
 --useWandb 0 \
---postactivation_production "mlp"
+--postactivation_production "kan"
 #--device 0 \
 # set --device 0 to allow slurm to assign GPU automatically
 # use Wandb set to 0 for local testing, set to 1 for slurm runs
 # to submit the job on slurm, use from ctm main folder:
-#sbatch --partition=NvidiaAll train_ctm.sh script for slurm
+#sbatch --partition=NvidiaAll listops.sh script for slurm

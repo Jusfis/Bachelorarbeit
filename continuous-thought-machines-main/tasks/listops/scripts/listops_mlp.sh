@@ -54,5 +54,5 @@ python -m tasks.listops.train_listops \
 
 # use Wandb set to 0 for local testing, set to 1 for slurm runs
 # to submit the job on slurm, use from ctm main folder:
-# sbatch --partition=NvidiaAll listops_MLP.sh
+# sbatch --partition=NvidiaAll listops_mlp.sh
 # remove --device 0 to allow slurm to assign GPU automatically

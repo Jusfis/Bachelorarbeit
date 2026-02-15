@@ -5,6 +5,8 @@ import random
 import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sns
+import wandb
+
 sns.set_style('darkgrid')
 import torch
 if torch.cuda.is_available():
@@ -185,10 +187,15 @@ def get_dataset(dataset, root):
 
 
 
-if __name__=='__main__':
+def imagenet_model(args,config,run):
 
-    # Hosuekeeping
-    args = parse_args()
+    if config is not None:
+        print(f"Using config: {config}\n Parsed args: {args}\n")
+    else:
+        print(f"Using args: {args}")
+
+
+
 
     set_seed(args.seed, False)
     if not os.path.exists(args.log_dir): os.makedirs(args.log_dir)
@@ -686,3 +693,55 @@ if __name__=='__main__':
                 torch.save(checkpoint_data, f'{args.log_dir}/checkpoint.pt')
 
             pbar.update(1)
+
+
+
+def run_sweep():
+    """ Function to be called by wandb agent for hyperparameter sweeps """
+    with wandb.init(entity="justus-fischer-ludwig-maximilian-university-of-munich", project="ctm-imagenet") as run:
+        config = wandb.config
+        args = parse_args()
+        # --------------------- Input from wandb sweep -------------------------- #
+        args.batch_size = config.batch_size
+        args.lr = config.learning_rate
+        args.training_iterations = config.training_iterations
+        args.use_amp = config.use_amp
+        args.use_scheduler = config.use_scheduler
+        args.model_type = config.model_type
+        # args.postactivation_production = config.postactivation_production
+        # args.model_type = config.model_type
+        # ------------------ Modell laufen lassen ------------------------------- #
+        imagenet_model(args, config, run)
+
+if __name__ == "__main__":
+    args = parse_args()
+
+    if args.useWandb == 1:
+        # Sweep configuration for wandb
+        sweep_configuration = {
+            "program": "train.py",
+            "name": "ctm-listops",
+            "method": "random",
+            "metric": {
+                "name": "Train/Losses",
+                "goal": "minimize"
+            },
+            "parameters": {
+                "batch_size": {"values": [64]},
+                "learning_rate": {"min": 1e-4, "max": 3e-4},
+                "use_amp": {"values": [True]},
+                "use_scheduler": {"values": [True]},
+                "training_iterations": {"values": [200000]},
+                # "postactivation_production": {"values": ["kan"]},
+                "model_type": {"values": ["ctm"]},
+
+            }
+        }
+
+        # ------------------ RUN WITH WANDB SWEEPS ------------------------- #
+        sweep_id = wandb.sweep(sweep_configuration, project="ctm-imagenet")
+        wandb.agent(sweep_id, function=run_sweep, count=50)
+
+    else:
+        # ------------------- RUN WITHOUT WANDB ------------------------ #
+        imagenet_model(args, None, None)

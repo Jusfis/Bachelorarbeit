@@ -115,6 +115,7 @@ def listops_model(args, config, run):
             else:
                 print(f"Using args: {args}")
 
+            set_seed(args.seed)
 
             if not os.path.exists(args.log_dir): os.makedirs(args.log_dir)
 
