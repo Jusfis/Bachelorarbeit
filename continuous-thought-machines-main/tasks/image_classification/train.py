@@ -18,11 +18,11 @@ from tqdm.auto import tqdm
 from data.custom_datasets import ImageNet
 from torchvision import datasets
 from torchvision import transforms
-from image_classification.imagenet_classes import IMAGENET2012_CLASSES
-from models.ctm import ContinuousThoughtMachine
+from tasks.image_classification.imagenet_classes import IMAGENET2012_CLASSES
+from models.ctm_kan_efficient import ContinuousThoughtMachine
 from models.lstm import LSTMBaseline
 from models.ff import FFBaseline
-from image_classification.plotting import plot_neural_dynamics, make_classification_gif
+from tasks.image_classification.plotting import plot_neural_dynamics, make_classification_gif
 from utils.housekeeping import set_seed, zip_python_code
 from utils.losses import image_classification_loss # Used by CTM, LSTM
 from utils.schedulers import WarmupCosineAnnealingLR, WarmupMultiStepLR, warmup
@@ -118,7 +118,9 @@ def parse_args():
     parser.add_argument('--n_test_batches', type=int, default=20, help='How many minibatches to approx metrics. Set to -1 for full eval')
     parser.add_argument('--device', type=int, nargs='+', default=[-1], help='List of GPU(s) to use. Set to -1 to use CPU.')
     parser.add_argument('--use_amp', action=argparse.BooleanOptionalAction, default=False, help='AMP autocast.')
-
+    parser.add_argument('--useWandb', type=int, help='Use wandb logging.', default=0)
+    parser.add_argument('--postactivation_production', type=str, default='mlp', choices=['mlp', 'kan'],
+                        help='Type neural network for post-activiation production.')
 
     args = parser.parse_args()
     return args
@@ -249,6 +251,7 @@ def imagenet_model(args,config,run):
             dropout_nlm=args.dropout_nlm,
             neuron_select_type=args.neuron_select_type,
             n_random_pairing_self=args.n_random_pairing_self,
+            postactivation_production=args.postactivation_production,
         ).to(device)
     elif args.model == 'lstm':
          model = LSTMBaseline(
@@ -495,6 +498,8 @@ def imagenet_model(args,config,run):
 
                             all_losses.append(loss.item())
 
+
+
                             if args.n_test_batches != -1 and inferi >= args.n_test_batches -1 : break # Check condition >= N-1
                             pbar_inner.set_description(f'Computing metrics for train (Batch {inferi+1})')
                             pbar_inner.update(1)
@@ -516,7 +521,11 @@ def imagenet_model(args,config,run):
                          train_accuracies.append(current_train_accuracies)
                 
                 del these_predictions
-                
+                if args.useWandb == 1:
+                    run.log({
+                        "Train/Losses": loss.item(),
+                        "Train/Accuracies": current_train_losses,
+                    }, step=bi)
 
                 # Switch to eval mode for test metrics (fixed BN stats)
                 model.eval()
@@ -720,7 +729,7 @@ if __name__ == "__main__":
         # Sweep configuration for wandb
         sweep_configuration = {
             "program": "train.py",
-            "name": "ctm-listops",
+            "name": "ctm-imagenet",
             "method": "random",
             "metric": {
                 "name": "Train/Losses",
