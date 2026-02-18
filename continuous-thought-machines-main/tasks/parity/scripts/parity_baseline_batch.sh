@@ -14,7 +14,9 @@
 #LOG_DIR="logs/parity/run${RUN}/ctm_${ITERATIONS}_${MEMORY_LENGTH}"
 #SEED=$((RUN - 1))
 
-python -u parity_baseline_mlp,py \
+export PYTHONPATH=$PYTHONPATH:.
+
+python -u tasks/parity/parity_baseline_mlp.py \
     --log_dir "logs/parity/run7/baseline_sweeps" \
     --seed 42 \
     --parity_sequence_length 64  \
