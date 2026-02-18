@@ -8,6 +8,7 @@
 #SBATCH --chdir=/home/f/fischerjus/Bachelorarbeit/continuous-thought-machines-main/
 #SBATCH --output=/home/f/fischerjus/Bachelorarbeit/continuous-thought-machines-main/tasks/qamnist/slurm_mlp.%j.%N.out
 
+export PYTHONPATH=$PYTHONPATH:.
 
 RUN=2
 MEMORY_LENGTH=3

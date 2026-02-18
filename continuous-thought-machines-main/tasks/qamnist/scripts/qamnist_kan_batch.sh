@@ -8,7 +8,7 @@
 #SBATCH --chdir=/home/f/fischerjus/Bachelorarbeit/continuous-thought-machines-main/
 #SBATCH --output=/home/f/fischerjus/Bachelorarbeit/continuous-thought-machines-main/tasks/qamnist/slurm_kan.%j.%N.out
 
-
+export PYTHONPATH=$PYTHONPATH:.
 
 
 #!/bin/bash
