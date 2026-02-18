@@ -1,5 +1,6 @@
 
 from models.lstm_qamnist import LSTMBaseline
+
 from data.custom_datasets import QAMNISTDataset
 from torchvision import datasets
 from torchvision import transforms

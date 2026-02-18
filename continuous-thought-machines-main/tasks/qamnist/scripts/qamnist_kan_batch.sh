@@ -20,7 +20,7 @@ LOG_DIR="logs/qamnist${POSTACTIVATION}/run${RUN}/${MODEL_TYPE}_${Q_NUM_REPEATS_P
 SEED=$((RUN - 1))
 POSTACTIVATION="kan"
 
-python -u tasks.qamnis.train_qamnist.py \
+python -u tasks.qamnist.train_qamnist.py \
     --log_dir $LOG_DIR \
     --seed $SEED \
     --memory_length $MEMORY_LENGTH \
