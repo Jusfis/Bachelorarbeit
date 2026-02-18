@@ -17,7 +17,7 @@ LOG_DIR="logs/qamnist_${POSTACTIVATION}/run${RUN}/ctm_${ITERATIONS}_${MEMORY_LEN
 SEED=$((RUN - 1))
 POSTACTIVATION="mlp"
 
-python -u train_qamnist.py \
+python -u tasks.qamnis.train_qamnist.py \
     --log_dir $LOG_DIR \
     --seed $SEED \
     --memory_length $MEMORY_LENGTH \
