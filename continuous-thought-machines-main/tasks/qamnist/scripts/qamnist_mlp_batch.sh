@@ -5,7 +5,7 @@
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=justus.fischer@campus.lmu.de
 #SBATCH --ntasks=1
-#SBATCH --chdir=/home/f/fischerjus/Bachelorarbeit/continuous-thought-machines-main/tasks/qamnist
+#SBATCH --chdir=/home/f/fischerjus/Bachelorarbeit/continuous-thought-machines-main/
 #SBATCH --output=/home/f/fischerjus/Bachelorarbeit/continuous-thought-machines-main/tasks/qamnist/slurm_mlp.%j.%N.out
 
 
@@ -17,7 +17,7 @@ LOG_DIR="logs/qamnist_${POSTACTIVATION}/run${RUN}/ctm_${ITERATIONS}_${MEMORY_LEN
 SEED=$((RUN - 1))
 POSTACTIVATION="mlp"
 
-python -u tasks.qamnist.train_qamnist.py \
+python -u tasks/qamnist/train_qamnist.py \
     --log_dir $LOG_DIR \
     --seed $SEED \
     --memory_length $MEMORY_LENGTH \
