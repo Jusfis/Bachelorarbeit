@@ -19,7 +19,7 @@ from utils.housekeeping import set_seed, zip_python_code
 from utils.losses import qamnist_loss
 from utils.schedulers import WarmupCosineAnnealingLR, WarmupMultiStepLR, warmup
 from tasks.parity.utils import reshape_attention_weights
-from tasks.qamnist.utils import get_dataset, prepare_model
+from tasks.qamnist.utils_qamnist import get_dataset, prepare_model
 from models.utils import reshape_predictions, get_latest_checkpoint
 import wandb
 def parse_args():

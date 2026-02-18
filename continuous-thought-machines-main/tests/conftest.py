@@ -2,7 +2,7 @@ import pytest
 from models.ctm import ContinuousThoughtMachine
 from models.ctm_qamnist import ContinuousThoughtMachineQAMNIST
 from utils.samplers import QAMNISTSampler
-from tasks.qamnist.utils import get_dataset
+from tasks.qamnist.utils_qamnist import get_dataset
 from tests.test_data import *
 from utils.housekeeping import set_seed
 from other.rl.train import Agent

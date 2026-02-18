@@ -20,7 +20,7 @@ mpl.rcParams.update({
         \renewcommand{\rmdefault}{cmr}
     """
 })
-from tasks.qamnist.utils import prepare_model
+from tasks.qamnist.utils_qamnist import prepare_model
 from models.utils import load_checkpoint, get_model_args_from_checkpoint
 from tasks.qamnist.analysis.run import prepare_data_for_analysis
 from tasks.parity.utils import reshape_attention_weights

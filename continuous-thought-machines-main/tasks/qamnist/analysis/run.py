@@ -15,7 +15,7 @@ from image_classification.plotting import plot_neural_dynamics
 from tasks.parity.plotting import plot_training_curve_all_runs
 from models.utils import load_checkpoint, get_all_log_dirs, get_model_args_from_checkpoint, get_latest_checkpoint_file
 from tasks.parity.utils import reshape_attention_weights
-from tasks.qamnist.utils import get_dataset, prepare_model
+from tasks.qamnist.utils_qamnist import get_dataset, prepare_model
 
 
 def parse_args():
