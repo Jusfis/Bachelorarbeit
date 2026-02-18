@@ -482,7 +482,7 @@ def run_sweep():
         args.use_amp = config.use_amp
         args.use_scheduler = config.use_scheduler
         args.postactivation_production = config.postactivation_production
-        args.model_type = config.model_type
+        # args.model_type = config.model_type
         # ------------------ Hyperparameters from paper  ------------------------ #
         args.memory_length = config.memory_length
         args.q_num_repeats_per_input = config.q_num_repeats_per_input
@@ -513,8 +513,8 @@ if __name__=='__main__':
                 "use_amp": {"values": [True]},
                 "use_scheduler": {"values": [True]},
                 "training_iterations": {"values": [200000]},
-                # "postactivation_production": {"values": ["kan"]},
-                # "model_type": {"values": ["ctm"]},
+                "postactivation_production": {"values": [args.postactivation_production]},
+
                 # ------------------ Hyperparameters from paper  ------------------------- #
                 "memory_length": {"values": [3]},
                 "q_num_repeats_per_input": {'values': [1]},
