@@ -623,7 +623,7 @@ if __name__=='__main__':
                 "training_iterations": {"values": [200000]},
                 "model_type": {"values": ["ctm"]},
                 "parity_sequence_length": {"values": [64]},
-                "postactivation_production": {"values": ["mlp"]}
+                "postactivation_production": {"values": [args.postactivation_production]},
             }
         }
 

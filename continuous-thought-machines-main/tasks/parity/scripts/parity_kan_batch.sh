@@ -5,7 +5,7 @@
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=justus.fischer@campus.lmu.de
 #SBATCH --ntasks=1
-#SBATCH --chdir=/home/f/fischerjus/Bachelorarbeit/continuous-thought-machines-main/tasks/parity
+#SBATCH --chdir=/home/f/fischerjus/Bachelorarbeit/continuous-thought-machines-main/
 #SBATCH --output=/home/f/fischerjus/Bachelorarbeit/continuous-thought-machines-main/tasks/parity/slurm_kan.%j.%N.out
 
 #RUN=1
@@ -17,7 +17,9 @@
 
 # IMPORTANT D_model % 5 == 0 for MLP postactivation production
 
-python -u train_sweeps_efficient.py \
+export PYTHONPATH=$PYTHONPATH:.
+
+python -u tasks/parity/train_sweeps_efficient.py \
     --log_dir "logs/parity/kan"\
     --seed 1 \
     --iterations 10 \
