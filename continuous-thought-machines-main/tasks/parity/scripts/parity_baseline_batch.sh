@@ -5,7 +5,7 @@
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=justus.fischer@campus.lmu.de
 #SBATCH --ntasks=1
-#SBATCH --chdir=/home/f/fischerjus/Bachelorarbeit/continuous-thought-machines-main/tasks/parity
+#SBATCH --chdir=/home/f/fischerjus/Bachelorarbeit/continuous-thought-machines-main/
 #SBATCH --output=/home/f/fischerjus/Bachelorarbeit/continuous-thought-machines-main/tasks/parity/slurm_baseline.%j.%N.out
 
 #RUN=1
