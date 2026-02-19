@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-#SBATCH --job-name=Base_Cifar10
+#SBATCH --job-name=MLP_Cifar10
 #SBATCH --comment="CTM tuning with wandb"
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=justus.fischer@campus.lmu.de
@@ -53,7 +53,7 @@ python -u tasks/image_classification/train.py \
 --seed 1 \
 --useWandb 1 \
 --postactivation_production $POSTACTIVATION \
---device 1 \
+--device 0 \
 
 
 

@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-#SBATCH --job-name=Base_Cifar10
+#SBATCH --job-name=KAN_Cifar10
 #SBATCH --comment="CTM tuning with wandb"
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=justus.fischer@campus.lmu.de
@@ -53,7 +53,7 @@ python -u tasks/image_classification/train.py \
 --seed 1 \
 --useWandb 1 \
 --postactivation_production $POSTACTIVATION \
---device 1 \
+--device 0 \
 
 #python -m tasks.image_classification.train \
 #--log_dir logs/kan_cifar10-versus-humans/ctm/d=256--i=64--heads=16--sd=5--synch=256-512-0-h=64-random-pairing--iters=50x15--backbone=18-1--seed=2 \
