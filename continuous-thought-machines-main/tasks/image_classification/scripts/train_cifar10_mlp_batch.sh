@@ -12,7 +12,7 @@ RUN=1
 LOG_DIR="logs/image_classification/run${RUN}/kan${MODEL}"
 SEED=$((RUN - 1))
 MODEL="ctm"
-POSTACTIVATION = "MLP"
+POSTACTIVATION = "mlp"
 
 
 export PYTHONPATH=$PYTHONPATH:.
