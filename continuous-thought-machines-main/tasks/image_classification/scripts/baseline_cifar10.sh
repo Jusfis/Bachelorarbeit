@@ -28,7 +28,7 @@ python -m tasks.image_classification.image_baseline_mlp \
 --use_scheduler \
 --scheduler_type cosine \
 --weight_decay 0.0001 \
---save_every 1000 \
+--save_every 20000 \
 --track_every 2000 \
 --n_test_batches 50 \
 --num_workers_train 8 \
@@ -38,7 +38,7 @@ python -m tasks.image_classification.image_baseline_mlp \
 --seed $SEED \
 --useWandb 1 \
 --model "mlp" \
- --device 0
+# --device 0
 
 # set --device 0 to allow slurm to assign GPU automatically
 # use Wandb set to 0 for local testing, set to 1 for slurm runs

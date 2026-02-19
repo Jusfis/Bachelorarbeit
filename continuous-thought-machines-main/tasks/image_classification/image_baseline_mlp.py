@@ -227,10 +227,13 @@ def imagenet_baseline_model(args, config, run):
     train_data, test_data, class_labels, dataset_mean, dataset_std = get_dataset(args.dataset, args.data_root)
 
     num_workers_test = 1  # Defaulting to 1, change if needed
+    # Ensure persistent_workers is only True if num_workers > 0
+    use_persistent = args.num_workers_train > 0
     trainloader = torch.utils.data.DataLoader(train_data, batch_size=args.batch_size, shuffle=True,
-                                              num_workers=args.num_workers_train)
+                                              num_workers=args.num_workers_train, pin_memory=True, persistent_workers=use_persistent,
+                                              prefetch_factor=4 if use_persistent else None)
     testloader = torch.utils.data.DataLoader(test_data, batch_size=args.batch_size_test, shuffle=True,
-                                             num_workers=num_workers_test, drop_last=False)
+                                             num_workers=num_workers_test, drop_last=False, pin_memory=True, persistent_workers=True)
 
     prediction_reshaper = [-1]  # Problem specific
     args.out_dims = len(class_labels)
@@ -477,6 +480,12 @@ def imagenet_baseline_model(args, config, run):
                     accuracy = (predictions.argmax(1) == targets).float().mean().item()
                     pbar_desc = f'{args.model}-Loss={loss.item():0.3f}. Acc={accuracy:0.3f}. LR={current_lr:0.6f}'
 
+            # if args.useWandb == 1:
+            #     run.log({
+            #         "Train/Losses": loss.item(),
+            #         "Train/Accuracies": accuracy,
+            #     }, step=bi)
+
             scaler.scale(loss).backward()
 
             if args.gradient_clipping != -1:
@@ -551,6 +560,10 @@ def imagenet_baseline_model(args, config, run):
                                     these_predictions.argmax(1).detach().cpu().numpy())  # Shape (B,)
 
                             all_losses.append(loss.item())
+                            if args.useWandb == 1:
+                                run.log({
+                                    "Train/Losses": loss.item(),
+                                }, step=bi)
 
                             if args.n_test_batches != -1 and inferi >= args.n_test_batches - 1: break  # Check condition >= N-1
                             pbar_inner.set_description(f'Computing metrics for train (Batch {inferi + 1})')
@@ -572,13 +585,14 @@ def imagenet_baseline_model(args, config, run):
                     else:  # FF or Baseline
                         current_train_accuracies = (all_targets == all_predictions).mean()  # Shape scalar
                         train_accuracies.append(current_train_accuracies)
+                        if args.useWandb == 1:
+                            run.log({
+                                "Train/Accuracies": current_train_accuracies,
+                            }, step=bi)
 
                 del these_predictions
-                if args.useWandb == 1:
-                    run.log({
-                        "Train/Losses": loss.item(),
-                        "Train/Accuracies": current_train_losses,
-                    }, step=bi)
+
+
 
                 # Switch to eval mode for test metrics (fixed BN stats)
                 model.eval()
@@ -630,6 +644,10 @@ def imagenet_baseline_model(args, config, run):
                     all_targets = np.concatenate(all_targets_list)
                     all_predictions = np.concatenate(all_predictions_list)
                     test_losses.append(np.mean(all_losses))
+                    if args.useWandb == 1:
+                        run.log({
+                            "Test/Losses": test_losses[-1],
+                        }, step=bi)
 
                     if args.model in ['ctm', 'lstm']:
                         current_test_accuracies = np.mean(all_predictions == all_targets[..., np.newaxis], axis=0)
@@ -637,9 +655,14 @@ def imagenet_baseline_model(args, config, run):
                         all_predictions_most_certain = np.concatenate(all_predictions_most_certain_list)
                         current_test_accuracies_most_certain = (all_targets == all_predictions_most_certain).mean()
                         test_accuracies_most_certain.append(current_test_accuracies_most_certain)
-                    else:  # FF
+                    else:  # FF or Baseline
                         current_test_accuracies = (all_targets == all_predictions).mean()
                         test_accuracies.append(current_test_accuracies)
+                        if args.useWandb == 1:
+                            run.log({
+                                "Test/Accuracies": current_test_accuracies,
+                            }, step=bi)
+
 
                 # Plotting (conditional)
                 figacc = plt.figure(figsize=(10, 10))
@@ -766,8 +789,9 @@ def imagenet_baseline_model(args, config, run):
 def run_sweep():
     """ Function to be called by wandb agent for hyperparameter sweeps """
     with wandb.init(entity="justus-fischer-ludwig-maximilian-university-of-munich", project="baseline-imagenet") as run:
+
         config = wandb.config
-        args = parse_args()
+
         # --------------------- Input from wandb sweep -------------------------- #
         args.batch_size = config.batch_size
         args.lr = config.learning_rate
@@ -798,8 +822,9 @@ if __name__ == "__main__":
                 "learning_rate": {"min": 1e-4, "max": 3e-4},
                 "use_amp": {"values": [True]},
                 "use_scheduler": {"values": [True]},
-                "training_iterations": {"values": [600000]},
-                "model_type": {"values": ["resnet","mlp"]},
+                "training_iterations": {"values": [200000]},
+                "model_type": {"values": ["mlp"]},
+                "seeds": {"values": [1, 7, 9, 42, 67, 100, 22]},
 
             }
         }
