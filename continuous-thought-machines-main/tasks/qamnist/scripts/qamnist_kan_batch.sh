@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-#SBATCH --job-name=qamnist_kan_wandb_sweeps
+#SBATCH --job-name=kan_qamnist__wandb_sweeps
 #SBATCH --comment="CTM tuning with wandb"
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=justus.fischer@campus.lmu.de
@@ -10,8 +10,6 @@
 
 export PYTHONPATH=$PYTHONPATH:.
 
-
-#!/bin/bash
 RUN=2
 MEMORY_LENGTH=3
 MODEL_TYPE="ctm"

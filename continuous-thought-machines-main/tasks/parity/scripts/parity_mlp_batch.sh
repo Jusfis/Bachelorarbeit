@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-#SBATCH --job-name=KAN_Parity
+#SBATCH --job-name=MLP_Parity
 #SBATCH --comment="CTM tuning with wandb"
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=justus.fischer@campus.lmu.de

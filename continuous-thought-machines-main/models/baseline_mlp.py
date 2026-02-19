@@ -37,3 +37,23 @@ class BaselineMLPListops(nn.Module):
         pass
     def forward(self, x):
         pass
+
+class SimpleMLP(nn.Module):
+
+
+    def __init__(self, input_dim, hidden_dim, out_dims, dropout=0.0):
+        super().__init__()
+        self.flatten = nn.Flatten()
+        self.net = nn.Sequential(
+            nn.Linear(input_dim, hidden_dim),
+            nn.ReLU(),
+            nn.Dropout(dropout),
+            nn.Linear(hidden_dim, hidden_dim),
+            nn.ReLU(),
+            nn.Dropout(dropout),
+            nn.Linear(hidden_dim, out_dims)
+        )
+
+    def forward(self, x):
+        x = self.flatten(x)
+        return self.net(x)

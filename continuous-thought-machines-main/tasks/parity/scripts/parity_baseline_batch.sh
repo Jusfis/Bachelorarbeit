@@ -8,17 +8,15 @@
 #SBATCH --chdir=/home/f/fischerjus/Bachelorarbeit/continuous-thought-machines-main/
 #SBATCH --output=/home/f/fischerjus/Bachelorarbeit/continuous-thought-machines-main/tasks/parity/slurm_baseline.%j.%N.out
 
-#RUN=1
-#ITERATIONS=10
-#MEMORY_LENGTH=5
-#LOG_DIR="logs/parity/run${RUN}/ctm_${ITERATIONS}_${MEMORY_LENGTH}"
-#SEED=$((RUN - 1))
+RUN=1
+LOG_DIR="logs/parity/run${RUN}/baseline/"
+SEED=$((RUN - 1))
 
 export PYTHONPATH=$PYTHONPATH:.
 
 python -u tasks/parity/parity_baseline_mlp.py \
-    --log_dir "logs/parity/run7/baseline_sweeps" \
-    --seed 42 \
+    --log_dir $LOG_DIR \
+    --seed SEED \
     --parity_sequence_length 64  \
     --n_test_batches 20 \
     --memory_hidden_dims 16 \
@@ -44,7 +42,9 @@ python -u tasks/parity/parity_baseline_mlp.py \
     --no-reload \
     --no-reload_model_only \
     --no-use_amp \
-    --useWandb 1
+    --useWandb 1 \
+    -- device 0
+
 
 #    --neuron_select_type "random" \
 #    --postactivation_production 'kan'
