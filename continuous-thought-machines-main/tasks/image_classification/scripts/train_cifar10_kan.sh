@@ -32,9 +32,9 @@ python -m tasks.image_classification.train \
 --batch_size_test 512 \
 --lr 1e-4 \
 --seed 1 \
---useWandb 0 \
+--useWandb 1 \
 --postactivation_production "kan" \
---device 1 \
+#--device 1 \
 
 python -m tasks.image_classification.train \
 --log_dir logs/kan_cifar10-versus-humans/ctm/d=256--i=64--heads=16--sd=5--synch=256-512-0-h=64-random-pairing--iters=50x15--backbone=18-1--seed=2 \

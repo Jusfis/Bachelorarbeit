@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-#SBATCH --job-name=Base_Cifar10_Parity
+#SBATCH --job-name=Base_Cifar10
 #SBATCH --comment="CTM tuning with wandb"
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=justus.fischer@campus.lmu.de
