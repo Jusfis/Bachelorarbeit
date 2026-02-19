@@ -734,6 +734,7 @@ def run_sweep():
         args.use_scheduler = config.use_scheduler
         args.model_type = config.model_type
         args.postactivation_production = config.postactivation_production
+        args.seed = config.seed
         # args.model = config.model_type
         # ------------------ Modell laufen lassen ------------------------------- #
         imagenet_model(args, config, run)
@@ -753,11 +754,12 @@ if __name__ == "__main__":
             },
             "parameters": {
                 "batch_size": {"values": [64]},
-                "learning_rate": {"min": 1e-4, "max": 3e-4},
+                "learning_rate": {"values": [1e-4]},
                 "use_amp": {"values": [True]},
                 "use_scheduler": {"values": [True]},
                 "training_iterations": {"values": [200000]},
-                "postactivation_production": {"values": ["kan"]},
+                "postactivation_production": {"values": args.postactivation_production},
+                "seed": {"values": [1, 10, 47, 23, 49, 6, 30]},
                 "model_type": {"values": ["ctm"]},
 
             }
