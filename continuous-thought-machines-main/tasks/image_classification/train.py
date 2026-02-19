@@ -516,6 +516,10 @@ def imagenet_model(args,config,run):
                         all_predictions_most_certain = np.concatenate(all_predictions_most_certain_list)
                         current_train_accuracies_most_certain = (all_targets == all_predictions_most_certain).mean()
                         train_accuracies_most_certain.append(current_train_accuracies_most_certain)
+                        if args.useWandb == 1:
+                            run.log({
+                                "Train/All_Predictions_Most_Certain": train_accuracies_most_certain[-1],
+                            }, step=bi)
                     else: # FF
                          current_train_accuracies = (all_targets == all_predictions).mean() # Shape scalar
                          train_accuracies.append(current_train_accuracies)
@@ -549,6 +553,10 @@ def imagenet_model(args,config,run):
                                 loss, where_most_certain = image_classification_loss(these_predictions, certainties, targets, use_most_certain=True)
                                 all_predictions_list.append(these_predictions.argmax(1).detach().cpu().numpy())
                                 all_predictions_most_certain_list.append(these_predictions.argmax(1)[torch.arange(these_predictions.size(0), device=these_predictions.device), where_most_certain].detach().cpu().numpy())
+                                if args.useWandb == 1:
+                                    run.log({
+                                        "Test/All_Predictions_Most_Certain": all_predictions_most_certain_list[-1],
+                                    }, step=bi)
 
                             elif args.model == 'lstm':
                                 these_predictions, certainties, _ = model(inputs)
@@ -570,6 +578,10 @@ def imagenet_model(args,config,run):
                     all_targets = np.concatenate(all_targets_list)
                     all_predictions = np.concatenate(all_predictions_list)
                     test_losses.append(np.mean(all_losses))
+                    if args.useWandb == 1:
+                        run.log({
+                            "Test/Losses": test_losses[-1],
+                        }, step=bi)
 
                     if args.model in ['ctm', 'lstm']:
                         current_test_accuracies = np.mean(all_predictions == all_targets[...,np.newaxis], axis=0)
@@ -580,6 +592,10 @@ def imagenet_model(args,config,run):
                     else: # FF
                          current_test_accuracies = (all_targets == all_predictions).mean()
                          test_accuracies.append(current_test_accuracies)
+                    if args.useWandb == 1:
+                        run.log({
+                            "Test/Accuracies": current_test_accuracies,
+                        }, step=bi)
 
                 # Plotting (conditional)
                 figacc = plt.figure(figsize=(10, 10))
@@ -717,8 +733,8 @@ def run_sweep():
         args.use_amp = config.use_amp
         args.use_scheduler = config.use_scheduler
         args.model_type = config.model_type
-        # args.postactivation_production = config.postactivation_production
-        # args.model_type = config.model_type
+        args.postactivation_production = config.postactivation_production
+        # args.model = config.model_type
         # ------------------ Modell laufen lassen ------------------------------- #
         imagenet_model(args, config, run)
 
@@ -741,7 +757,7 @@ if __name__ == "__main__":
                 "use_amp": {"values": [True]},
                 "use_scheduler": {"values": [True]},
                 "training_iterations": {"values": [200000]},
-                # "postactivation_production": {"values": ["kan"]},
+                "postactivation_production": {"values": ["kan"]},
                 "model_type": {"values": ["ctm"]},
 
             }
