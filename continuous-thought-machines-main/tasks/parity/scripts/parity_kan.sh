@@ -15,10 +15,16 @@
 #SEED=$((RUN - 1))
 #    --model_type "ctm"\
 # IMPORTANT D_model % 5 == 0 for MLP postactivation production
+RUN=1
+LOG_DIR="logs/parity/kan${MODEL}"
+SEED=$((RUN - 1))
+MODEL="ctm"
+POSTACTIVATION="kan"
 
 
 python -m tasks.parity.train_sweeps_efficient \
-    --log_dir "logs/parity/run1/KAN"\
+    --log_dir "logs/parity/kan"\
+    --model_type $MODEL \
     --seed 1 \
     --iterations 10 \
     --memory_length 5 \
@@ -55,8 +61,10 @@ python -m tasks.parity.train_sweeps_efficient \
     --no-reload_model_only \
     --no-use_amp \
     --neuron_select_type "random" \
-    --postactivation_production 'kan' \
-    --useWandb 0
+    --postactivation_production $POSTACTIVATION \
+    --useWandb 1 \
+    --device 1
+
 
 
 # set --device 0 to allow slurm to assign GPU automatically

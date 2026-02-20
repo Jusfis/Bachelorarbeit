@@ -17,10 +17,18 @@
 
 # IMPORTANT D_model % 5 == 0 for MLP postactivation production
 
+RUN=1
+LOG_DIR="logs/image_classification/run${RUN}/kan${MODEL}"
+SEED=$((RUN - 1))
+MODEL="ctm"
+POSTACTIVATION="kan"
+
+
 export PYTHONPATH=$PYTHONPATH:.
 
 python -u tasks/parity/train_sweeps_efficient.py \
     --log_dir "logs/parity/kan"\
+    --model_type $MODEL \
     --seed 1 \
     --iterations 10 \
     --memory_length 5 \
@@ -58,7 +66,7 @@ python -u tasks/parity/train_sweeps_efficient.py \
     --no-use_amp \
     --neuron_select_type "random" \
     --device 0 \
-    --postactivation_production 'kan' \
+    --postactivation_production $POSTACTIVATION \
     --useWandb 1
 
 
