@@ -537,9 +537,9 @@ if __name__=='__main__':
                 "model_type": {"values": ["ctm"]},
 
                 # ------------------ Hyperparameters from paper  ------------------------- #
-                "memory_length": {"values": [3]},
-                "q_num_repeats_per_input": {'values': [1]},
-                "q_num_answer_steps": {'values': [1]},
+                "memory_length": {"values": [args.memory_length]},
+                "q_num_repeats_per_input": {'values': [args.q_num_repeats_per_input]},
+                "q_num_answer_steps": {'values': [args.q_num_answer_steps]},
 
 
             }
