@@ -769,7 +769,8 @@ if __name__ == "__main__":
                 "postactivation_production": {"values": [args.postactivation_production]},
                 "seed": {"values": [1, 10, 47, 23, 49, 6, 30]},
                 "model_type": {"values": ["ctm"]},
-
+                "memory_length": {"values": [args.memory_length]},
+                "internal_ticks": {"values": [args.iterations]},
             }
         }
 
