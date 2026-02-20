@@ -18,3 +18,4 @@ safetensors
 efficient-kan @ git+https://github.com/Blealtan/efficient-kan.git@7b6ce1c87f18c8bc90c208f6b494042344216b11
 wandb
 seaborn
+pykan
