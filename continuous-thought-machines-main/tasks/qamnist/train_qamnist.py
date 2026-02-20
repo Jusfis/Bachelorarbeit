@@ -124,9 +124,11 @@ def qamnist_model(args, config, run):
             print(f"Using args: {args}")
 
         set_seed(args.seed)
-
+        args.log_dir = f'{args.log_dir}/dmodel{args.d_model}_memory{args.memory_length}_seed{args.seed}'
 
         if not os.path.exists(args.log_dir): os.makedirs(args.log_dir)
+
+
 
         # Data
         train_data, test_data, class_labels, dataset_mean, dataset_std = get_dataset(args.q_num_images, args.q_num_images_delta, args.q_num_repeats_per_input, args.q_num_operations, args.q_num_operations_delta)
