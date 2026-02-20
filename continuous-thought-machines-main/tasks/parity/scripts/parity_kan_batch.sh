@@ -18,7 +18,7 @@
 # IMPORTANT D_model % 5 == 0 for MLP postactivation production
 
 RUN=1
-LOG_DIR="logs/image_classification/run${RUN}/kan${MODEL}"
+LOG_DIR="logs/parity/run/kan${MODEL}"
 SEED=$((RUN - 1))
 MODEL="ctm"
 POSTACTIVATION="kan"
