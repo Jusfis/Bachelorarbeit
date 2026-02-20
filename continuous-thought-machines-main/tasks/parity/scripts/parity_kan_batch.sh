@@ -27,7 +27,7 @@ POSTACTIVATION="kan"
 export PYTHONPATH=$PYTHONPATH:.
 
 python -u tasks/parity/train_sweeps_efficient.py \
-    --log_dir "logs/parity/kan"\
+    --log_dir $LOG_DIR \
     --model_type $MODEL \
     --seed 1 \
     --iterations 10 \
