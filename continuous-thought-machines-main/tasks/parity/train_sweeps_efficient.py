@@ -268,8 +268,8 @@ def parity_model(args, config, run):
 
             if args.useWandb == 1:
                 run.log({
-                    "Train/Losses": loss.item(),
-                    "Train/Accuracies": accuracy_finegrained,
+                    "Train/Losses_every_step": loss.item(),
+                    "Train/Accuracies_every_step": accuracy_finegrained,
                 }, step=bi)
 
             # Metrics tracking and plotting ####################### TRACK ##############
@@ -354,6 +354,14 @@ def parity_model(args, config, run):
                                 -1).mean())
                         train_losses.append(np.mean(all_losses))
 
+                        if args.useWandb == 1:
+                            run.log({
+                                "Train/Losses_every_step": train_losses[-1],
+                                "Train/Accuracies_every_step": train_accuracies[-1],
+                                "Train/Accuracies_most_certain": train_accuracies_most_certain[-1],
+                            }, step=bi)
+
+
                         # # log to wandb
                         # run.log({
                         #     "Train/Accuracies_Most_Certain": train_accuracies_most_certain[-1] if len(train_accuracies_most_certain) > 0 else 0,
@@ -405,6 +413,13 @@ def parity_model(args, config, run):
                             (all_targets == all_predictions_most_certain).reshape(all_targets.shape[0], -1).all(
                                 -1).mean())
                         test_losses.append(np.mean(all_losses))
+
+                        if args.useWandb == 1:
+                            run.log({
+                                "Test/Losses": test_losses[-1],
+                                "Test/Accuracies": test_accuracies[-1],
+                                "Test/Accuracies_most_certain": test_accuracies_most_certain[-1],
+                            }, step=bi)
 
                         sns.set_theme(style="whitegrid")
 
