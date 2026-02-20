@@ -268,10 +268,10 @@ def qamnist_model(args, config, run):
                 accuracy = (predictions_answer_steps.argmax(1)[torch.arange(predictions_answer_steps.size(0), device=predictions.device),where_most_certain] == targets).float().mean().item()
 
                 pbar.set_description(f'Dataset=QAMNIST. Loss={loss.item():0.3f}. Accuracy={accuracy:0.3f}. LR={current_lr:0.6f}. Where_certain={where_most_certain.float().mean().item():0.2f}+-{where_most_certain.float().std().item():0.2f} ({where_most_certain.min().item():d}<->{where_most_certain.max().item():d})')
-                if run is not None:
+                if args.useWandb == 1:
                     run.log({
-                        "Train/Losses": loss.item(),
-                        "Train/Accuracy": accuracy,
+                        "Train/Losses_every_step": loss.item(),
+                        "Train/Accuracies_every_step": accuracy,
                     }, step=bi)
 
 
@@ -372,6 +372,14 @@ def qamnist_model(args, config, run):
                             train_accuracies_most_certain.append((all_targets == all_predictions_most_certain).mean())
                             train_losses.append(np.mean(all_losses))
 
+                            if args.useWandb == 1:
+                                run.log({
+                                    "Train/Losses_every_step": train_losses[-1],
+                                    "Train/Accuracies_every_step": train_accuracies[-1],
+                                    "Train/Accuracies_most_certain": train_accuracies_most_certain[-1],
+                                }, step=bi)
+
+
                             ##################################### TEST METRICS
                             all_predictions = []
                             all_predictions_most_certain = []
@@ -408,6 +416,14 @@ def qamnist_model(args, config, run):
                             test_accuracies.append(np.mean(all_predictions == all_targets[...,np.newaxis], axis=tuple(range(all_predictions.ndim-1))))
                             test_accuracies_most_certain.append((all_targets == all_predictions_most_certain).mean())
                             test_losses.append(np.mean(all_losses))
+
+                            if args.useWandb == 1:
+                                run.log({
+                                    "Test/Losses": test_losses[-1],
+                                    "Test/Accuracies": test_accuracies[-1],
+                                    "Test/Accuracies_most_certain": test_accuracies_most_certain[-1],
+                                }, step=bi)
+
 
 
                             figacc = plt.figure(figsize=(10, 10))
@@ -482,7 +498,8 @@ def run_sweep():
         args.use_amp = config.use_amp
         args.use_scheduler = config.use_scheduler
         args.postactivation_production = config.postactivation_production
-        # args.model_type = config.model_type
+        args.model = config.model_type
+        args.seed = config.seed
         # ------------------ Hyperparameters from paper  ------------------------ #
         args.memory_length = config.memory_length
         args.q_num_repeats_per_input = config.q_num_repeats_per_input
@@ -509,16 +526,19 @@ if __name__=='__main__':
             },
             "parameters": {
                 "batch_size": {"values": [64]},
-                "learning_rate": {"min": 1e-4, "max": 3e-4},
+                "learning_rate": {"values" : [1e-4]},
                 "use_amp": {"values": [True]},
                 "use_scheduler": {"values": [True]},
                 "training_iterations": {"values": [200000]},
                 "postactivation_production": {"values": [args.postactivation_production]},
+                "seed": {"values": [1, 10, 47, 23, 49, 6, 30]},
+                "model_type": {"values": ["ctm"]},
 
                 # ------------------ Hyperparameters from paper  ------------------------- #
                 "memory_length": {"values": [3]},
                 "q_num_repeats_per_input": {'values': [1]},
                 "q_num_answer_steps": {'values': [1]},
+
 
             }
         }

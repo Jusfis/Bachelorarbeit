@@ -632,7 +632,7 @@ if __name__=='__main__':
             },
             "parameters": {
                 "batch_size": {"values": [64]},
-                "learning_rate": {"min": 1e-4, "max": 3e-4},
+                "learning_rate": {"values" : [1e-4]},
                 "use_amp": {"values": [True]},
                 "use_scheduler": {"values": [True]},
                 "memory_length": {"values": [50]},
