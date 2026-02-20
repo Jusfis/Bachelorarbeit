@@ -5,19 +5,23 @@
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=justus.fischer@campus.lmu.de
 #SBATCH --ntasks=1
-#SBATCH --chdir=/home/f/fischerjus/Bachelorarbeit/continuous-thought-machines-main/tasks/listops
+#SBATCH --chdir=/home/f/fischerjus/Bachelorarbeit/continuous-thought-machines-main/
 #SBATCH --output=/home/f/fischerjus/Bachelorarbeit/continuous-thought-machines-main/tasks/listops/slurm_kan.%j.%N.out
 
 LOG_DIR="logs/listops/kan/"
+ITERATIONS=75
+MEMORY_LENGTH=50
+POSTACTIVATION="kan"
 
+export PYTHONPATH=$PYTHONPATH:.
 
 python -u train_listops.py \
     --log_dir $LOG_DIR \
     --seed 1 \
-    --iterations 75 \
-    --memory_length 25 \
+    --iterations $ITERATIONS \
+    --memory_length $MEMORY_LENGTH \
     --n_test_batches 20 \
-    --d_model 512 \
+    --d_model 1024 \
     --d_input 100 \
     --n_synch_out 32 \
     --n_synch_action 32 \
@@ -48,7 +52,7 @@ python -u train_listops.py \
     --no-reload_model_only \
     --no-use_amp \
     --neuron_select_type "random" \
-    --postactivation_production 'kan' \
+    --postactivation_production $POSTAC \
     --useWandb 1 \
     --device 0
 
