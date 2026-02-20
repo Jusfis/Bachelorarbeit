@@ -433,11 +433,11 @@ def imagenet_model(args,config,run):
                     accuracy = (predictions.argmax(1) == targets).float().mean().item()
                     pbar_desc = f'FF Loss={loss.item():0.3f}. Acc={accuracy:0.3f}. LR={current_lr:0.6f}'
 
-            if args.useWandb == 1:
-                run.log({
-                    "Train/Losses": loss.item(),
-                    "Train/Accuracies": accuracy,
-                }, step=bi)
+                if args.useWandb == 1:
+                    run.log({
+                        "Train/Losses": loss.item(),
+                        "Train/Accuracies": accuracy,
+                    }, step=bi)
 
             scaler.scale(loss).backward()
 
