@@ -1,5 +1,5 @@
 RUN=1
-LOG_DIR="logs/image_classification/run${RUN}/${POSTACTIVATION}_${MODEL}"
+LOG_DIR="logs/image_classification/${POSTACTIVATION}_${MODEL}"
 SEED=$((RUN - 1))
 MODEL="ctm"
 POSTACTIVATION="kan"

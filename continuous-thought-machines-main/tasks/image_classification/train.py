@@ -200,6 +200,8 @@ def imagenet_model(args,config,run):
 
 
     set_seed(args.seed, False)
+    args.log_dir = f'{args.log_dir}/dmodel{args.d_model}_iter{args.iterations}_seed{args.seed}'
+
     if not os.path.exists(args.log_dir): os.makedirs(args.log_dir)
 
     assert args.dataset in ['cifar10', 'cifar100', 'imagenet']
