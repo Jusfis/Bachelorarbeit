@@ -19,7 +19,7 @@ import umap
 from scipy.special import softmax
 
 import subprocess as sp
-import cv2 # Still potentially useful for color conversion checks if needed
+# import cv2 # Still potentially useful for color conversion checks if needed
 import os
 
 def save_frames_to_mp4(frames, output_filename, fps=15.0, gop_size=None, crf=23, preset='medium', pix_fmt='yuv420p'):
