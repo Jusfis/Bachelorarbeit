@@ -117,6 +117,7 @@ def parity_model(args, config, run):
         print(f"Using config: {args}")
 
     set_seed(args.seed)
+    args.log_dir = f'{args.log_dir}/dmodel{args.d_model}_iter{args.iterations}_seed{args.seed}'
 
     if not os.path.exists(args.log_dir): os.makedirs(args.log_dir)
 
@@ -592,8 +593,9 @@ def run_sweep():
         args.memory_length = config.memory_length
         args.iterations = config.internal_ticks
         args.postactivation_production = config.postactivation_production
-        args.model_type = config.model_type
+        args.model = config.model_type
         args.parity_sequence_length = config.parity_sequence_length
+        args.seed = config.seed
 
         # modell laufen lassen
         parity_model(args, config, run)
@@ -621,9 +623,10 @@ if __name__=='__main__':
                 "memory_length": {"values": [50]},
                 "internal_ticks": {"values": [100]},
                 "training_iterations": {"values": [200000]},
-                "model_type": {"values": ["ctm"]},
                 "parity_sequence_length": {"values": [64]},
                 "postactivation_production": {"values": [args.postactivation_production]},
+                "seed": {"values": [1, 10, 47, 23, 49, 6, 30]},
+                "model_type": {"values": ["ctm"]},
             }
         }
 
