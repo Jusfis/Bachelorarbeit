@@ -819,7 +819,7 @@ if __name__ == "__main__":
             },
             "parameters": {
                 "batch_size": {"values": [512]},
-                "learning_rate": {"values": 1e-4},
+                "learning_rate": {"values": [1e-4]},
                 "use_amp": {"values": [True]},
                 "use_scheduler": {"values": [True]},
                 "training_iterations": {"values": [200000]},
