@@ -319,8 +319,8 @@ def listops_model(args, config, run):
 
                             if args.useWandb == 1:
                                 run.log({
-                                    "Train/Losses": loss.item(),
-                                    "Train/Accuracies": accuracy_finegrained,
+                                    "Train/Losses_every_step": loss.item(),
+                                    "Train/Accuracies_every_step": accuracy_finegrained,
                                 }, step=bi)
 
                             # ----------------------------- TRACKING BEGINS ------------------------------- #
@@ -415,6 +415,16 @@ def listops_model(args, config, run):
                                                 -1).mean())
                                         train_losses.append(np.mean(all_losses))
 
+                                        if args.useWandb == 1:
+                                            run.log({
+                                                "Train/Losses": train_losses[-1],
+                                                "Train/Accuracies": train_accuracies[-1],
+                                                "Train/Accuracies_most_certrain": train_accuracies_most_certain[-1],
+                                                "Train/Accuracies_most_certrain_per_input": train_accuracies_most_certain_per_input[-1],
+                                            }, step=bi)
+
+
+
                                         # # log to wandb
                                         # run.log({
                                         #     "Train/Accuracies_Most_Certain": train_accuracies_most_certain[-1] if len(train_accuracies_most_certain) > 0 else 0,
@@ -487,6 +497,14 @@ def listops_model(args, config, run):
                                             (all_targets == all_predictions_most_certain).reshape(all_targets.shape[0], -1).all(
                                                 -1).mean())
                                         test_losses.append(np.mean(all_losses))
+                                        if args.useWandb == 1:
+                                            run.log({
+                                                "Test/Losses": test_losses[-1],
+                                                "Test/Accuracies": test_accuracies[-1],
+                                                "Test/Accuracies_most_certrain": test_accuracies_most_certain[-1],
+                                                "Test/Accuracies_most_certrain_per_input": test_accuracies_most_certain_per_input[-1],
+                                            }, step=bi)
+
 
                                         sns.set_theme(style="whitegrid")
 
@@ -661,10 +679,12 @@ def run_sweep():
         args.lr = config.learning_rate
         args.training_iterations = config.training_iterations
         args.use_amp = config.use_amp
+        args.memory_length = config.memory_length
+        args.iterations = config.internal_ticks
         args.use_scheduler = config.use_scheduler
-        args.model_type = config.model_type
-        # args.postactivation_production = config.postactivation_production
-        # args.model_type = config.model_type
+        args.postactivation_production = config.postactivation_production
+        args.model = config.model_type
+        args.seed = config.seed
         # ------------------ Modell laufen lassen ------------------------------- #
         listops_model(args, config, run)
 
@@ -695,6 +715,7 @@ if __name__ == "__main__":
                 "postactivation_production": {"values": [args.postactivation_production]},
                 "memory_length": {"values": [args.memory_length]},
                 "internal_ticks": {"values": [args.iterations]},
+                "seed": {"values": [1, 10, 47, 23, 49, 6, 30]},
                 "model_type": {"values": ["ctm"]},
 
 

@@ -435,8 +435,8 @@ def imagenet_model(args,config,run):
 
                 if args.useWandb == 1:
                     run.log({
-                        "Train/Losses": loss.item(),
-                        "Train/Accuracies": accuracy,
+                        "Train/Losses_every_step": loss.item(),
+                        "Train/Accuracies_every_step": accuracy,
                     }, step=bi)
 
             scaler.scale(loss).backward()

@@ -15,7 +15,7 @@ POSTACTIVATION="kan"
 
 export PYTHONPATH=$PYTHONPATH:.
 
-python -u train_listops.py \
+python -u tasks/listops/train_listops.py \
     --log_dir $LOG_DIR \
     --seed 1 \
     --iterations $ITERATIONS \
