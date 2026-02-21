@@ -1,21 +1,25 @@
 #!/bin/bash
 #
-#SBATCH --job-name=mlp_listops_wandb_sweeps
+#SBATCH --job-name=kan_listops_wandb_sweeps
 #SBATCH --comment="CTM tuning with wandb"
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=justus.fischer@campus.lmu.de
 #SBATCH --ntasks=1
-#SBATCH --chdir=/home/f/fischerjus/Bachelorarbeit/continuous-thought-machines-main/tasks/listops
-#SBATCH --output=/home/f/fischerjus/Bachelorarbeit/continuous-thought-machines-main/tasks/listops/slurm_mlp.%j.%N.out
+#SBATCH --chdir=/home/f/fischerjus/Bachelorarbeit/continuous-thought-machines-main/
+#SBATCH --output=/home/f/fischerjus/Bachelorarbeit/continuous-thought-machines-main/tasks/listops/slurm_kan.%j.%N.out
 
 LOG_DIR="logs/listops/mlp/"
+ITERATIONS=75
+MEMORY_LENGTH=50
+POSTACTIVATION="mlp"
 
+export PYTHONPATH=$PYTHONPATH:.
 
-python -u train_listops.py \
+python -u tasks/listops/train_listops.py \
     --log_dir $LOG_DIR \
     --seed 1 \
-    --iterations 75 \
-    --memory_length 25 \
+    --iterations $ITERATIONS \
+    --memory_length $MEMORY_LENGTH \
     --n_test_batches 20 \
     --d_model 1024 \
     --d_input 100 \
@@ -48,11 +52,11 @@ python -u train_listops.py \
     --no-reload_model_only \
     --no-use_amp \
     --neuron_select_type "random" \
-    --postactivation_production 'mlp' \
+    --postactivation_production $POSTAC \
     --useWandb 1 \
     --device 0
 
 # use Wandb set to 0 for local testing, set to 1 for slurm runs
 # to submit the job on slurm, use from ctm main folder:
-# sbatch --partition=NvidiaAll listops_mlp_batch.sh
+# sbatch --partition=NvidiaAll listops_kan_batch.sh
 # remove --device 0 to allow slurm to assign GPU automatically
