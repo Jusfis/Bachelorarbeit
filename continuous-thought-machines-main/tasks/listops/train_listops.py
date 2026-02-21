@@ -708,10 +708,10 @@ if __name__ == "__main__":
             },
             "parameters": {
                 "batch_size": {"values": [64]},
-                "learning_rate": {"min": 1e-4},
+                "learning_rate": {"values": [1e-4]},
                 "use_amp": {"values": [True]},
                 "use_scheduler": {"values": [True]},
-                "training_iterations": {"values": [200000]},
+                "training_iterations": {"values": [50000]},
                 "postactivation_production": {"values": [args.postactivation_production]},
                 "memory_length": {"values": [args.memory_length]},
                 "internal_ticks": {"values": [args.iterations]},
