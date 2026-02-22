@@ -39,7 +39,7 @@ python -m tasks.listops.train_listops \
     --dataset "listops" \
     --batch_size 64 \
     --batch_size_test 256 \
-    --lr 0.0002 \
+    --lr 0.0001 \
     --training_iterations 50001 \
     --warmup_steps 500 \
     --track_every 1000 \

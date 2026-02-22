@@ -387,7 +387,7 @@ def listops_model(args, config, run):
 
 
 
-                                                print(these_predictions.size())
+                                                # print(these_predictions.size())
                                                 # these_predictions = reshape_predictions(these_predictions, prediction_reshaper)
                                                 loss, where_most_certain = listops_loss(predictions=these_predictions, certainties=certainties, targets=targets_pure,
                                                                                        use_most_certain=args.use_most_certain)
