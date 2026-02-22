@@ -48,7 +48,7 @@ python -m tasks.listops.train_listops \
     --no-reload_model_only \
     --no-use_amp \
     --neuron_select_type "random" \
-    --postactivation_production 'mlp' \
+    --postactivation_production 'kan' \
     --useWandb 1 \
     --device 0
 
