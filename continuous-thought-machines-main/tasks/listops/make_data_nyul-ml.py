@@ -17,8 +17,8 @@ VALUES = range(10)
 # ==========================================
 # ⚙️ EINSTELLUNGEN FÜR DEIN DATASET
 # ==========================================
-OUTPUT_FILE = "tasks/listops/dataset/test_easy.tsv"  # Hier wird die Datei gespeichert
-DATA_POINTS = 20000
+OUTPUT_FILE = "tasks/listops/dataset/train_easy_200_000.tsv"  # Hier wird die Datei gespeichert
+DATA_POINTS = 200000
 MAX_DEPTH = 3
 MAX_ARGS = 3
 VALUE_P = 0.25  # Wahrscheinlichkeit für eine reine Zahl statt Operator

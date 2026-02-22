@@ -139,8 +139,8 @@ def listops_model(args, config, run):
             if not os.path.exists(args.log_dir): os.makedirs(args.log_dir)
 
             # ----------------------------- LOAD DATA ------------------------------- #
-            csv_train_file='tasks/listops/dataset/train_easy.tsv'
-            csv_test_file='tasks/listops/dataset/test_easy.tsv'
+            csv_train_file='tasks/listops/dataset/train_easy_200_000.tsv'
+            csv_test_file='tasks/listops/dataset/test_easy_200_000.tsv'
             if not os.path.exists('tasks/listops/dataset'):
                 os.makedirs('tasks/listops/dataset')
                 print("Fehler, dataset folder is missing, created dataset")
@@ -148,8 +148,8 @@ def listops_model(args, config, run):
 
             # Laenge latent representatation
                 # check the longest sequence in the dataset to set max_len accordingly
-            df_train = pd.read_csv('tasks/listops/dataset/train_easy.tsv', sep='\t')
-            df_test = pd.read_csv('tasks/listops/dataset/test_easy.tsv', sep='\t')
+            df_train = pd.read_csv('tasks/listops/dataset/train_easy_200_000.tsv', sep='\t')
+            df_test = pd.read_csv('tasks/listops/dataset/test_easy_200_000.tsv', sep='\t')
             max_len_test = df_test.iloc[:, 1].apply(lambda x: len(str(x).split())).max()
             max_len_train = df_train.iloc[:, 1].apply(lambda x: len(str(x).split())).max()
 

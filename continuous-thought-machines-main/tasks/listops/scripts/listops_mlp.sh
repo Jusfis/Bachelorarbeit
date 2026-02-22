@@ -24,7 +24,7 @@ python -m tasks.listops.train_listops \
     --synapse_depth 1 \
     --heads 4 \
     --memory_hidden_dims 16 \
-    --dropout 0.0 \
+    --dropout 0.1 \
     --deep_memory \
     --no-do_normalisation \
     --positional_embedding_type="learned-1d" \
