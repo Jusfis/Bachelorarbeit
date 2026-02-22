@@ -8,7 +8,7 @@
 #SBATCH --chdir=/home/f/fischerjus/Bachelorarbeit/continuous-thought-machines-main/tasks/listops
 #SBATCH --output=/home/f/fischerjus/Bachelorarbeit/continuous-thought-machines-main/tasks/listops/slurm_kan.%j.%N.out
 
-LOG_DIR="logs/qamnist/kan/run1"
+LOG_DIR="logs/qamnist/kan/test"
 
 
 python -m tasks.listops.train_listops \
@@ -39,7 +39,7 @@ python -m tasks.listops.train_listops \
     --dataset "listops" \
     --batch_size 64 \
     --batch_size_test 256 \
-    --lr 0.0002 \
+    --lr 0.0001 \
     --training_iterations 50001 \
     --warmup_steps 500 \
     --track_every 1000 \
@@ -49,8 +49,8 @@ python -m tasks.listops.train_listops \
     --no-use_amp \
     --neuron_select_type "random" \
     --postactivation_production 'kan' \
-    --useWandb 0 \
-#    --device 0
+    --useWandb 1 \
+    --device 0
 
 # use Wandb set to 0 for local testing, set to 1 for slurm runs
 # to submit the job on slurm, use from ctm main folder:
