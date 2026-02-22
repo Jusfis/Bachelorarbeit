@@ -8,7 +8,7 @@
 #SBATCH --chdir=/home/f/fischerjus/Bachelorarbeit/continuous-thought-machines-main/tasks/listops
 #SBATCH --output=/home/f/fischerjus/Bachelorarbeit/continuous-thought-machines-main/tasks/listops/slurm_mlp.%j.%N.out
 
-LOG_DIR="logs/qamnist/mlp/test"
+LOG_DIR="logs/listops/mlp/test"
 
 
 python -m tasks.listops.train_listops \
@@ -49,8 +49,8 @@ python -m tasks.listops.train_listops \
     --no-use_amp \
     --neuron_select_type "random" \
     --postactivation_production 'mlp' \
-    --useWandb 1 \
-    --device 0
+    --useWandb 0 \
+#    --device 0
 
 # use Wandb set to 0 for local testing, set to 1 for slurm runs
 # to submit the job on slurm, use from ctm main folder:

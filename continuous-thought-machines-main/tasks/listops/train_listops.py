@@ -91,6 +91,23 @@ def parse_args():
     args = parser.parse_args()
     return args
 
+
+from torch.nn.utils.rnn import pad_sequence
+
+
+def listops_collate_fn(batch):
+    # 'batch' ist eine Liste von (token_tensor, target_tensor) Tuples
+    inputs = [item[0] for item in batch]
+    targets = [item[1] for item in batch]
+
+    # pad_sequence füllt automatisch alle Tensoren auf die Länge des längsten Tensors IM BATCH auf.
+    # padding_value=0, da 0 die ID für <PAD> in deinem Vocab ist.
+    # batch_first=True, damit die Form (Batch, Time) ist und nicht (Time, Batch)
+    inputs_padded = pad_sequence(inputs, batch_first=True, padding_value=0)
+    targets_tensor = torch.stack(targets)
+
+    return inputs_padded, targets_tensor
+
 def create_long_df(data_array, iters, metric_name='Accuracy'):
     """
     Converts numpy array (iters x runs) into a Long-Form DataFrame for Seaborn.
@@ -122,23 +139,70 @@ def listops_model(args, config, run):
             if not os.path.exists(args.log_dir): os.makedirs(args.log_dir)
 
             # ----------------------------- LOAD DATA ------------------------------- #
-            csv_train_file='tasks/listops/dataset/train_d20s.tsv'
-            csv_test_file='tasks/listops/dataset/test_d20s.tsv'
+            csv_train_file='tasks/listops/dataset/train_easy.tsv'
+            csv_test_file='tasks/listops/dataset/test_easy.tsv'
             if not os.path.exists('tasks/listops/dataset'):
                 os.makedirs('tasks/listops/dataset')
                 print("Fehler, dataset folder is missing, created dataset")
 
+
+            # Laenge latent representatation
+                # check the longest sequence in the dataset to set max_len accordingly
+            df_train = pd.read_csv('tasks/listops/dataset/train_easy.tsv', sep='\t')
+            df_test = pd.read_csv('tasks/listops/dataset/test_easy.tsv', sep='\t')
+            max_len_test = df_test.iloc[:, 1].apply(lambda x: len(str(x).split())).max()
+            max_len_train = df_train.iloc[:, 1].apply(lambda x: len(str(x).split())).max()
+
+            max_len = max(max_len_test, max_len_train)
+            print(f"Die längste Sequenz ueber Test und Train hat {max_len} Tokens.")
+
+
             train_data = ListOpsDataset(csv_train_file)
             test_data = ListOpsDataset(csv_test_file)
-            # loads batches from train_data and test_data which are insctances of torch.utils.data.Dataset
-            trainloader = torch.utils.data.DataLoader(train_data, batch_size=args.batch_size, shuffle=True, num_workers=0)
 
-            testloader = torch.utils.data.DataLoader(test_data, batch_size=args.batch_size_test, shuffle=False, num_workers=0, drop_last=False)
+            # loads batches from train_data and test_data which are insctances of torch.utils.data.Dataset
+            if args.device[0] != -1:
+                trainloader = torch.utils.data.DataLoader(
+                    train_data,
+                    batch_size=args.batch_size,
+                    shuffle=True,
+                    num_workers=4,
+                    pin_memory=True,
+                    collate_fn=listops_collate_fn
+                )
+
+                testloader = torch.utils.data.DataLoader(
+                    test_data,
+                    batch_size=args.batch_size_test,
+                    shuffle=False,
+                    num_workers=4,
+                    pin_memory=True,
+                    drop_last=False,
+                    collate_fn=listops_collate_fn
+                )
+            else: # CPU or MPS (where pin_memory is not beneficial)
+                trainloader = torch.utils.data.DataLoader(
+                    train_data,
+                    batch_size=args.batch_size,
+                    shuffle=True,
+                    num_workers=4,
+                    collate_fn=listops_collate_fn  # <--- HIER EINFÜGEN
+                )
+
+                testloader = torch.utils.data.DataLoader(
+                    test_data,
+                    batch_size=args.batch_size_test,
+                    shuffle=False,
+                    num_workers=4,
+                    drop_last=False,
+                    collate_fn=listops_collate_fn  # <--- HIER EINFÜGEN
+                )
+
 
             prediction_reshaper = [1, 10]
             # da ZMOD 10Z Restklasse
             args.out_dims = 10
-            pass
+
 
 
             args.use_most_certain = args.model_type == "ctm" or (args.use_most_certain_with_lstm and args.model_type == "lstm")
@@ -343,10 +407,12 @@ def listops_model(args, config, run):
                                     # inputs = reshape_inputs(inputs, args.iterations,
                                     #                         grid_size=int(math.sqrt(args.parity_sequence_length)))
 
-                                    pbar.set_description('Tracking: Neural dynamics')
-                                    plot_neural_dynamics(post_activations, args.d_model, args.log_dir, axis_snap=True)
+                                    if bi % (args.track_every * 4 )== 0 and bi != 0:
 
-                                    pbar.set_description('Tracking: Producing attention gif')
+                                        pbar.set_description('Tracking: Neural dynamics')
+                                        plot_neural_dynamics(post_activations, args.d_model, args.log_dir, axis_snap=True)
+
+                                    # pbar.set_description('Tracking: Producing attention gif')
 
                                      # ----------------------------- TRACK TRAIN METRICS ------------------------------- #
                                     all_predictions = []
@@ -356,8 +422,18 @@ def listops_model(args, config, run):
 
                                     iters.append(bi)
                                     with torch.inference_mode():
-                                        loader = torch.utils.data.DataLoader(train_data, batch_size=args.batch_size_test,
-                                                                             shuffle=True, num_workers=0)
+                                        # remember to auch changen
+                                        loader = torch.utils.data.DataLoader(
+                                            train_data,
+                                            batch_size=args.batch_size,
+                                            shuffle=True,
+                                            num_workers=4,
+                                            pin_memory=True,
+                                            collate_fn=listops_collate_fn
+                                        )
+
+
+
                                         with tqdm(total=len(loader), initial=0, leave=False, position=1,
                                                   dynamic_ncols=True) as pbar_inner:
 
@@ -440,8 +516,14 @@ def listops_model(args, config, run):
                                         all_predictions_most_certain = []
                                         all_targets = []
                                         all_losses = []
-                                        loader = torch.utils.data.DataLoader(test_data, batch_size=args.batch_size_test,
-                                                                             shuffle=True, num_workers=0)
+                                        loader = torch.utils.data.DataLoader(
+                                            test_data,
+                                            batch_size=args.batch_size,
+                                            shuffle=True,
+                                            num_workers=4,
+                                            pin_memory=True,
+                                            collate_fn=listops_collate_fn
+                                        )
                                         with tqdm(total=len(loader), initial=0, leave=False, position=1,
                                                   dynamic_ncols=True) as pbar_inner:
                                             for inferi, (inputs, targets) in enumerate(loader):

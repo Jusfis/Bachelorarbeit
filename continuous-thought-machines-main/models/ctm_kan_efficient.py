@@ -145,7 +145,7 @@ class ContinuousThoughtMachine(nn.Module, PyTorchModelHubMixin):
                  neuron_select_type='random-pairing',
                  n_random_pairing_self=0,
                  postactivation_production="mlp",
-                 vocab_size=20,
+                 vocab_size=19, # consists of 10 digits, 8 operators, and 1 padding token; only relevant for ListOps
                  ):
         super(ContinuousThoughtMachine, self).__init__()
 
@@ -281,7 +281,7 @@ class ContinuousThoughtMachine(nn.Module, PyTorchModelHubMixin):
         are only updated recurrently at each step, meaning that there is a linear recurrence we can
         leverage.
 
-        See Appendix TODO of the Technical Report (TODO:LINK) for the maths that enables this method.
+        See Appendix
         """
 
         if synch_type == 'action':  # Get action parameters
@@ -337,6 +337,14 @@ class ContinuousThoughtMachine(nn.Module, PyTorchModelHubMixin):
         self.kv_features = self.backbone(initial_rgb)
 
         pos_emb = self.positional_embedding(self.kv_features)
+
+        # Wir lesen die aktuelle Sequenzlänge aus (Dimension 2)
+        seq_len = self.kv_features.size(2)
+
+        # Wir schneiden das Positional Embedding auf diese Länge ab
+        sliced_pos_emb = pos_emb[:, :, :seq_len]
+        if sliced_pos_emb.size(2) != pos_emb.size(2):
+            pos_emb = sliced_pos_emb
 
         combined_features = (self.kv_features + pos_emb).flatten(2).transpose(1, 2)
         kv = self.kv_proj(combined_features)
@@ -603,7 +611,7 @@ class ContinuousThoughtMachine(nn.Module, PyTorchModelHubMixin):
     def get_neuron_select_type(self):
         """
         Another helper method to accomodate our legacy neuron selection types.
-        TODO: additional experimentation and possible removal of 'first-last' and 'random'
+
         """
         print(f"Using neuron select type: {self.neuron_select_type}")
         if self.neuron_select_type == 'first-last':

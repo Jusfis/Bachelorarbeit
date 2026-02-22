@@ -213,29 +213,67 @@ def qamnist_loss(predictions, certainties, targets, use_most_certain=True):
     loss = (loss_minimum_ce + loss_selected)/2
     return loss, loss_index_2
 
-def listops_loss(predictions, certainties, targets, use_most_certain=True):
+# def listops_loss(predictions, certainties, targets, use_most_certain=True):
+#     """
+#     Computes the listops loss.
+#
+#     Predictions are of shape: (B, class, internal_ticks),
+#     Certainties are of shape: (B, 2, internal_ticks),
+#         where the inside dimension (2) is [normalised_entropy, 1-normalised_entropy]
+#     Targets are of shape: [B]
+#
+#     use_most_certain will select either the most certain point or the final point.
+#     """
+#
+#     losses = nn.CrossEntropyLoss(reduction='none')(predictions,
+#                                                    torch.repeat_interleave(targets.unsqueeze(-1), predictions.size(-1), -1))
+#
+#     loss_index_1 = losses.argmin(dim=1)
+#     loss_index_2 = certainties[:,1].argmax(-1)
+#     if not use_most_certain:
+#         loss_index_2[:] = -1
+#
+#     batch_indexer = torch.arange(predictions.size(0), device=predictions.device)
+#     loss_minimum_ce = losses[batch_indexer, loss_index_1].mean()
+#     loss_selected = losses[batch_indexer, loss_index_2].mean()
+#
+#     loss = (loss_minimum_ce + loss_selected)/2
+#     return loss, loss_index_2
+
+
+import torch.nn.functional as F
+import torch
+
+
+def listops_loss(predictions, certainties, targets, use_most_certain=True, alpha=0.5):
     """
-    Computes the listops loss.
-
-    Predictions are of shape: (B, class, internal_ticks),
-    Certainties are of shape: (B, 2, internal_ticks),
-        where the inside dimension (2) is [normalised_entropy, 1-normalised_entropy]
-    Targets are of shape: [B]
-
-    use_most_certain will select either the most certain point or the final point.
+    Optimized listops loss.
+    alpha: Gewichtet das Verhältnis zwischen (1-alpha)*loss_minimum_ce und alpha*loss_selected
     """
+    batch_size, num_classes, internal_ticks = predictions.shape
 
-    losses = nn.CrossEntropyLoss(reduction='none')(predictions,
-                                                   torch.repeat_interleave(targets.unsqueeze(-1), predictions.size(-1), -1))
+
+    targets_expanded = targets.unsqueeze(-1).expand(-1, internal_ticks)
+
+
+    losses = F.cross_entropy(predictions, targets_expanded, reduction='none')
+
 
     loss_index_1 = losses.argmin(dim=1)
-    loss_index_2 = certainties[:,1].argmax(-1)
-    if not use_most_certain:
-        loss_index_2[:] = -1
 
-    batch_indexer = torch.arange(predictions.size(0), device=predictions.device)
+    if use_most_certain:
+        loss_index_2 = certainties[:, 1].argmax(dim=-1)
+    else:
+
+        loss_index_2 = torch.full((batch_size,), -1, dtype=torch.long, device=predictions.device)
+
+    batch_indexer = torch.arange(batch_size, device=predictions.device)
+
+    # 4. Losses extrahieren
     loss_minimum_ce = losses[batch_indexer, loss_index_1].mean()
     loss_selected = losses[batch_indexer, loss_index_2].mean()
 
-    loss = (loss_minimum_ce + loss_selected)/2
+    # 5. Gewichtung (alpha anpassbar, um Instabilität zu reduzieren)
+    loss = (1 - alpha) * loss_minimum_ce + (alpha) * loss_selected
+
     return loss, loss_index_2

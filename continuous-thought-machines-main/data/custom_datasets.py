@@ -337,15 +337,26 @@ class ParityDataset(Dataset):
 
 
 class ListOpsDataset(Dataset):
-    def __init__(self, tsv_file, max_len=100, vocab=None):
+    def __init__(self, tsv_file, vocab=None):
         """
         Args:
             tsv_file (str): Path to the ListOps .tsv file
-            max_len (int): Maximum sequence length for padding
+
             vocab (dict): Dictionary mapping xtokens to integer IDs
         """
+
+
         self.data = pd.read_csv(tsv_file, sep='\t')
-        self.max_len = max_len
+
+        # # NEU: Wirf alle Reihen weg, die mehr als 50 Tokens haben!
+        # # Das gibt dir ein "Mini-ListOps" zum schnellen Debuggen. droe unter 50 und tiefe unter 3
+        # self.data = self.data[self.data.iloc[:, 1].apply(lambda x: len(str(x).split()) <= 50)]
+        #
+        # # Index resetten, damit der DataLoader nicht stolpert
+        # self.data = self.data.reset_index(drop=True)
+
+
+
 
         # Standard ListOps vocabulary including brackets and operators
         if vocab is None:
@@ -370,18 +381,12 @@ class ListOpsDataset(Dataset):
         return len(self.data)
 
     def __getitem__(self, idx):
-        row = self.data.iloc[idx]
-        # source = row['Source']  # The math problem
-        source = row.iloc[1]  # The math problem
-        target = int(row.iloc[0])  # The result (0-9)
 
-        # Convert source sequence to indices
-        token_ids = self.tokenize(source)
+            row = self.data.iloc[idx]
+            source = row.iloc[1]
+            target = int(row.iloc[0])
 
-        # Pad or truncate
-        if len(token_ids) > self.max_len:
-            token_ids = token_ids[:self.max_len]
-        else:
-            token_ids += [0] * (self.max_len - len(token_ids))
+            token_ids = self.tokenize(source)
 
-        return torch.tensor(token_ids, dtype=torch.long), torch.tensor(target, dtype=torch.long)
+            # ohne Padding/Truncating mehr hier!
+            return torch.tensor(token_ids, dtype=torch.long), torch.tensor(target, dtype=torch.long)
