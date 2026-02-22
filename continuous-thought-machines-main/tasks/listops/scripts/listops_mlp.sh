@@ -49,8 +49,8 @@ python -m tasks.listops.train_listops \
     --no-use_amp \
     --neuron_select_type "random" \
     --postactivation_production 'mlp' \
-    --useWandb 0 \
-#    --device 0
+    --useWandb 1 \
+    --device 0
 
 # use Wandb set to 0 for local testing, set to 1 for slurm runs
 # to submit the job on slurm, use from ctm main folder:

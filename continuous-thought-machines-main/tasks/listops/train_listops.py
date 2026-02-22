@@ -407,6 +407,7 @@ def listops_model(args, config, run):
                                     # inputs = reshape_inputs(inputs, args.iterations,
                                     #                         grid_size=int(math.sqrt(args.parity_sequence_length)))
 
+                                    # track only every 25k steps for the neural dynamics, otherwise too exp.
                                     if bi % (args.track_every * 25 )== 0 and bi != 0:
 
                                         pbar.set_description('Tracking: Neural dynamics')
