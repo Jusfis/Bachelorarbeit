@@ -6,9 +6,9 @@
 #SBATCH --mail-user=justus.fischer@campus.lmu.de
 #SBATCH --ntasks=1
 #SBATCH --chdir=/home/f/fischerjus/Bachelorarbeit/continuous-thought-machines-main/tasks/listops
-#SBATCH --output=/home/f/fischerjus/Bachelorarbeit/continuous-thought-machines-main/tasks/listops/slurm_kan.%j.%N.out
+#SBATCH --output=/home/f/fischerjus/Bachelorarbeit/continuous-thought-machines-main/tasks/listops/slurm_mlp.%j.%N.out
 
-LOG_DIR="logs/qamnist/kan/test"
+LOG_DIR="logs/listops/kan/test"
 
 
 python -m tasks.listops.train_listops \
@@ -17,14 +17,14 @@ python -m tasks.listops.train_listops \
     --iterations 75 \
     --memory_length 25 \
     --n_test_batches 20 \
-    --d_model 512 \
+    --d_model 1024 \
     --d_input 100 \
     --n_synch_out 32 \
     --n_synch_action 32 \
     --synapse_depth 1 \
     --heads 4 \
     --memory_hidden_dims 16 \
-    --dropout 0.0 \
+    --dropout 0.1 \
     --deep_memory \
     --no-do_normalisation \
     --positional_embedding_type="learned-1d" \
@@ -48,11 +48,11 @@ python -m tasks.listops.train_listops \
     --no-reload_model_only \
     --no-use_amp \
     --neuron_select_type "random" \
-    --postactivation_production 'kan' \
+    --postactivation_production 'mlp' \
     --useWandb 1 \
     --device 0
 
 # use Wandb set to 0 for local testing, set to 1 for slurm runs
 # to submit the job on slurm, use from ctm main folder:
-# sbatch --partition=NvidiaAll listops_kan.sh
+# sbatch --partition=NvidiaAll listops_mlp.sh
 # remove --device 0 to allow slurm to assign GPU automatically
