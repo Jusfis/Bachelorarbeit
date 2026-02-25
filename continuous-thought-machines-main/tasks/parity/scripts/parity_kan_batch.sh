@@ -18,10 +18,12 @@
 # IMPORTANT D_model % 5 == 0 for MLP postactivation production
 
 RUN=1
-LOG_DIR="logs/parity/run/kan${MODEL}"
+LOG_DIR="logs/parity/kan"
 SEED=$((RUN - 1))
 MODEL="ctm"
 POSTACTIVATION="kan"
+ITERATIONS=100
+MEMORY_LENGTH=50
 
 
 export PYTHONPATH=$PYTHONPATH:.
@@ -30,8 +32,8 @@ python -u tasks/parity/train_sweeps_efficient.py \
     --log_dir $LOG_DIR \
     --model_type $MODEL \
     --seed 1 \
-    --iterations 10 \
-    --memory_length 5 \
+    --iterations $ITERATIONS \
+    --memory_length $MEMORY_LENGTH \
     --parity_sequence_length 64  \
     --n_test_batches 20 \
     --d_model 1024 \
