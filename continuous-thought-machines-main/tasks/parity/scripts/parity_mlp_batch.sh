@@ -9,8 +9,8 @@
 #SBATCH --output=/home/f/fischerjus/Bachelorarbeit/continuous-thought-machines-main/tasks/parity/mlp_final_100_50.%j.%N.out
 
 #RUN=1
-ITERATIONS=100
-MEMORY_LENGTH=50
+ITERATIONS=10
+MEMORY_LENGTH=5
 #LOG_DIR="logs/parity/run${RUN}/ctm_${ITERATIONS}_${MEMORY_LENGTH}"
 #SEED=$((RUN - 1))
 MODEL="ctm"
