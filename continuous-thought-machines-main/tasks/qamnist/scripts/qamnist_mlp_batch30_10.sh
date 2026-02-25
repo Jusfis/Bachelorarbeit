@@ -1,22 +1,22 @@
 #!/bin/bash
 #
-#SBATCH --job-name=kan_qamnist__wandb_sweeps
+#SBATCH --job-name=mlp_qamnist_wandb_sweeps
 #SBATCH --comment="CTM tuning with wandb"
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=justus.fischer@campus.lmu.de
 #SBATCH --ntasks=1
 #SBATCH --chdir=/home/f/fischerjus/Bachelorarbeit/continuous-thought-machines-main/
-#SBATCH --output=/home/f/fischerjus/Bachelorarbeit/continuous-thought-machines-main/tasks/qamnist/kan_30_10.%j.%N.out
+#SBATCH --output=/home/f/fischerjus/Bachelorarbeit/continuous-thought-machines-main/tasks/qamnist/mlp_30_10.%j.%N.out
 
 export PYTHONPATH=$PYTHONPATH:.
 
 RUN=2
-MEMORY_LENGTH=30
+MEMORY_LENGTH=3
 MODEL_TYPE="ctm"
-Q_NUM_REPEATS_PER_INPUT=10 # same as Q_NUM_Q_NUM_REPEATS_PER_INPUT
-LOG_DIR="logs/qamnist${POSTACTIVATION}/${MODEL_TYPE}_${Q_NUM_REPEATS_PER_INPUT}"
+Q_NUM_REPEATS_PER_INPUT=1
+LOG_DIR="logs/qamnist_${POSTACTIVATION}/run${RUN}/ctm_${ITERATIONS}_${MEMORY_LENGTH}"
 SEED=$((RUN - 1))
-POSTACTIVATION="kan"
+POSTACTIVATION="mlp"
 
 python -u tasks/qamnist/train_qamnist.py \
     --log_dir $LOG_DIR \
@@ -28,7 +28,7 @@ python -u tasks/qamnist/train_qamnist.py \
     --q_num_repeats_per_input $Q_NUM_REPEATS_PER_INPUT \
     --q_num_operations 3 \
     --q_num_operations_delta 2 \
-    --q_num_answer_steps $Q_NUM_REPEATS_PER_INPUT \
+    --q_num_answer_steps 1 \
     --n_test_batches 20 \
     --d_model 1024 \
     --d_input 64 \
@@ -62,5 +62,5 @@ python -u tasks/qamnist/train_qamnist.py \
 
 # use Wandb set to 0 for local testing, set to 1 for slurm runs
 # to submit the job on slurm, use from ctm main folder:
-# sbatch --partition=NvidiaAll parity_kan_batch.sh
+# sbatch --partition=NvidiaAll parity_mlp_batch.sh
 # remove --device 0 to allow slurm to assign GPU automatically
