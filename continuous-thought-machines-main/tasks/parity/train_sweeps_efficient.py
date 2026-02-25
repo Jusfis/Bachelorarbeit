@@ -359,6 +359,7 @@ def parity_model(args, config, run):
                                 "Train/Losses_every_step": train_losses[-1],
                                 "Train/Accuracies_every_step": train_accuracies[-1],
                                 "Train/Accuracies_most_certain": train_accuracies_most_certain[-1],
+                                "Train/Accuracies_most_certain_per_input": train_accuracies_most_certain_per_input[-1],
                             }, step=bi)
 
 
@@ -419,6 +420,7 @@ def parity_model(args, config, run):
                                 "Test/Losses": test_losses[-1],
                                 "Test/Accuracies": test_accuracies[-1],
                                 "Test/Accuracies_most_certain": test_accuracies_most_certain[-1],
+                                "Test/Accuracies_most_certain_per_input": test_accuracies_most_certain_per_input[-1],
                             }, step=bi)
 
                         sns.set_theme(style="whitegrid")
@@ -635,9 +637,9 @@ if __name__=='__main__':
                 "learning_rate": {"values" : [1e-4]},
                 "use_amp": {"values": [True]},
                 "use_scheduler": {"values": [True]},
-                "memory_length": {"values": [50]},
-                "internal_ticks": {"values": [100]},
-                "training_iterations": {"values": [200000]},
+                "memory_length": {"values": [args.memory_length]},
+                "internal_ticks": {"values": [args.iterations]},
+                "training_iterations": {"values": [args.training_iterations]},
                 "parity_sequence_length": {"values": [64]},
                 "postactivation_production": {"values": [args.postactivation_production]},
                 "seed": {"values": [1, 10, 47, 23, 49, 6, 30]},

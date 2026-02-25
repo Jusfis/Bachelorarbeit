@@ -20,14 +20,17 @@ LOG_DIR="logs/parity/kan${MODEL}"
 SEED=$((RUN - 1))
 MODEL="ctm"
 POSTACTIVATION="kan"
+ITERATIONS=75
+MEMORY_LENGTH=25
+
 
 
 python -m tasks.parity.train_sweeps_efficient \
     --log_dir "logs/parity/kan"\
     --model_type $MODEL \
     --seed 1 \
-    --iterations 10 \
-    --memory_length 5 \
+    --iterations $ITERATIONS \
+    --memory_length $MEMORY_LENGTH \
     --parity_sequence_length 64  \
     --n_test_batches 20 \
     --d_model 1024 \
@@ -53,7 +56,7 @@ python -m tasks.parity.train_sweeps_efficient \
     --batch_size 64 \
     --batch_size_test 256 \
     --lr=0.0001 \
-    --training_iterations 50001 \
+    --training_iterations 200001 \
     --warmup_steps 500 \
     --track_every 1000 \
     --save_every 20000 \
@@ -62,8 +65,8 @@ python -m tasks.parity.train_sweeps_efficient \
     --no-use_amp \
     --neuron_select_type "random" \
     --postactivation_production $POSTACTIVATION \
-    --useWandb 1 \
-    --device 0
+    --useWandb 0 \
+#    --device 0
 
 
 

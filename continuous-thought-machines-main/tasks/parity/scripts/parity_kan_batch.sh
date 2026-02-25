@@ -6,7 +6,7 @@
 #SBATCH --mail-user=justus.fischer@campus.lmu.de
 #SBATCH --ntasks=1
 #SBATCH --chdir=/home/f/fischerjus/Bachelorarbeit/continuous-thought-machines-main/
-#SBATCH --output=/home/f/fischerjus/Bachelorarbeit/continuous-thought-machines-main/tasks/parity/slurm_kan.%j.%N.out
+#SBATCH --output=/home/f/fischerjus/Bachelorarbeit/continuous-thought-machines-main/tasks/parity/kan_final_100_50.%j.%N.out
 
 #RUN=1
 #ITERATIONS=10
@@ -57,7 +57,7 @@ python -u tasks/parity/train_sweeps_efficient.py \
     --batch_size 64 \
     --batch_size_test 256 \
     --lr=0.0001 \
-    --training_iterations 50001 \
+    --training_iterations 200001 \
     --warmup_steps 500 \
     --track_every 1000 \
     --save_every 20000 \

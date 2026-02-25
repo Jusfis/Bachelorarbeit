@@ -52,6 +52,9 @@ python -m tasks.listops.train_listops \
     --useWandb 1 \
     --device 0
 
+#--iterations 75 \ # maybe 100
+#--d_input 100 \ # might change to 64
+#    --memory_length 25 \  # maybe 50
 # use Wandb set to 0 for local testing, set to 1 for slurm runs
 # to submit the job on slurm, use from ctm main folder:
 # sbatch --partition=NvidiaAll listops_mlp.sh

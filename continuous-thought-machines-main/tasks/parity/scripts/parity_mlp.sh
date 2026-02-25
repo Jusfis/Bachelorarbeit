@@ -9,8 +9,8 @@
 #SBATCH --output=/home/f/fischerjus/Bachelorarbeit/continuous-thought-machines-main/tasks/parity/slurm_kan.%j.%N.out
 
 #RUN=1
-#ITERATIONS=10
-#MEMORY_LENGTH=5
+ITERATIONS=25
+MEMORY_LENGTH=10
 #LOG_DIR="logs/parity/run${RUN}/ctm_${ITERATIONS}_${MEMORY_LENGTH}"
 #SEED=$((RUN - 1))
 #    --model_type "ctm"\
@@ -20,8 +20,8 @@
 python -m tasks.parity.train_sweeps_efficient \
     --log_dir "logs/parity/run10/MLP"\
     --seed 1 \
-    --iterations 10 \
-    --memory_length 5 \
+    --iterations $ITERATIONS \
+    --memory_length $MEMORY_LENGTH \
     --parity_sequence_length 64  \
     --n_test_batches 20 \
     --d_model 1024 \
@@ -47,7 +47,7 @@ python -m tasks.parity.train_sweeps_efficient \
     --batch_size 64 \
     --batch_size_test 256 \
     --lr=0.0001 \
-    --training_iterations 50001 \
+    --training_iterations 200001 \
     --warmup_steps 500 \
     --track_every 1000 \
     --save_every 20000 \

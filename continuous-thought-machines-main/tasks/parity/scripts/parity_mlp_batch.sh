@@ -6,23 +6,26 @@
 #SBATCH --mail-user=justus.fischer@campus.lmu.de
 #SBATCH --ntasks=1
 #SBATCH --chdir=/home/f/fischerjus/Bachelorarbeit/continuous-thought-machines-main/
-#SBATCH --output=/home/f/fischerjus/Bachelorarbeit/continuous-thought-machines-main/tasks/parity/slurm_kan.%j.%N.out
+#SBATCH --output=/home/f/fischerjus/Bachelorarbeit/continuous-thought-machines-main/tasks/parity/mlp_final_100_50.%j.%N.out
 
 #RUN=1
-#ITERATIONS=10
-#MEMORY_LENGTH=5
+ITERATIONS=100
+MEMORY_LENGTH=50
 #LOG_DIR="logs/parity/run${RUN}/ctm_${ITERATIONS}_${MEMORY_LENGTH}"
 #SEED=$((RUN - 1))
+MODEL="ctm"
+POSTACTIVATION="mlp"
 #    --model_type "ctm"\
 # IMPORTANT D_model % 5 == 0 for MLP postactivation production
 
 export PYTHONPATH=$PYTHONPATH:.
 
 python -u tasks/parity/train_sweeps_efficient.py \
+    --model_type $MODEL \
     --log_dir "logs/parity/mlp"\
     --seed 1 \
-    --iterations 10 \
-    --memory_length 5 \
+    --iterations $ITERATIONS \
+    --memory_length $MEMORY_LENGTH \
     --parity_sequence_length 64  \
     --n_test_batches 20 \
     --d_model 1024 \
@@ -48,7 +51,7 @@ python -u tasks/parity/train_sweeps_efficient.py \
     --batch_size 64 \
     --batch_size_test 256 \
     --lr=0.0001 \
-    --training_iterations 50001 \
+    --training_iterations 200001 \
     --warmup_steps 500 \
     --track_every 1000 \
     --save_every 20000 \
@@ -57,7 +60,7 @@ python -u tasks/parity/train_sweeps_efficient.py \
     --no-use_amp \
     --neuron_select_type "random" \
     --device 0 \
-    --postactivation_production 'mlp' \
+    --postactivation_production $POSTACTIVATION \
     --useWandb 1
 
 

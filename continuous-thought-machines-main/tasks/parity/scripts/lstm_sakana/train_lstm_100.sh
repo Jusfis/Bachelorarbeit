@@ -5,7 +5,7 @@ MODEL_TYPE="lstm"
 LOG_DIR="logs/parity/run${RUN}/${MODEL_TYPE}_${ITERATIONS}"
 SEED=$((RUN - 1))
 
-python -m tasks.parity.train \
+python -m tasks.parity.train_sweeps_efficient \
     --log_dir $LOG_DIR \
     --seed $SEED \
     --iterations $ITERATIONS \
@@ -35,5 +35,6 @@ python -m tasks.parity.train \
     --save_every 10000 \
     --no-reload \
     --no-reload_model_only \
-    --device 0 \
     --no-use_amp \
+
+#    --device 0 \
