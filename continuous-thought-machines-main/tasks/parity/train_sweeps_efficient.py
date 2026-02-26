@@ -292,7 +292,7 @@ def parity_model(args, config, run):
                     if bi % ((args.training_iterations)/2) == 0 and bi != 0:
                         pbar.set_description('Tracking: Neural dynamics')
                         plot_neural_dynamics(post_activations, args.d_model, args.log_dir, axis_snap=True)
-
+                        print("Plotted neural dynamics")
                         pbar.set_description('Tracking: Producing attention gif')
 
                         process = multiprocessing.Process(
