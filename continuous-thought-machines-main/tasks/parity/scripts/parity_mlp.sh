@@ -18,7 +18,7 @@ MEMORY_LENGTH=10
 # IMPORTANT D_model % 5 == 0 for MLP postactivation production
 
 python -m tasks.parity.train_sweeps_efficient \
-    --log_dir "logs/parity/run10/MLP"\
+    --log_dir "logs/parity/mlp"\
     --seed 1 \
     --iterations $ITERATIONS \
     --memory_length $MEMORY_LENGTH \
@@ -56,7 +56,8 @@ python -m tasks.parity.train_sweeps_efficient \
     --no-use_amp \
     --neuron_select_type "random" \
     --postactivation_production 'mlp'\
-    --useWandb 0
+    --useWandb 1 \
+    --device 0
 
 
 # set --device 0 to allow slurm to assign GPU automatically

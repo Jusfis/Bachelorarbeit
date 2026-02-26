@@ -16,8 +16,8 @@ python -m tasks.image_classification.train \
 --n_synch_action 512 \
 --n_random_pairing_self 0 \
 --neuron_select_type random-pairing \
---iterations 50 \
---memory_length 15 \
+--iterations 25 \
+--memory_length 10 \
 --deep_memory \
 --memory_hidden_dims 64 \
 --dropout 0.0 \

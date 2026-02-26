@@ -65,8 +65,8 @@ python -m tasks.parity.train_sweeps_efficient \
     --no-use_amp \
     --neuron_select_type "random" \
     --postactivation_production $POSTACTIVATION \
-    --useWandb 0 \
-#    --device 0
+    --useWandb 1 \
+    --device 0
 
 
 

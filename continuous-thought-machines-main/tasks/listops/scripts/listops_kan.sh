@@ -8,7 +8,7 @@
 #SBATCH --chdir=/home/f/fischerjus/Bachelorarbeit/continuous-thought-machines-main/tasks/listops
 #SBATCH --output=/home/f/fischerjus/Bachelorarbeit/continuous-thought-machines-main/tasks/listops/slurm_mlp.%j.%N.out
 
-LOG_DIR="logs/listops/kan/test"
+LOG_DIR="logs/listops/kan/final"
 
 
 python -m tasks.listops.train_listops \
