@@ -11,8 +11,8 @@ python -m tasks.image_classification.train \
 --n_synch_action 512 \
 --n_random_pairing_self 0 \
 --neuron_select_type random-pairing \
---iterations 25 \
---memory_length 10 \
+--iterations 50 \
+--memory_length 15 \
 --deep_memory \
 --memory_hidden_dims 64 \
 --dropout 0.0 \
@@ -32,11 +32,10 @@ python -m tasks.image_classification.train \
 --batch_size 512 \
 --batch_size_test 512 \
 --lr 1e-4 \
---device 0 \
 --seed 1 \
 --useWandb 1 \
 --postactivation_production "mlp" \
-
+#--device 0 \
 #
 #python -m tasks.image_classification.train \
 #--log_dir logs/cifar10-versus-humans/ctm/d=256--i=64--heads=16--sd=5--synch=256-512-0-h=64-random-pairing--iters=50x15--backbone=18-1--seed=2 \

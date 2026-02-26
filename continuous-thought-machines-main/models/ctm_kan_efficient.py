@@ -339,12 +339,12 @@ class ContinuousThoughtMachine(nn.Module, PyTorchModelHubMixin):
         pos_emb = self.positional_embedding(self.kv_features)
 
         # Wir lesen die aktuelle Sequenzlänge aus (Dimension 2)
-        seq_len = self.kv_features.size(2)
-
-        # Wir schneiden das Positional Embedding auf diese Länge ab
-        sliced_pos_emb = pos_emb[:, :, :seq_len]
-        if sliced_pos_emb.size(2) != pos_emb.size(2):
-            pos_emb = sliced_pos_emb
+        # Only slice if pos_emb is actually a Tensor
+        if isinstance(pos_emb, torch.Tensor):
+            seq_len = self.kv_features.size(2)
+            sliced_pos_emb = pos_emb[:, :, :seq_len]
+            if sliced_pos_emb.size(2) != pos_emb.size(2):
+                pos_emb = sliced_pos_emb
 
         combined_features = (self.kv_features + pos_emb).flatten(2).transpose(1, 2)
         kv = self.kv_proj(combined_features)
