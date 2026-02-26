@@ -59,10 +59,10 @@ python -u tasks/parity/train_sweeps_efficient.py \
     --batch_size 64 \
     --batch_size_test 256 \
     --lr=0.0001 \
-    --training_iterations 200001 \
+    --training_iterations 300000 \
     --warmup_steps 500 \
-    --track_every 1000 \
-    --save_every 20000 \
+    --track_every 10000 \
+    --save_every 50000 \
     --no-reload \
     --no-reload_model_only \
     --no-use_amp \

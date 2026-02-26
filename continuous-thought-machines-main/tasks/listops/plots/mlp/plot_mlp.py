@@ -47,7 +47,7 @@ def plot_metrics_seaborn(test_acc_file, test_loss_file, train_acc_file, train_lo
     ax2.set_ylabel('Loss', fontsize=12)
 
     plt.tight_layout()
-    plt.savefig(os.path.join(BASE_DIR,'listops_loss_75_25_accuracies_mlp.png' ),dpi=300)
+    plt.savefig(os.path.join(BASE_DIR,'listops_loss_75_25_accuracies.png' ),dpi=300)
     plt.show()
 
 
@@ -56,8 +56,8 @@ def plot_metrics_seaborn(test_acc_file, test_loss_file, train_acc_file, train_lo
 
 
 plot_metrics_seaborn(
-    os.path.join(BASE_DIR, 'test_acc_kan_listops.csv'),
-    os.path.join(BASE_DIR, 'test_Losses_kan_listops.csv'),
-    os.path.join(BASE_DIR, 'train_acc_kan_listops.csv'),
-    os.path.join(BASE_DIR, 'train_losses_kan_listops.csv')
+os.path.join(BASE_DIR, 'test_accuracies_mlp.csv'),
+os.path.join(BASE_DIR, 'test_losses_mlp.csv'),
+os.path.join(BASE_DIR, 'train_accuracies_mlp.csv'),
+os.path.join(BASE_DIR, 'train_losses_mlp.csv')
 )
