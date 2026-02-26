@@ -10,9 +10,9 @@
 
 
 RUN=2
-MEMORY_LENGTH=3
+MEMORY_LENGTH=30
 MODEL_TYPE="ctm"
-Q_NUM_REPEATS_PER_INPUT=1
+Q_NUM_REPEATS_PER_INPUT=10
 LOG_DIR="logs/qamnist${POSTACTIVATION}/run${RUN}/${MODEL_TYPE}_${Q_NUM_REPEATS_PER_INPUT}"
 SEED=$((RUN - 1))
 POSTACTIVATION="kan"
@@ -27,7 +27,7 @@ python -m tasks.qamnist.train_qamnist \
     --q_num_repeats_per_input $Q_NUM_REPEATS_PER_INPUT \
     --q_num_operations 3 \
     --q_num_operations_delta 2 \
-    --q_num_answer_steps 1 \
+    --q_num_answer_steps $Q_NUM_REPEATS_PER_INPUT \
     --n_test_batches 20 \
     --d_model 1024 \
     --d_input 64 \
@@ -56,8 +56,8 @@ python -m tasks.qamnist.train_qamnist \
     --no-use_amp \
     --neuron_select_type "random" \
     --postactivation_production $POSTACTIVATION \
-    --useWandb 1
-#    --device 0
+    --useWandb 1 \
+    --device 0
 
 # use Wandb set to 0 for local testing, set to 1 for slurm runs
 # to submit the job on slurm, use from ctm main folder:
