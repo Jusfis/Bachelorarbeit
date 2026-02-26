@@ -288,7 +288,7 @@ def parity_model(args, config, run):
                     inputs = reshape_inputs(inputs, args.iterations,
                                             grid_size=int(math.sqrt(args.parity_sequence_length)))
 
-                    if bi % (args.track_every * 50) == 0 and bi != 0:
+                    if bi % (args.track_every * 10) == 0 and bi != 0:
                         pbar.set_description('Tracking: Neural dynamics')
                         plot_neural_dynamics(post_activations, args.d_model, args.log_dir, axis_snap=True)
 
