@@ -309,9 +309,9 @@ def qamnist_model(args, config, run):
                         embedding_tensor = torch.from_numpy(embedding_input).to(gif_inputs.device)
                         gif_inputs[digits_input.size(0):digits_input.size(0) + T_embed] = embedding_tensor[:T_embed]
 
-
-                        pbar.set_description('Tracking: Neural dynamics')
-                        plot_neural_dynamics(post_activations, 100, args.log_dir, axis_snap=True)
+                        if bi % args.track_every * 50 == 0:
+                            pbar.set_description('Tracking: Neural dynamics')
+                            plot_neural_dynamics(post_activations, 100, args.log_dir, axis_snap=True)
 
                         pbar.set_description('Tracking: Producing attention gif')
 
