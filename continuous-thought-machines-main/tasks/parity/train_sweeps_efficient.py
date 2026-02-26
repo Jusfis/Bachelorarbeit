@@ -288,24 +288,25 @@ def parity_model(args, config, run):
                     inputs = reshape_inputs(inputs, args.iterations,
                                             grid_size=int(math.sqrt(args.parity_sequence_length)))
 
-                    pbar.set_description('Tracking: Neural dynamics')
-                    plot_neural_dynamics(post_activations, args.d_model, args.log_dir, axis_snap=True)
+                    if bi % (args.track_every * 50) == 0 and bi != 0:
+                        pbar.set_description('Tracking: Neural dynamics')
+                        plot_neural_dynamics(post_activations, args.d_model, args.log_dir, axis_snap=True)
 
-                    pbar.set_description('Tracking: Producing attention gif')
+                        pbar.set_description('Tracking: Producing attention gif')
 
-                    process = multiprocessing.Process(
-                        target=make_parity_gif,
-                        args=(
-                            predictions.detach().cpu().numpy(),
-                            certainties.detach().cpu().numpy(),
-                            targets.detach().cpu().numpy(),
-                            pre_activations,
-                            post_activations,
-                            attention,
-                            inputs,
-                            f"{args.log_dir}/eval_output_val_{0}_iter_{0}.gif",
-                        ))
-                    process.start()
+                        process = multiprocessing.Process(
+                            target=make_parity_gif,
+                            args=(
+                                predictions.detach().cpu().numpy(),
+                                certainties.detach().cpu().numpy(),
+                                targets.detach().cpu().numpy(),
+                                pre_activations,
+                                post_activations,
+                                attention,
+                                inputs,
+                                f"{args.log_dir}/eval_output_val_{0}_iter_{0}.gif",
+                            ))
+                        process.start()
 
                     ##################################### TRAIN METRICS ##########################
                     all_predictions = []
