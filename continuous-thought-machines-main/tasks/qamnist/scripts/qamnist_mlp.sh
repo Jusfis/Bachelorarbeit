@@ -56,7 +56,7 @@ python -m tasks.qamnist.train_qamnist \
     --no-use_amp \
     --neuron_select_type "random" \
     --postactivation_production $POSTACTIVATION \
-    --useWandb 0 \
+    --useWandb 1 \
     --device 0
 
 # use Wandb set to 0 for local testing, set to 1 for slurm runs
