@@ -43,8 +43,8 @@ python -u tasks/image_classification/train.py \
 --use_scheduler \
 --scheduler_type cosine \
 --weight_decay 0.0001 \
---save_every 10000 \
---track_every 2000 \
+--save_every 50000 \
+--track_every 20000 \
 --n_test_batches 50 \
 --num_workers_train 8 \
 --batch_size 512 \
