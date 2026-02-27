@@ -765,7 +765,7 @@ if __name__ == "__main__":
                 "learning_rate": {"values": [1e-4]},
                 "use_amp": {"values": [True]},
                 "use_scheduler": {"values": [True]},
-                "training_iterations": {"values": [200000]},
+                "training_iterations": {"values": [600000]},
                 "postactivation_production": {"values": [args.postactivation_production]},
                 "seed": {"values": [1, 10, 47, 23, 49, 6, 30]},
                 "model_type": {"values": ["ctm"]},
