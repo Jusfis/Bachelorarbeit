@@ -13,9 +13,10 @@ RUN=2
 MEMORY_LENGTH=3
 MODEL_TYPE="ctm"
 Q_NUM_REPEATS_PER_INPUT=1
+POSTACTIVATION="mlp"
 LOG_DIR="logs/qamnist${POSTACTIVATION}/run${RUN}/${MODEL_TYPE}_${Q_NUM_REPEATS_PER_INPUT}"
 SEED=$((RUN - 1))
-POSTACTIVATION="mlp"
+
 
 python -m tasks.qamnist.train_qamnist \
     --log_dir $LOG_DIR \
