@@ -311,6 +311,7 @@ def qamnist_model(args, config, run):
 
                         if bi % (args.track_every * 10) == 0  & bi != 0:
                             pbar.set_description('Tracking: Neural dynamics')
+                            print("Plooting neural dynamics")
                             plot_neural_dynamics(post_activations, 100, args.log_dir, axis_snap=True)
 
                         pbar.set_description('Tracking: Producing attention gif')
