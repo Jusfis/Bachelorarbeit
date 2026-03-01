@@ -533,7 +533,8 @@ if __name__=='__main__':
                 "use_scheduler": {"values": [True]},
                 "training_iterations": {"values": [200000]},
                 "postactivation_production": {"values": [args.postactivation_production]},
-                "seed": {"values": [1, 10, 47, 23, 49, 6, 30]},
+                "seed": {"values": [2, 11, 48, 24, 50, 7, 31]},
+                # "seed": {"values": [1, 10, 47, 23, 49, 6, 30]},
                 "model_type": {"values": ["ctm"]},
 
                 # ------------------ Hyperparameters from paper  ------------------------- #
