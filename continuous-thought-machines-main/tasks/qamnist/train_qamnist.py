@@ -309,7 +309,7 @@ def qamnist_model(args, config, run):
                         embedding_tensor = torch.from_numpy(embedding_input).to(gif_inputs.device)
                         gif_inputs[digits_input.size(0):digits_input.size(0) + T_embed] = embedding_tensor[:T_embed]
 
-                        if bi % (args.track_every * 50) == 0  & bi != 0:
+                        if bi % (args.track_every * 10) == 0  & bi != 0:
                             pbar.set_description('Tracking: Neural dynamics')
                             plot_neural_dynamics(post_activations, 100, args.log_dir, axis_snap=True)
 
@@ -534,7 +534,7 @@ if __name__=='__main__':
                 "training_iterations": {"values": [200000]},
                 "postactivation_production": {"values": [args.postactivation_production]},
                 # "seed": {"values": [2, 11, 48, 24, 50, 7, 31]},
-                "seed": {"values": [10, 47, 23, 49, 6, 30]},
+                "seed": {"values": [47, 23, 49, 6, 30]},
                 "model_type": {"values": ["ctm"]},
 
                 # ------------------ Hyperparameters from paper  ------------------------- #
