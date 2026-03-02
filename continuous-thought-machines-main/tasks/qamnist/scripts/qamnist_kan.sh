@@ -8,14 +8,14 @@
 #SBATCH --chdir=/home/f/fischerjus/Bachelorarbeit/continuous-thought-machines-main/
 #SBATCH --output=/home/f/fischerjus/Bachelorarbeit/continuous-thought-machines-main/tasks/qamnist/slurm_kan.%j.%N.out
 
-
-RUN=2
+POSTACTIVATION="kan"
+RUN=3
 MEMORY_LENGTH=30
 MODEL_TYPE="ctm"
 Q_NUM_REPEATS_PER_INPUT=10
 LOG_DIR="logs/qamnist${POSTACTIVATION}/run${RUN}/${MODEL_TYPE}_${Q_NUM_REPEATS_PER_INPUT}"
 SEED=$((RUN - 1))
-POSTACTIVATION="kan"
+
 
 python -m tasks.qamnist.train_qamnist \
     --log_dir $LOG_DIR \
@@ -47,7 +47,7 @@ python -m tasks.qamnist.train_qamnist \
     --batch_size 64 \
     --batch_size_test 256 \
     --lr=0.0001 \
-    --training_iterations 300001 \
+    --training_iterations 200001 \
     --warmup_steps 500 \
     --track_every 1000 \
     --save_every 10000 \

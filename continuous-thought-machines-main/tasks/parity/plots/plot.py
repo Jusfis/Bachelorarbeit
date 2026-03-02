@@ -37,7 +37,7 @@ def plot_metrics_seaborn(test_acc_files, test_loss_files, train_acc_files, train
     df_train_loss = df_train_loss[df_train_loss['Step'] <= 100000]
     df_train_loss = df_train_loss[::100]
         # print( df_train_loss.head(100))
-    df_train_acc = df_train_acc.iloc[:100:]
+    df_tIrain_acc = df_train_acc.iloc[:100:]
 
     df_test_loss = df_test_loss.iloc[:100:]
     df_test_acc = df_test_acc.iloc[:100:]
