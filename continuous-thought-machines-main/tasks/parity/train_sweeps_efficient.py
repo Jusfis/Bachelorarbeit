@@ -641,7 +641,7 @@ if __name__=='__main__':
                 "use_scheduler": {"values": [True]},
                 "memory_length": {"values": [args.memory_length]},
                 "internal_ticks": {"values": [args.iterations]},
-                "training_iterations": {"values": [args.training_iterations]},
+                "training_iterations": {"values": [150001]},
                 "parity_sequence_length": {"values": [64]},
                 "postactivation_production": {"values": [args.postactivation_production]},
                 "seed": {"values": [2, 11, 48, 24, 50, 7, 31]},
