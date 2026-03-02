@@ -25,7 +25,7 @@ python -m tasks.image_classification.train \
 --no-do_normalisation \
 --positional_embedding_type none \
 --backbone_type resnet18-1 \
---training_iterations 600001 \
+--training_iterations 150001 \
 --warmup_steps 1000 \
 --use_scheduler \
 --scheduler_type cosine \

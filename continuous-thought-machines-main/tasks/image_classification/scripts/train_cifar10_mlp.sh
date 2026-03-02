@@ -1,7 +1,13 @@
-LOG_DIR="logs/listops/mlp/final"
+RUN=1
+LOG_DIR="logs/image_classification/${POSTACTIVATION}_${MODEL}"
+SEED=$((RUN - 1))
+MODEL="ctm"
+POSTACTIVATION="mlp"
+
+
 python -m tasks.image_classification.train \
---log_dir logs/cifar10-versus-humans/ctm/d=256--i=64--heads=16--sd=5--synch=256-512-0-h=64-random-pairing--iters=50x15--backbone=18-1--seed=1 \
---model ctm \
+--log_dir $LOG_DIR \
+--model $MODEL \
 --dataset cifar10 \
 --d_model 256 \
 --d_input 64 \
@@ -11,8 +17,8 @@ python -m tasks.image_classification.train \
 --n_synch_action 512 \
 --n_random_pairing_self 0 \
 --neuron_select_type random-pairing \
---iterations 50 \
---memory_length 15 \
+--iterations 25 \
+--memory_length 10 \
 --deep_memory \
 --memory_hidden_dims 64 \
 --dropout 0.0 \
@@ -20,7 +26,7 @@ python -m tasks.image_classification.train \
 --no-do_normalisation \
 --positional_embedding_type none \
 --backbone_type resnet18-1 \
---training_iterations 600001 \
+--training_iterations 150001 \
 --warmup_steps 1000 \
 --use_scheduler \
 --scheduler_type cosine \
@@ -32,10 +38,10 @@ python -m tasks.image_classification.train \
 --batch_size 512 \
 --batch_size_test 512 \
 --lr 1e-4 \
---seed 1 \
+--seed $SEED \
 --useWandb 1 \
---postactivation_production "mlp" \
-#--device 0 \
+--postactivation_production $POSTACTIVATION \
+--device 0 \
 #
 #python -m tasks.image_classification.train \
 #--log_dir logs/cifar10-versus-humans/ctm/d=256--i=64--heads=16--sd=5--synch=256-512-0-h=64-random-pairing--iters=50x15--backbone=18-1--seed=2 \
