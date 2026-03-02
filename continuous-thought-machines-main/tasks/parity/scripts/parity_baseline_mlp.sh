@@ -9,13 +9,13 @@
 #SBATCH --output=/home/f/fischerjus/Bachelorarbeit/continuous-thought-machines-main/tasks/parity/slurm_baseline.%j.%N.out
 
 #RUN=1
-ITERATIONS=10
-MEMORY_LENGTH=5
+#ITERATIONS=10
+#MEMORY_LENGTH=5
 #LOG_DIR="logs/parity/run${RUN}/ctm_${ITERATIONS}_${MEMORY_LENGTH}"
 #SEED=$((RUN - 1))
 
 python -m tasks.parity.parity_baseline_mlp \
-    --log_dir "logs/parity/run7/baseline_sweeps" \
+    --log_dir "logs/parity/baseline_sweeps_final" \
     --seed 42 \
     --parity_sequence_length 64  \
     --n_test_batches 20 \

@@ -362,6 +362,24 @@ def parity_baseline_model(args, config=None, run=None):
                                     accuracy = (pred_labels == true_classes).float().mean().item()
                                     temp_test_acc.append(accuracy)
 
+                                    last_step_logits = these_predictions[:, -1, :]
+                                    # last step targets: [batch]
+                                    last_step_targets = targets[:, -1].long()
+                                    loss_final = torch.nn.functional.cross_entropy(last_step_logits, last_step_targets)
+
+
+
+                                    predicted_classes = last_step_logits.argmax(dim=-1)
+                                    accuracy = (predicted_classes == last_step_targets).float().mean().item()
+
+
+                                    if run is not None:
+                                        run.log({
+                                            "Test/Losses": temp_test_loss[-1],
+                                            "Test/Accuracies final ": accuracy,
+                                            "Test/Accuracies": temp_test_acc[-1],
+                                            "Test/Losses final": loss_final.item(),
+                                        }, step=bi)
 
                                     # PROGRESS BAR
                                     if inferi % args.n_test_batches == 0 and inferi != 0 and not args.full_eval: break
@@ -517,12 +535,12 @@ if __name__=='__main__':
                     "goal": "minimize"
                 },
                 "parameters": {
-                    "seed": {"min": 1, "max": 100},
+                    "seed": {"min": 101, "max": 200},
                     "batch_size": {"values": [64]},
-                    "learning_rate": {"min": 1e-4, "max": 3e-4},
+                    "learning_rate": {"values": [1e-4]},
                     "use_amp": {"values": [True]},
                     "use_scheduler": {"values": [True]},
-                    "training_iterations": {"values": [200000]},
+                    "training_iterations": {"values": [300001]},
                     "parity_sequence_length": {"values": [64]},
                 }
             }
