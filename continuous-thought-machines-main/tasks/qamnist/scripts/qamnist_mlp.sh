@@ -48,7 +48,7 @@ python -m tasks.qamnist.train_qamnist \
     --batch_size 64 \
     --batch_size_test 256 \
     --lr=0.0001 \
-    --training_iterations 300001 \
+    --training_iterations 200001 \
     --warmup_steps 500 \
     --track_every 1000 \
     --save_every 10000 \
