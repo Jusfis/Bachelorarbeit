@@ -25,6 +25,25 @@ for col in df_baseline_acc.columns[1:]:
     df_baseline_acc[col] = df_baseline_acc[col].rolling(window=100, min_periods=1).mean()
 
 
+def aggregate_baseline(df):
+    """Berechnet den Durchschnitt der Metriken, MIN und MAX über alle Baseline-Runs."""
+    main_cols = [col for col in df.columns if col != 'Step' and '__MIN' not in col and '__MAX' not in col]
+    min_cols = [col for col in df.columns if '__MIN' in col]
+    max_cols = [col for col in df.columns if '__MAX' in col]
+
+    # Neue gemittelte Spalten anlegen
+    df['Aggregated_Baseline'] = df[main_cols].mean(axis=1)
+    df['Aggregated_Baseline__MIN'] = df[min_cols].mean(axis=1)
+    df['Aggregated_Baseline__MAX'] = df[max_cols].mean(axis=1)
+
+    return df
+
+
+# Aggregieren der Baseline-Daten
+df_baseline_loss = aggregate_baseline(df_baseline_loss)
+df_baseline_acc = aggregate_baseline(df_baseline_acc)
+
+
 # Create a 2x2 subplot grid
 fig, axes = plt.subplots(2, 2, figsize=(15, 10))
 
