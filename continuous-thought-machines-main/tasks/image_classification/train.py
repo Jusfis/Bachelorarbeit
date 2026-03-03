@@ -611,51 +611,52 @@ def imagenet_model(args,config,run):
                 axacc_test = figacc.add_subplot(212)
                 cm = sns.color_palette("viridis", as_cmap=True)
 
-                if args.model in ['ctm', 'lstm']:
-                    # Plot per-tick accuracy for CTM/LSTM
-                    train_acc_arr = np.array(train_accuracies) # Shape (N_iters, T)
-                    test_acc_arr = np.array(test_accuracies) # Shape (N_iters, T)
-                    num_ticks = train_acc_arr.shape[1]
-                    for ti in range(num_ticks):
-                         axacc_train.plot(iters, train_acc_arr[:, ti], color=cm(ti / num_ticks), alpha=0.3)
-                         axacc_test.plot(iters, test_acc_arr[:, ti], color=cm(ti / num_ticks), alpha=0.3)
-                    # Plot most certain accuracy
-                    axacc_train.plot(iters, train_accuracies_most_certain, 'k--', alpha=0.7, label='Most certain')
-                    axacc_test.plot(iters, test_accuracies_most_certain, 'k--', alpha=0.7, label='Most certain')
-                else: # FF
-                    axacc_train.plot(iters, train_accuracies, 'k-', alpha=0.7, label='Accuracy') # Simple line
-                    axacc_test.plot(iters, test_accuracies, 'k-', alpha=0.7, label='Accuracy')
+                # if args.model in ['ctm', 'lstm']:
+                #     # Plot per-tick accuracy for CTM/LSTM
+                #     train_acc_arr = np.array(train_accuracies) # Shape (N_iters, T)
+                #     test_acc_arr = np.array(test_accuracies) # Shape (N_iters, T)
+                #     num_ticks = train_acc_arr.shape[1]
+                #     for ti in range(num_ticks):
+                #          axacc_train.plot(iters, train_acc_arr[:, ti], color=cm(ti / num_ticks), alpha=0.3)
+                #          axacc_test.plot(iters, test_acc_arr[:, ti], color=cm(ti / num_ticks), alpha=0.3)
+                #     # Plot most certain accuracy
+                #     axacc_train.plot(iters, train_accuracies_most_certain, 'k--', alpha=0.7, label='Most certain')
+                #     axacc_test.plot(iters, test_accuracies_most_certain, 'k--', alpha=0.7, label='Most certain')
+                # else: # FF
+                #     axacc_train.plot(iters, train_accuracies, 'k-', alpha=0.7, label='Accuracy') # Simple line
+                #     axacc_test.plot(iters, test_accuracies, 'k-', alpha=0.7, label='Accuracy')
+                #
+                # axacc_train.set_title('Train Accuracy')
+                # axacc_test.set_title('Test Accuracy')
+                # axacc_train.legend(loc='lower right')
+                # axacc_test.legend(loc='lower right')
+                # axacc_train.set_xlim([0, args.training_iterations])
+                # axacc_test.set_xlim([0, args.training_iterations])
+                # if args.dataset=='cifar10':
+                #     axacc_train.set_ylim([0.75, 1])
+                #     axacc_test.set_ylim([0.75, 1])
 
-                axacc_train.set_title('Train Accuracy')
-                axacc_test.set_title('Test Accuracy')
-                axacc_train.legend(loc='lower right')
-                axacc_test.legend(loc='lower right')
-                axacc_train.set_xlim([0, args.training_iterations])
-                axacc_test.set_xlim([0, args.training_iterations])
-                if args.dataset=='cifar10':
-                    axacc_train.set_ylim([0.75, 1])
-                    axacc_test.set_ylim([0.75, 1])
 
 
-
-                figacc.tight_layout()
-                figacc.savefig(f'{args.log_dir}/accuracies.png', dpi=150)
-                plt.close(figacc)
-
-                figloss = plt.figure(figsize=(10, 5))
-                axloss = figloss.add_subplot(111)
-                axloss.plot(iters, train_losses, 'b-', linewidth=1, alpha=0.8, label=f'Train: {train_losses[-1]:.4f}')
-                axloss.plot(iters, test_losses, 'r-', linewidth=1, alpha=0.8, label=f'Test: {test_losses[-1]:.4f}')
-                axloss.legend(loc='upper right')
-                axloss.set_xlim([0, args.training_iterations])
-                axloss.set_ylim(bottom=0)
-
-                figloss.tight_layout()
-                figloss.savefig(f'{args.log_dir}/losses.png', dpi=150)
-                plt.close(figloss)
+                # figacc.tight_layout()
+                # figacc.savefig(f'{args.log_dir}/accuracies.png', dpi=150)
+                # plt.close(figacc)
+                #
+                # figloss = plt.figure(figsize=(10, 5))
+                # axloss = figloss.add_subplot(111)
+                # axloss.plot(iters, train_losses, 'b-', linewidth=1, alpha=0.8, label=f'Train: {train_losses[-1]:.4f}')
+                # axloss.plot(iters, test_losses, 'r-', linewidth=1, alpha=0.8, label=f'Test: {test_losses[-1]:.4f}')
+                # axloss.legend(loc='upper right')
+                # axloss.set_xlim([0, args.training_iterations])
+                # axloss.set_ylim(bottom=0)
+                #
+                # figloss.tight_layout()
+                # figloss.savefig(f'{args.log_dir}/losses.png', dpi=150)
+                # plt.close(figloss)
 
                 # Conditional Visualization (Only for CTM/LSTM)
-                if args.model in ['ctm', 'lstm']:
+                if (args.model in ['ctm', 'lstm'] ) and ( (args.track_every * 20) % bi) == 0:
+
                     try: # For safety
                         inputs_viz, targets_viz = next(iter(testloader)) # Get a fresh batch
                         inputs_viz = inputs_viz.to(device)
@@ -668,6 +669,7 @@ def imagenet_model(args,config,run):
                         attention_tracking_viz = attention_tracking_viz.reshape(
                             attention_tracking_viz.shape[0], 
                             attention_tracking_viz.shape[1], -1, att_shape[0], att_shape[1])
+
 
                         pbar.set_description('Tracking: Neural dynamics plot')
                         plot_neural_dynamics(post_activations_viz, 100, args.log_dir, axis_snap=True)
@@ -767,7 +769,7 @@ if __name__ == "__main__":
                 "use_scheduler": {"values": [True]},
                 "training_iterations": {"values": [150000]},
                 "postactivation_production": {"values": [args.postactivation_production]},
-                "seed": {"values": [2, 11, 48, 24, 50, 7, 31]},
+                "seed": {"values": [3, 12, 49, 25, 51, 8, 32]},
                 "model_type": {"values": ["ctm"]},
                 "memory_length": {"values": [args.memory_length]},
                 "internal_ticks": {"values": [args.iterations]},
