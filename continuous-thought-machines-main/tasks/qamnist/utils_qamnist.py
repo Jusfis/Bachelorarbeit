@@ -23,7 +23,6 @@ def prepare_model(args, device):
 
 
     if args.model_type == 'ctm':
-
         if args.postactivation_production == 'kan':
             from models.ctm_qamnist import ContinuousThoughtMachineQAMNIST_KAN
             model = ContinuousThoughtMachineQAMNIST_KAN(
@@ -47,6 +46,7 @@ def prepare_model(args, device):
             iterations_per_question_part=args.q_num_repeats_per_input,
             iterations_for_answering=args.q_num_answer_steps,
             ).to(device)
+
         elif args.postactivation_production == 'mlp':
             from models.ctm_qamnist import ContinuousThoughtMachineQAMNIST
             model = ContinuousThoughtMachineQAMNIST(
@@ -70,8 +70,7 @@ def prepare_model(args, device):
                 iterations_per_question_part=args.q_num_repeats_per_input,
                 iterations_for_answering=args.q_num_answer_steps,
             ).to(device)
-
-        elif args.model_type == 'lstm':
+    elif args.model_type == 'lstm':
                 model = LSTMBaseline(
                 iterations=args.iterations,
                 d_model=args.d_model,
@@ -83,7 +82,7 @@ def prepare_model(args, device):
                 iterations_per_question_part=args.q_num_repeats_per_input,
                 iterations_for_answering=args.q_num_answer_steps,
             ).to(device)
-        else:
+    else:
             raise ValueError(f"Model must be either ctm or lstm, not {args.model_type}")
 
         return model
