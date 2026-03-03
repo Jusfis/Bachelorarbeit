@@ -29,8 +29,8 @@ python -u tasks/image_classification/train.py \
 --n_synch_action 512 \
 --n_random_pairing_self 0 \
 --neuron_select_type random-pairing \
---iterations 50 \
---memory_length 15 \
+--iterations 25 \
+--memory_length 10 \
 --deep_memory \
 --memory_hidden_dims 64 \
 --dropout 0.0 \
@@ -38,12 +38,12 @@ python -u tasks/image_classification/train.py \
 --no-do_normalisation \
 --positional_embedding_type none \
 --backbone_type resnet18-1 \
---training_iterations 600001 \
+--training_iterations 150001 \
 --warmup_steps 1000 \
 --use_scheduler \
 --scheduler_type cosine \
 --weight_decay 0.0001 \
---save_every 10000 \
+--save_every 50000 \
 --track_every 2000 \
 --n_test_batches 50 \
 --num_workers_train 8 \
