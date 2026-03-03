@@ -6,7 +6,7 @@ Q_NUM_REPEATS_PER_INPUT=10
 LOG_DIR="logs/qamnist/run${RUN}/${MODEL_TYPE}_${Q_NUM_REPEATS_PER_INPUT}"
 SEED=$((RUN - 1))
 
-python -m tasks.qamnist.train \
+python -m tasks.qamnist.train_qamnist \
     --log_dir $LOG_DIR \
     --seed $SEED \
     --memory_length $MEMORY_LENGTH \
@@ -44,4 +44,5 @@ python -m tasks.qamnist.train \
     --no-reload_model_only \
     --device 0 \
     --no-use_amp \
-    --neuron_select_type "random"
+    --neuron_select_type "random" \
+    --useWandb 1

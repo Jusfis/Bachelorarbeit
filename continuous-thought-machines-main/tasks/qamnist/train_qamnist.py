@@ -503,6 +503,7 @@ def run_sweep():
         args.postactivation_production = config.postactivation_production
         args.model = config.model_type
         args.seed = config.seed
+        args.model_type = config.model_type
         # ------------------ Hyperparameters from paper  ------------------------ #
         args.memory_length = config.memory_length
         args.q_num_repeats_per_input = config.q_num_repeats_per_input
@@ -536,7 +537,7 @@ if __name__=='__main__':
                 "postactivation_production": {"values": [args.postactivation_production]},
                 "seed": {"values": [2, 11, 48, 24, 50, 7, 31]},
                 # "seed": {"values": [47, 23, 49, 6, 30]},
-                "model_type": {"values": ["ctm"]},
+                "model_type": {"values": [args.model_type]},
 
                 # ------------------ Hyperparameters from paper  ------------------------- #
                 "memory_length": {"values": [args.memory_length]},
