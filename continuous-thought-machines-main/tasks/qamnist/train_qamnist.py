@@ -314,22 +314,22 @@ def qamnist_model(args, config, run):
                             print("Plotting neural dynamics")
                             plot_neural_dynamics(post_activations, 100, args.log_dir, axis_snap=True)
 
-                        pbar.set_description('Tracking: Producing attention gif')
+                            pbar.set_description('Tracking: Producing attention gif')
 
-                        process = multiprocessing.Process(
-                            target=make_qamnist_gif,
-                            args=(
-                            predictions.detach().cpu().numpy(),
-                            certainties.detach().cpu().numpy(),
-                            targets.detach().cpu().numpy(),
-                            pre_activations,
-                            post_activations,
-                            attention,
-                            gif_inputs.detach().cpu().numpy(),
-                            f"{args.log_dir}/eval_output_val_{0}_iter_{0}.gif",
-                            question_readable
-                        ))
-                        process.start()
+                            process = multiprocessing.Process(
+                                target=make_qamnist_gif,
+                                args=(
+                                predictions.detach().cpu().numpy(),
+                                certainties.detach().cpu().numpy(),
+                                targets.detach().cpu().numpy(),
+                                pre_activations,
+                                post_activations,
+                                attention,
+                                gif_inputs.detach().cpu().numpy(),
+                                f"{args.log_dir}/eval_output_val_{0}_iter_{0}.gif",
+                                question_readable
+                            ))
+                            process.start()
 
 
                         ##################################### TRAIN METRICS

@@ -39,7 +39,7 @@ python -m tasks.qamnist.train_qamnist \
     --training_iterations 300001 \
     --warmup_steps 500 \
     --track_every 1000 \
-    --save_every 10000 \
+    --save_every 50000 \
     --no-reload \
     --no-reload_model_only \
     --no-use_amp \

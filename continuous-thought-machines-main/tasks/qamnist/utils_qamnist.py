@@ -85,4 +85,4 @@ def prepare_model(args, device):
     else:
             raise ValueError(f"Model must be either ctm or lstm, not {args.model_type}")
 
-        return model
+    return model

@@ -644,7 +644,7 @@ if __name__=='__main__':
                 "training_iterations": {"values": [150001]},
                 "parity_sequence_length": {"values": [64]},
                 "postactivation_production": {"values": [args.postactivation_production]},
-                "seed": {"values": [3, 12, 49, 25, 51, 8, 32]},
+                "seed": {"values": [4, 13, 50, 26, 52, 9, 33]},
                 "model_type": {"values": ["ctm"]},
             }
         }
