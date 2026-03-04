@@ -769,7 +769,7 @@ if __name__ == "__main__":
                 "use_scheduler": {"values": [True]},
                 "training_iterations": {"values": [150000]},
                 "postactivation_production": {"values": [args.postactivation_production]},
-                "seed": {"values": [3, 12, 49, 25, 51, 8, 32]},
+                "seed": {"values": [4, 13, 50, 26, 52, 9, 33]},
                 "model_type": {"values": ["ctm"]},
                 "memory_length": {"values": [args.memory_length]},
                 "internal_ticks": {"values": [args.iterations]},
