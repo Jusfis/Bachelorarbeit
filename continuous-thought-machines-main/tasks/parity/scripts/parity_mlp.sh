@@ -9,8 +9,8 @@
 #SBATCH --output=/home/f/fischerjus/Bachelorarbeit/continuous-thought-machines-main/tasks/parity/slurm_kan.%j.%N.out
 
 #RUN=1
-ITERATIONS=25
-MEMORY_LENGTH=10
+ITERATIONS=10
+MEMORY_LENGTH=5
 #LOG_DIR="logs/parity/run${RUN}/ctm_${ITERATIONS}_${MEMORY_LENGTH}"
 #SEED=$((RUN - 1))
 #    --model_type "ctm"\

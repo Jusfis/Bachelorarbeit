@@ -612,7 +612,7 @@ def run_sweep():
         args.memory_length = config.memory_length
         args.iterations = config.internal_ticks
         args.postactivation_production = config.postactivation_production
-        args.model = config.model_type
+        args.model_type = config.model_type
         args.parity_sequence_length = config.parity_sequence_length
         args.seed = config.seed
 
