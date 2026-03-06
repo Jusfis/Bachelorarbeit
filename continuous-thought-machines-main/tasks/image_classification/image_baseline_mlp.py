@@ -301,12 +301,24 @@ def imagenet_baseline_model(args, config, run):
         import torchvision.models as models
         model = models.resnet18(num_classes=args.out_dims)
         print("Initialising ResNet18 with output dimensions:", args.out_dims)
-        # Adapt ResNet stem for small CIFAR images
+        # Adapt ResNet stem for small CIFAR images urspruenglich 224 x 224 cifar nur 32 x 32
         if args.dataset in ['cifar10', 'cifar100']:
             model.conv1 = nn.Conv2d(3, 64, kernel_size=3, stride=1, padding=1, bias=False)
             model.maxpool = nn.Identity()
 
         model = model.to(device)
+    # elif args.model == 'resnetNew':
+    #     import torchvision.models as models§
+    #     model = models.resnet18(num_classes=args.out_dims)
+    #     print("Initialising ResNet18 with output dimensions:", args.out_dims)
+    #     # Adapt ResNet stem for small CIFAR images
+    #     if args.dataset in ['cifar10', 'cifar100']:
+    #         model.conv1 = nn.Conv2d(3, 64, kernel_size=3, stride=1, padding=1, bias=False)
+    #         model.maxpool = nn.Identity()
+    #
+    #     model = model.to(device)
+
+
     elif args.model == 'mlp':
         # Calculate flat input dimension based on dataset
         if args.dataset in ['cifar10', 'cifar100']:
