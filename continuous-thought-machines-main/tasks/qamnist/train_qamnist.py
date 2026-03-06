@@ -533,7 +533,7 @@ if __name__=='__main__':
                 "learning_rate": {"values" : [1e-4]},
                 "use_amp": {"values": [True]},
                 "use_scheduler": {"values": [True]},
-                "training_iterations": {"values": [100000]},
+                "training_iterations": {"values": [100001]},
                 "postactivation_production": {"values": [args.postactivation_production]},
                 "seed": {"values": [2, 11, 48, 24, 50, 7, 31]},
                 # "seed": {"values": [47, 23, 49, 6, 30]},

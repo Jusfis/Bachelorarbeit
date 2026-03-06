@@ -5,6 +5,7 @@ import os
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 # Set the seaborn theme for better aesthetics
 sns.set_theme(style="darkgrid")
+colors = sns.color_palette("deep")
 
 # Load the data
 df_test_acc = pd.read_csv(os.path.join(BASE_DIR,"parity_10_5_test_accuracies.csv"))
