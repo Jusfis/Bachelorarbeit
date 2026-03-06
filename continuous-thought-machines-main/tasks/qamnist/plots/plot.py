@@ -56,7 +56,7 @@ def plot_metrics_seaborn_smoothed(test_acc_file, test_loss_file, train_acc_file,
     sns.set_theme(style="darkgrid")
     colors = sns.color_palette("deep")
 
-    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 6))
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(15, 10))
 
 
 
