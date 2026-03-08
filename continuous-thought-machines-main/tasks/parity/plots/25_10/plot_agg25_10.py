@@ -7,7 +7,6 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 # Set the seaborn theme for better aesthetics
 sns.set_theme(style="darkgrid")
-colors = sns.color_palette("deep")
 
 # Load the data
 df_test_acc = pd.read_csv(os.path.join(BASE_DIR, "parity_10_5_test_accuracies.csv"))
@@ -59,9 +58,9 @@ def plot_metric(df, ax, title, ylabel, metric_base_name, df_baseline=None, basel
     kan_max = f"{kan_col}__MAX"
 
     # Plot KAN main line and variance shadow
-    sns.lineplot(data=df, x="Step", y=kan_col, ax=ax, label="KAN", color=colors[0])
+    sns.lineplot(data=df, x="Step", y=kan_col, ax=ax, label="KAN", color="blue")
     if kan_min in df.columns and kan_max in df.columns:
-        ax.fill_between(df["Step"], df[kan_min], df[kan_max], color=colors[0], alpha=0.2)
+        ax.fill_between(df["Step"], df[kan_min], df[kan_max], color="blue", alpha=0.2)
 
     # Retrieve column names for MLP
     mlp_col = f"postactivation_production: mlp - {metric_base_name}"
@@ -69,18 +68,18 @@ def plot_metric(df, ax, title, ylabel, metric_base_name, df_baseline=None, basel
     mlp_max = f"{mlp_col}__MAX"
 
     # Plot MLP main line and variance shadow
-    sns.lineplot(data=df, x="Step", y=mlp_col, ax=ax, label="MLP", color=colors[1])
+    sns.lineplot(data=df, x="Step", y=mlp_col, ax=ax, label="MLP", color="orange")
     if mlp_min in df.columns and mlp_max in df.columns:
-        ax.fill_between(df["Step"], df[mlp_min], df[mlp_max], color=colors[1], alpha=0.2)
+        ax.fill_between(df["Step"], df[mlp_min], df[mlp_max], color="orange", alpha=0.2)
 
     # Plot Baseline if provided
     if df_baseline is not None and baseline_col_name is not None:
         base_min = f"{baseline_col_name}__MIN"
         base_max = f"{baseline_col_name}__MAX"
 
-        sns.lineplot(data=df_baseline, x="Step", y=baseline_col_name, ax=ax, label="Baseline", color=colors[2])
+        sns.lineplot(data=df_baseline, x="Step", y=baseline_col_name, ax=ax, label="Baseline", color="green")
         if base_min in df_baseline.columns and base_max in df_baseline.columns:
-            ax.fill_between(df_baseline["Step"], df_baseline[base_min], df_baseline[base_max], color=colors[2], alpha=0.2)
+            ax.fill_between(df_baseline["Step"], df_baseline[base_min], df_baseline[base_max], color="green", alpha=0.2)
 
     ax.set_title(title, fontsize=14)
     ax.set_ylabel(ylabel, fontsize=12)

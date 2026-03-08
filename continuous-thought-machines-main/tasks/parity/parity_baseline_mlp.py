@@ -351,34 +351,33 @@ def parity_baseline_model(args, config=None, run=None):
                                     targets = targets.to(device)
                                     these_predictions = model(inputs)
 
-                                    loss = parity_loss_baseline(these_predictions, targets)
-                                    temp_test_loss.append(loss.item())
-                                    pred_labels = these_predictions[:, -1, :].argmax(dim=-1)
+                                    ################################### LOSS & ACCURACY AUF ALLEN BITS #######################
+                                    loss_all_bits = parity_loss_baseline(these_predictions, targets)
+                                    temp_test_loss.append(loss_all_bits.item())
 
-                                    true_classes = targets[:, -1]
-                                    if true_classes.min() < 0: true_classes = (true_classes + 1) // 2
+                                    # Targets mappen (von -1/1 auf 0/1) für die Accuracy-Berechnung
+                                    targets_mapped = (targets + 1) // 2 if targets.min() < 0 else targets
 
-                                    # print(predicted_classes.shape, true_classes.shape)
-                                    accuracy = (pred_labels == true_classes).float().mean().item()
-                                    temp_test_acc.append(accuracy)
+                                    # Accuracy über alle Bits: [batch, seq_len]
+                                    pred_all_bits = these_predictions.argmax(dim=-1)
+                                    accuracy_all_bits = (pred_all_bits == targets_mapped).float().mean().item()
+                                    temp_test_acc.append(accuracy_all_bits)
 
+                                    ################################### LOSS & ACCURACY NUR AUF LETZTEM BIT ##################
                                     last_step_logits = these_predictions[:, -1, :]
-                                    # last step targets: [batch]
-                                    last_step_targets = targets[:, -1].long()
+                                    last_step_targets = targets_mapped[:, -1].long()
+
                                     loss_final = torch.nn.functional.cross_entropy(last_step_logits, last_step_targets)
-
-
-
-                                    predicted_classes = last_step_logits.argmax(dim=-1)
-                                    accuracy = (predicted_classes == last_step_targets).float().mean().item()
-
+                                    predicted_final_classes = last_step_logits.argmax(dim=-1)
+                                    accuracy_final_bit = (
+                                                predicted_final_classes == last_step_targets).float().mean().item()
 
                                     if run is not None:
                                         run.log({
-                                            "Test/Losses": temp_test_loss[-1],
-                                            "Test/Accuracies final ": accuracy,
-                                            "Test/Accuracies": temp_test_acc[-1],
-                                            "Test/Losses final": loss_final.item(),
+                                            "Test/Losses": temp_test_loss[-1],  # Loss über alle Bits
+                                            "Test/Accuracies": temp_test_acc[-1],  # Accuracy über alle Bits
+                                            "Test/Losses final": loss_final.item(),  # Loss letztes Bit
+                                            "Test/Accuracies final ": accuracy_final_bit,  # Accuracy letztes Bit
                                         }, step=bi)
 
                                     # PROGRESS BAR
