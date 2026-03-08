@@ -655,7 +655,7 @@ def imagenet_model(args,config,run):
                 # plt.close(figloss)
 
                 # Conditional Visualization (Only for CTM/LSTM)
-                if (args.model in ['ctm', 'lstm'] ) and ( (args.track_every * 20) % bi) == 0:
+                if (args.model in ['ctm', 'lstm'] ) and ( (args.track_every * 10) % bi == 0):
 
                     try: # For safety
                         inputs_viz, targets_viz = next(iter(testloader)) # Get a fresh batch
