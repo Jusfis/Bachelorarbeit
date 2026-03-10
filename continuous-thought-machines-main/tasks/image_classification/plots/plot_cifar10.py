@@ -153,7 +153,7 @@ sns.lineplot(data=df_test_loss_base, x='Step', y=df_test_loss_base.iloc[:, 1], l
 ax2.fill_between(df_test_loss_base['Step'], df_test_loss_base.iloc[:, 2], df_test_loss_base.iloc[:, 3], color=colors[2], alpha=0.2)
 
 
-ax2.set_title('Train Loss', fontsize=14)
+ax2.set_title('Test Loss', fontsize=14)
 ax2.set_xlabel('Step', fontsize=12)
 ax2.set_ylabel('Loss', fontsize=12)
 

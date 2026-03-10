@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import os
 
 # Alle CSV-Dateien auslesen
-files = [f for f in os.listdir('.') if f.endswith('.csv') and 'kan' in f]
+files = [f for f in os.listdir('..') if f.endswith('.csv') and 'kan' in f]
 
 data_frames = []
 

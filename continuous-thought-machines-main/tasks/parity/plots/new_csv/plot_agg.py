@@ -89,16 +89,14 @@ def plot_metric(df, ax, title, ylabel, metric_base_name, df_baseline=None, basel
 
 
 # Plot all 4 metrics, injecting the aggregated baseline data into the Train plots
-plot_metric(df_train_loss, axes[0, 0], "Train Loss", "Loss", "Train/Losses_every_step",
-            df_baseline=df_baseline_loss, baseline_col_name="Aggregated_Baseline")
+plot_metric(df_train_loss, axes[0, 0], "Train Loss", "Loss", "Train/Losses_every_step")
 
 plot_metric(df_test_loss, axes[0, 1], "Test Loss", "Loss", "Test/Losses")
 
-plot_metric(df_train_acc, axes[1, 0], "Train Accuracy", "Accuracy", "Train/Accuracies_most_certain",
-            df_baseline=df_baseline_acc, baseline_col_name="Aggregated_Baseline")
+plot_metric(df_train_acc, axes[1, 0], "Train Accuracy", "Accuracy", "Train/Accuracies_most_certain")
 
 plot_metric(df_test_acc, axes[1, 1], "Test Accuracy", "Accuracy", "Test/Accuracies_most_certain")
 
 # Adjust layout and save the figure
 plt.tight_layout()
-plt.savefig(os.path.join(BASE_DIR, "parity_10_5_metrics_with_baseline.png"), dpi=300)
+plt.savefig(os.path.join(BASE_DIR, "parity_10_5_metrics_final.png"), dpi=300)

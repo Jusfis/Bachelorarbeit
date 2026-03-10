@@ -1,34 +1,20 @@
 #ListOps Dataset
 
 # Training
-To train run this script from the root level of the repository:
+To train run this script from ~/continuous-thought-machines-main/ level of the repository:
+Asjust the script for the model you want to train:
+IMPORTANT! WANDB config may overwrite script parameters, so make sure to check the config in the wandb dashboard if you are using it.
+
 ```
-bash tasks/listops/scripts/train_ctm.sh
+bash tasks/listops/scripts/listops_{}.sh
 ```
 
 
-# Analysis
-Run analysis like in the other tasks:
-```
-python -m tasks.listops.analysis.run --log_dir <PATH_TO_LOG_DIR>
-```
-
-
-Download ListOps Dataset
-# From Huggingface below:
-```
-mkdir raw_datasets
-```
-
-# Clone and unpack the LRA object.
-# This can take a long time, so get comfortable.
+To generate train and test data, run the make_data_nyul-ml.py script:
 
 ```
-rm -rf ./raw_datasets/lra_release.gz ./raw_datasets/lra_release  # Clean out any old datasets.
-wget -v https://storage.googleapis.com/long-range-arena/lra_release.gz -P ./raw_datasets
-```
+python -m tasks.listops.make_data_nyul_ml 
 
-# Add a progress bar because this can be slow.
 ```
-pv ./raw_datasets/lra_release.gz | tar -zx -C ./raw_datasets/
-```
+To plot the results: 
+run python script in plots folder:

@@ -10,14 +10,18 @@ LAST = "[LAST"
 SUM_MOD = "[SM"
 END = "]"
 
-# Hier legst du fest, welche Operatoren vorkommen dürfen
+
 OPERATORS = [MIN, MAX, MED, SUM_MOD]
 VALUES = range(10)
 
 # ==========================================
-# ⚙️ EINSTELLUNGEN FÜR DEIN DATASET
+# Dataset configuration
+#  Conventions for the listops CTM dataset:
+#  csv_train_file='tasks/listops/dataset/train_easy_200_000.tsv'
+#  csv_test_file='tasks/listops/dataset/test_easy_200_000.tsv'
+#
 # ==========================================
-OUTPUT_FILE = "tasks/listops/dataset/train_easy_200_000.tsv"  # Hier wird die Datei gespeichert
+OUTPUT_FILE = "tasks/listops/dataset/train_easy_200_000.tsv"  # speicherort auswählen (chose your output file path)
 DATA_POINTS = 200000
 MAX_DEPTH = 3
 MAX_ARGS = 3

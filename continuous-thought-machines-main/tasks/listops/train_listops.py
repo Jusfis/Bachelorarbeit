@@ -146,7 +146,7 @@ def listops_model(args, config, run):
                 print("Fehler, dataset folder is missing, created dataset")
 
 
-            # Laenge latent representatation
+                 # Laenge latent representatation
                 # check the longest sequence in the dataset to set max_len accordingly
             df_train = pd.read_csv('tasks/listops/dataset/train_easy_200_000.tsv', sep='\t')
             df_test = pd.read_csv('tasks/listops/dataset/test_easy_200_000.tsv', sep='\t')
