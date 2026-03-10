@@ -3,14 +3,16 @@ Bachelor Thesis on the Topic on Kolmogorov Arnold Networks for Continuous Though
 
 This Repository consists of an aggregation of useful repositories and contents for the thesis.
 
+
+
+Useful files for this thesis
 # Project Structure 
 from  └── continuous-thought-machines-main on
 
 ``` text
 ├── data
 │   ├── ListOps
-│   ├── MNIST   
-│   └── mazes
+│   └── MNIST   
 ├── dataset
 ├── logs
 │    ├── listops   
@@ -18,46 +20,41 @@ from  └── continuous-thought-machines-main on
 │    ├── parity
 │    └── qamnist
 ├── models
-├── parity_logs_kan
 ├── tasks
 │   ├── image_classification
-│   │   ├── analysis
+│   │   ├── plots
+│   │   ├── depr
 │   │   └── scripts
 │   ├── listops
-│   │   ├── analysis
 │   │   ├── dataset
 │   │   ├── depr
 │   │   └── scripts
-│   ├── mazes
-│   │   ├── analysis
-│   │   └── scripts
-│   ├── other
-│   │   ├── rl
-│   │   └── sort
 │   ├── parity
-│   │   ├── analysis
 │   │   ├── depr
-│   │   ├── logs
-│   │   ├── model
-│   │   ├── scripts
-│   │   └── wandb
+│   │   ├── plots
+│   │   └── scripts
 │   └── qamnist
-│       ├── analysis
+│       ├── plots
 │       └── scripts
-├── tests
 └── utils
 ```
 # Preparation
+
+load root level requirements.txt (not in continuous-thought-machine-main) in venv:
+
 To install efficient-kan package:
 ```bash
 pip install git+https://github.com/Blealtan/efficient-kan.git
 ```
 
-
-
 # Usage
+Install packages and follow instructions from README in task/{subfolder} 
 
 # Datasets
+
+Generation script for listops in: task/listops
+
+OTHERWISE:
 
 [Listops Meta link](https://github.com/facebookresearch/latent-treelstm/blob/master/data/listops/external/urls.txt)
 
