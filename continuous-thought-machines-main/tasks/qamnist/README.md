@@ -1,15 +1,16 @@
 # Q&A MNIST
 
 ## Training
-To run the Q&A MNIST training that we used for the paper, run bash scripts from the root level of the repository. For example, to train the 10-iteration CTM, run:
+To run the Q&A MNIST training that we used for the paper, run bash scripts from ~/continuous-thought-machines-main/ level of the repository:
+
+Adjust the script for the model you want to train:
+IMPORTANT! WANDB config may overwrite script parameters, so make sure to check the config in the wandb dashboard if you are using it.
 
 ```
-bash tasks/qamnist/scripts/train_ctm_10.sh
+bash tasks/qamnist/scripts/qamnist_{}.sh
 ```
 
-## Analysis
-To run the analysis, first make sure the checkpoints are saved in the log directory (specified by the `log_dir` argument). The checkpoints can be obtained by either running the training code, or downloading them from [this link](https://drive.google.com/file/d/1-ycgRYxOlZ9-TJ_n3xvUonRvvf5Lh0r3/view?usp=drive_link).
 
-```
-python -m tasks.qamnist.analysis.run --log_dir <PATH_TO_LOG_DIR>
-```
+To plot the results: 
+
+run python script in plots and its subfolders.:

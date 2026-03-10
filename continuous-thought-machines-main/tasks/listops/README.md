@@ -1,8 +1,8 @@
-#ListOps Dataset
+# ListOps Dataset
 
 # Training
 To train run this script from ~/continuous-thought-machines-main/ level of the repository:
-Asjust the script for the model you want to train:
+Adjust the script for the model you want to train:
 IMPORTANT! WANDB config may overwrite script parameters, so make sure to check the config in the wandb dashboard if you are using it.
 
 ```
